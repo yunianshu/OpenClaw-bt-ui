@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw 知识图谱 - Notebook Tabs Style</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #faf9f7;
+  --text: #1a1a1a;
+  --coral: #e07a5f;
+  --sage: #81b29a;
+  --gold: #d4a373;
+  --blue: #457b9d;
+  --gray: #6b6b6b;
+}
+
+body {
+  font-family: 'Source Sans Pro', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  overflow: hidden;
+}
+
+.slide {
+  width: 100%;
+  max-width: clamp(320px, 90vw, 900px);
+  aspect-ratio: 16 / 9;
+  background: var(--bg);
+  border-radius: clamp(4px, 1vw, 12px);
+  box-shadow: 0 2px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Tab bar */
+.tab-bar {
+  display: flex;
+  align-items: stretch;
+  background: var(--bg);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  padding: 0 clamp(0.5rem, 2vw, 1.5rem);
+  gap: clamp(0.25rem, 1vw, 0.75rem);
+}
+
+.tab {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: clamp(0.6rem, 1.5vw, 0.85rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--gray);
+  padding: clamp(0.5rem, 1.5vw, 1rem) clamp(0.5rem, 1.5vw, 1.25rem);
+  border-bottom: 3px solid transparent;
+  cursor: default;
+  transition: color 0.25s ease, border-color 0.25s ease;
+  white-space: nowrap;
+  position: relative;
+  top: 1px;
+}
+
+.tab.active {
+  color: var(--text);
+}
+
+.tab:nth-child(1).active { border-bottom-color: var(--coral); }
+.tab:nth-child(2).active { border-bottom-color: var(--sage); }
+.tab:nth-child(3).active { border-bottom-color: var(--gold); }
+.tab:nth-child(4).active { border-bottom-color: var(--blue); }
+.tab:nth-child(5).active { border-bottom-color: var(--coral); }
+
+.tab-dot {
+  display: inline-block;
+  width: clamp(4px, 0.8vw, 7px);
+  height: clamp(4px, 0.8vw, 7px);
+  border-radius: 50%;
+  margin-right: clamp(3px, 0.5vw, 6px);
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+.tab:nth-child(1) .tab-dot { background: var(--coral); }
+.tab:nth-child(2) .tab-dot { background: var(--sage); }
+.tab:nth-child(3) .tab-dot { background: var(--gold); }
+.tab:nth-child(4) .tab-dot { background: var(--blue); }
+.tab:nth-child(5) .tab-dot { background: var(--coral); }
+
+/* Content area */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1.5rem, 5vw, 4.5rem);
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+/* Eyebrow */
+.eyebrow {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: clamp(0.55rem, 1.2vw, 0.72rem);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--coral);
+  margin-bottom: clamp(0.25rem, 0.8vw, 0.5rem);
+  opacity: 0;
+  animation: fadeUp 0.6s ease forwards 0.2s;
+}
+
+/* Title */
+.title {
+  font-family: 'Crimson Pro', serif;
+  font-size: clamp(1.8rem, 5.5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  opacity: 0;
+  animation: fadeUp 0.7s ease forwards 0.35s;
+}
+
+/* Subtitle */
+.subtitle {
+  font-family: 'Crimson Pro', serif;
+  font-size: clamp(0.9rem, 2.5vw, 1.6rem);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--gray);
+  margin-top: clamp(0.25rem, 0.8vw, 0.4rem);
+  opacity: 0;
+  animation: fadeUp 0.7s ease forwards 0.5s;
+}
+
+/* Divider */
+.divider {
+  width: clamp(2rem, 5vw, 4rem);
+  height: 3px;
+  background: linear-gradient(90deg, var(--coral), var(--gold));
+  border-radius: 2px;
+  margin: clamp(0.5rem, 1.5vw, 1rem) 0;
+  opacity: 0;
+  animation: fadeIn 0.6s ease forwards 0.6s;
+}
+
+/* Bullets */
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.4rem, 1.2vw, 0.8rem);
+  margin-top: clamp(0.25rem, 0.8vw, 0.5rem);
+}
+
+.bullet {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: clamp(0.7rem, 1.8vw, 1.05rem);
+  font-weight: 300;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
+  opacity: 0;
+  animation: fadeUp 0.6s ease forwards;
+}
+
+.bullet:nth-child(1) { animation-delay: 0.7s; }
+.bullet:nth-child(2) { animation-delay: 0.85s; }
+
+.bullet-marker {
+  width: clamp(5px, 1vw, 8px);
+  height: clamp(5px, 1vw, 8px);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bullet:nth-child(1) .bullet-marker { background: var(--sage); }
+.bullet:nth-child(2) .bullet-marker { background: var(--blue); }
+
+.bullet-dot {
+  display: inline-block;
+  width: clamp(3px, 0.6vw, 5px);
+  height: clamp(3px, 0.6vw, 5px);
+  background: currentColor;
+  border-radius: 50%;
+  opacity: 0.4;
+  margin: 0 clamp(0.25rem, 0.8vw, 0.5rem);
+}
+
+/* Bottom label */
+.label {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: clamp(0.5rem, 1vw, 0.65rem);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: rgba(107,107,107,0.6);
+  text-align: center;
+  padding: clamp(0.5rem, 1.5vw, 0.9rem) 0;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 0.6s ease forwards 1s;
+}
+
+/* Animations */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(clamp(8px, 2vw, 16px)); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Active tab indicator accent bar */
+.accent-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--coral) 0%, var(--gold) 50%, var(--sage) 100%);
+  opacity: 0;
+  animation: fadeIn 0.5s ease forwards 0.1s;
+}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="accent-bar"></div>
+
+  <nav class="tab-bar">
+    <div class="tab active">
+      <span class="tab-dot"></span>架构篇
+    </div>
+    <div class="tab">
+      <span class="tab-dot"></span>部署篇
+    </div>
+    <div class="tab">
+      <span class="tab-dot"></span>场景篇
+    </div>
+    <div class="tab">
+      <span class="tab-dot"></span>分析篇
+    </div>
+    <div class="tab">
+      <span class="tab-dot"></span>安全篇
+    </div>
+  </nav>
+
+  <main class="content">
+    <div class="eyebrow">OpenClaw AI Agent</div>
+    <h1 class="title">OpenClaw 知识图谱</h1>
+    <p class="subtitle">从部署到实践全指南</p>
+    <div class="divider"></div>
+    <div class="bullets">
+      <div class="bullet">
+        <span class="bullet-marker"></span>
+        三层架构：Channel &middot; Gateway &middot; Node
+      </div>
+      <div class="bullet">
+        <span class="bullet-marker"></span>
+        四层记忆：SOUL &middot; TOOLS &middot; USER &middot; Session
+      </div>
+    </div>
+  </main>
+
+  <div class="label">Style F: Notebook Tabs &middot; Editorial organized</div>
+</div>
+</body>
+</html>

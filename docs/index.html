@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw 知识图谱 · 风格选择器</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Sora:wght@400;600;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;600;700&family=Poppins:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Merriweather:wght@400;700&family=Unbounded:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg: #07090f;
+        --bg-card: #0d1520;
+        --bg-card-hover: #111a28;
+        --accent: #00e5cc;
+        --accent-dim: rgba(0, 229, 204, 0.6);
+        --text: #e0e8f0;
+        --text-muted: #5a7a8a;
+        --border: rgba(255, 255, 255, 0.06);
+        --border-hover: rgba(0, 229, 204, 0.25);
+        --font-display: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+        --font-body: 'Noto Sans SC', sans-serif;
+        --header-h: 58px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+        font-family: var(--font-body);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        overflow: hidden;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 100;
+        height: var(--header-h);
+        background: rgba(7, 9, 15, 0.98);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(0, 229, 204, 0.1);
+        display: flex; align-items: center;
+        padding: 0 1.5rem; gap: 1rem;
+    }
+    .header-badge {
+        font-family: var(--font-display);
+        font-size: 0.7rem; color: var(--accent);
+        text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600;
+    }
+    .header-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.1); }
+    .header-title { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--text); }
+    .header-title span { color: var(--accent); }
+
+    /* ===== LAYOUT ===== */
+    .layout { display: flex; height: 100vh; padding-top: var(--header-h); }
+
+    /* ===== LEFT COL (20%) ===== */
+    .left-col {
+        width: 20%; min-width: 240px; max-width: 320px;
+        height: 100%; overflow-y: auto;
+        background: var(--bg);
+        border-right: 1px solid rgba(0, 229, 204, 0.08);
+        display: flex; flex-direction: column;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 229, 204, 0.2) transparent;
+    }
+    .left-col::-webkit-scrollbar { width: 4px; }
+    .left-col::-webkit-scrollbar-track { background: transparent; }
+    .left-col::-webkit-scrollbar-thumb { background: rgba(0, 229, 204, 0.2); border-radius: 2px; }
+
+    .left-header {
+        padding: 1.2rem 1rem 0.8rem;
+        border-bottom: 1px solid var(--border);
+        position: sticky; top: 0; background: var(--bg); z-index: 10;
+    }
+    .left-header-title {
+        font-family: var(--font-display); font-size: 0.75rem;
+        color: var(--accent); text-transform: uppercase;
+        letter-spacing: 0.12em; margin-bottom: 0.8rem;
+    }
+    .left-header-count { font-size: 0.7rem; color: var(--text-muted); padding-bottom: 0.8rem; }
+    .left-header-count strong { color: var(--accent); font-weight: 600; }
+
+    /* ===== CARDS ===== */
+    .cards-list { flex: 1; padding: 0.6rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .style-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative; overflow: hidden;
+    }
+    .style-card:hover { transform: translateX(3px); border-color: var(--border-hover); }
+    .style-card.selected { border-color: var(--card-accent, var(--accent)); box-shadow: 0 0 20px rgba(0,0,0,0.4); }
+
+    /* MINI PREVIEW */
+    .card-preview { height: 140px; position: relative; overflow: hidden; flex-shrink: 0; }
+    .card-preview iframe { width: 100%; height: 100%; border: none; transform-origin: top left; }
+
+    /* CARD INFO */
+    .card-info { padding: 0.75rem 0.9rem; }
+    .card-name { font-family: var(--font-display); font-size: 0.8rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem; }
+    .card-desc { font-size: 0.65rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.4rem; }
+    .card-tags { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+    .card-tag {
+        font-family: var(--font-display); font-size: 0.55rem; font-weight: 600;
+        padding: 0.15em 0.5em; border-radius: 4px;
+        background: rgba(255,255,255,0.05); color: var(--text-muted);
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* SELECTED INDICATOR */
+    .selected-badge {
+        position: absolute; top: 0.5rem; right: 0.5rem;
+        font-family: var(--font-display); font-size: 0.55rem; font-weight: 700;
+        background: var(--card-accent, var(--accent)); color: #000;
+        padding: 0.2em 0.5em; border-radius: 4px;
+        text-transform: uppercase; letter-spacing: 0.05em;
+        opacity: 0; transition: opacity 0.2s;
+    }
+    .style-card.selected .selected-badge { opacity: 1; }
+
+    /* ===== RIGHT COL (80%) ===== */
+    .right-col { flex: 1; height: 100%; display: flex; flex-direction: column; background: #000; }
+
+    .preview-bar {
+        height: 48px; background: rgba(13, 21, 32, 0.95);
+        backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 1.25rem; flex-shrink: 0;
+    }
+    .preview-bar-left { display: flex; align-items: center; gap: 0.75rem; }
+    .preview-bar-dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        background: var(--accent); box-shadow: 0 0 8px var(--accent);
+        animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .preview-bar-label { font-family: var(--font-display); font-size: 0.8rem; font-weight: 600; color: var(--text); }
+    .btn-fullscreen {
+        font-family: var(--font-display); font-size: 0.72rem; font-weight: 600;
+        padding: 0.4em 1em; background: rgba(0, 229, 204, 0.1); color: var(--accent);
+        border: 1px solid rgba(0, 229, 204, 0.25); border-radius: 6px;
+        cursor: pointer; text-decoration: none;
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .btn-fullscreen:hover { background: rgba(0, 229, 204, 0.2); border-color: var(--accent); transform: translateY(-1px); }
+
+    .preview-frame { flex: 1; width: 100%; border: none; background: #000; display: block; }
+
+    /* ===== CARD ACCENT COLORS ===== */
+    .style-card[data-style="a"] { --card-accent: #ff3b3b; }
+    .style-card[data-style="b"] { --card-accent: #00ff41; }
+    .style-card[data-style="c"] { --card-accent: #c4a35a; }
+    .style-card[data-style="d"] { --card-accent: #3b82f6; }
+    .style-card[data-style="e"] { --card-accent: #f5e642; }
+    .style-card[data-style="f"] { --card-accent: #e07a5f; }
+    .style-card[data-style="g"] { --card-accent: #c9b8e8; }
+    .style-card[data-style="h"] { --card-accent: #ff8a80; }
+    .style-card[data-style="i"] { --card-accent: #8b2635; }
+    .style-card[data-style="j"] { --card-accent: #e63329; }
+    .style-card[data-style="k"] { --card-accent: #8b7355; }
+
+    /* CARD PREVIEW BACKGROUNDS */
+    .style-card[data-style="a"] .card-preview { background: #08080c; }
+    .style-card[data-style="b"] .card-preview { background: #050a05; }
+    .style-card[data-style="c"] .card-preview { background: #0b0d0b; }
+    .style-card[data-style="d"] .card-preview { background: #0a0f1a; }
+    .style-card[data-style="e"] .card-preview { background: #0f0f0f; }
+    .style-card[data-style="f"] .card-preview { background: #faf9f7; }
+    .style-card[data-style="g"] .card-preview { background: #f8f6f3; }
+    .style-card[data-style="h"] .card-preview { background: linear-gradient(135deg, #ffd6e0 0%, #c4d7f2 100%); }
+    .style-card[data-style="i"] .card-preview { background: #f5f0e8; }
+    .style-card[data-style="j"] .card-preview { background: #ffffff; }
+    .style-card[data-style="k"] .card-preview { background: #f4efe6; }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+    <div class="header-badge">OpenClaw</div>
+    <div class="header-sep"></div>
+    <div class="header-title">知识图谱 · <span>风格选择器</span></div>
+</header>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+    <!-- LEFT COLUMN -->
+    <aside class="left-col">
+        <div class="left-header">
+            <div class="left-header-title">选择风格预览</div>
+            <div class="left-header-count">共 <strong id="totalCount">12</strong> 种风格</div>
+        </div>
+
+        <div class="cards-list" id="cardsList">
+            <!-- Cards injected by JS -->
+        </div>
+    </aside>
+
+    <!-- RIGHT COLUMN -->
+    <main class="right-col">
+        <div class="preview-bar">
+            <div class="preview-bar-left">
+                <div class="preview-bar-dot"></div>
+                <span class="preview-bar-label" id="previewLabel">Bold Signal</span>
+            </div>
+            <a id="btnFullscreen" href="slide-previews/style-a-bold-signal.html" target="_blank" class="btn-fullscreen">
+                ↗ 全屏打开
+            </a>
+        </div>
+        <iframe id="previewFrame" class="preview-frame" src="slide-previews/style-a-bold-signal.html"></iframe>
+    </main>
+</div>
+
+<script>
+const presentations = [
+    {
+        id: 'a', name: 'Bold Signal',
+        previewFile: 'slide-previews/style-a-bold-signal.html',
+        file: 'slide-previews/style-a-bold-signal.html',
+        desc: '高对比亮色卡片 + 深色背景，自信高冲击',
+        tags: ['提案', '路演', 'Keynote'],
+        preview: `<div style="padding:1.2rem;font-family:'Space Grotesk',sans-serif;background:#08080c;height:100%;display:flex;flex-direction:column;justify-content:center;">
+            <div style="font-size:0.5rem;text-transform:uppercase;letter-spacing:0.2em;color:#ff3b3b;margin-bottom:0.4rem;">OpenClaw</div>
+            <div style="font-size:1.1rem;font-weight:900;line-height:1.1;margin-bottom:0.5rem;color:#fff;"><span style="color:#ff3b3b">OpenClaw</span><br>知识图谱</div>
+            <div style="font-size:0.45rem;color:#888;margin-bottom:0.6rem;">从部署到实践全指南</div>
+            <div style="display:flex;gap:0.3rem;flex-wrap:wrap;">
+                <div style="background:#111118;border-left:2px solid #ff3b3b;padding:0.25rem 0.4rem;border-radius:3px;font-size:0.4rem;color:#888">⚡ 能动手</div>
+                <div style="background:#111118;border-left:2px solid #ffb800;padding:0.25rem 0.4rem;border-radius:3px;font-size:0.4rem;color:#888">🔓 开源</div>
+                <div style="background:#111118;border-left:2px solid #3bff7a;padding:0.25rem 0.4rem;border-radius:3px;font-size:0.4rem;color:#888">🤖 多平台</div>
+            </div>
+        </div>`
+    },
+    {
+        id: 'n', name: 'Neon Cyber (原始版)',
+        previewFile: 'slide-previews/style-n-neon-cyber.html',
+        file: 'slide-previews/style-n-neon-cyber.html',
+        desc: '青色霓虹科技风，AI 技术演示',
+        tags: ['AI', '科技', '演示'],
+        preview: `<div style="padding:1.2rem;font-family:'Space Grotesk',sans-serif;background:#070b14;height:100%;display:flex;flex-direction:column;justify-content:center;">
+            <div style="font-size:0.45rem;text-transform:uppercase;letter-spacing:0.25em;color:#00e5cc;margin-bottom:0.5rem;">OpenClaw · AI Agent Platform</div>
+            <div style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:0.5rem;line-height:1.2;">OpenClaw<br><span style="color:#00e5cc">知识图谱</span></div>
+            <div style="font-size:0.4rem;color:#5a8a8a;margin-bottom:0.6rem;">企业级智能自动化平台</div>
+            <div style="display:flex;gap:0.3rem;">
+                <div style="flex:1;background:rgba(0,229,204,0.08);border:1px solid rgba(0,229,204,0.3);border-radius:4px;padding:0.25rem;font-size:0.4rem;color:#00e5cc;text-align:center;">⚡ 高性能</div>
+                <div style="flex:1;background:rgba(0,102,255,0.08);border:1px solid rgba(0,102,255,0.3);border-radius:4px;padding:0.25rem;font-size:0.4rem;color:#0066ff;text-align:center;">🔗 多渠道</div>
+            </div>
+        </div>`
+    },
+    {
+        id: 'b', name: 'Terminal Green',
+        previewFile: 'slide-previews/style-b-terminal-green.html',
+        file: 'slide-previews/style-b-terminal-green.html',
+        desc: '开发者终端风格，纯黑+绿色等宽字体',
+        tags: ['DevTools', '技术', 'API'],
+        preview: `<div style="padding:1rem;font-family:'JetBrains Mono',monospace;background:#050a05;height:100%;">
+            <div style="display:flex;gap:0.3rem;margin-bottom:0.7rem;">
+                <div style="width:8px;height:8px;border-radius:50%;background:#ff5f57"></div>
+                <div style="width:8px;height:8px;border-radius:50%;background:#febc2e"></div>
+                <div style="width:8px;height:8px;border-radius:50%;background:#28c840"></div>
+            </div>
+            <div style="font-size:0.6rem;color:#00ff41;margin-bottom:0.4rem;">$ <span style="color:#fff">OpenClaw</span> knowledge_graph_</div>
+            <div style="font-size:0.45rem;color:#4a7a4a;margin-bottom:0.5rem;">// 从部署到实践全指南</div>
+            <div style="font-size:0.45rem;color:#00ff41;margin-bottom:0.2rem;">&gt; gateway — 三层架构</div>
+            <div style="font-size:0.45rem;color:#00ff41;margin-bottom:0.2rem;">&gt; channel — 20+ 平台</div>
+            <div style="font-size:0.45rem;color:#00ff41;margin-bottom:0.2rem;">&gt; memory — 四层记忆</div>
+            <div style="font-size:0.45rem;color:#4a7a4a;">&gt; deploy — 平台/云/本地</div>
+        </div>`
+    },
+    {
+        id: 'c', name: 'Dark Botanical',
+        previewFile: 'slide-previews/style-c-dark-botanical.html',
+        file: 'slide-previews/style-c-dark-botanical.html',
+        desc: '优雅深色 + 柔美金色衬线，精致高端',
+        tags: ['高端', '品牌', '优雅'],
+        preview: `<div style="padding:1.2rem;font-family:'Cormorant Garamond',serif;background:#0b0d0b;height:100%;display:flex;flex-direction:column;justify-content:center;">
+            <div style="font-size:0.45rem;text-transform:uppercase;letter-spacing:0.3em;color:#c4a35a;margin-bottom:0.7rem;font-family:'IBM Plex Sans',sans-serif;">OpenClaw</div>
+            <div style="font-size:1.1rem;font-weight:600;font-style:italic;line-height:1.1;margin-bottom:0.5rem;color:#e8e4dc;">OpenClaw<br><span style="color:#c4a35a;font-style:normal;">知识图谱</span></div>
+            <div style="font-size:0.4rem;color:#8a8578;line-height:1.8;margin-bottom:0.7rem;font-family:'IBM Plex Sans',sans-serif;">从部署到实践全指南<br>一份完整技术解析与实战手册</div>
+            <div style="display:flex;align-items:center;gap:0.5rem;">
+                <div style="width:18px;height:1px;background:#c4a35a"></div>
+                <div style="font-size:0.4rem;color:#8a8578;font-family:'IBM Plex Sans',sans-serif">三层架构 · 四层记忆</div>
+            </div>
+        </div>`
+    },
+    {
+        id: 'd', name: 'Electric Studio',
+        previewFile: 'slide-previews/style-d-electric-studio.html',
+        file: 'slide-previews/style-d-electric-studio.html',
+        desc: '干净专业，蓝紫渐变，现代感',
+        tags: ['专业', '现代', '企业'],
+        preview: `<div style="padding:1.2rem;font-family:'Sora',sans-serif;background:#0a0f1a;height:100%;display:flex;flex-direction:column;justify-content:center;">
+            <div style="font-size:0.45rem;text-transform:uppercase;letter-spacing:0.2em;color:#3b82f6;margin-bottom:0.5rem;">OpenClaw</div>
+            <div style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:0.4rem;">OpenClaw 知识图谱</div>
+            <div style="font-size:0.4rem;color:#888;margin-bottom:0.6rem;">从部署到实践全指南</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.3rem;">
+                <div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:5px;padding:0.25rem;font-size:0.35rem;color:#3b82f6;text-align:center;">三层架构</div>
+                <div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:5px;padding:0.25rem;font-size:0.35rem;color:#8b5cf6;text-align:center;">四层记忆</div>
+                <div style="background:rgba(0,229,204,0.1);border:1px solid rgba(0,229,204,0.3);border-radius:5px;padding:0.25rem;font-size:0.35rem;color:#00e5cc;text-align:center;">8大场景</div>
+            </div>
+        </div>`
+    },
+    {
+        id: 'e', name: 'Creative Voltage',
+        previewFile: 'slide-previews/style-e-creative-voltage.html',
+        file: 'slide-previews/style-e-creative-voltage.html',
+        desc: '活力复古，黄粉撞色，适合创意 pitch',
+        tags: ['创意', 'Pitch', '活泼'],
+        preview: `<div style="padding:1.2rem;font-family:'Poppins',sans-serif;background:#0f0f0f;height:100%;display:flex;flex-direction:column;justify-content:center;">
+            <div style="display:flex;gap:0.4rem;margin-bottom:0.6rem;align-items:center;">
+                <div style="width:12px;height:12px;background:#f5e642;border-radius:2px;"></div>
+                <div style="width:12px;height:12px;background:#ff2d7c;border-radius:2px;"></div>
+                <div style="font-size:0.45rem;color:#888;margin-left:0.3rem;">VOLTAGE</div>
+            </div>
+            <div style="font-size:1rem;font-weight:700;color:#fff;margin-bottom:0.4rem;line-height:1.2;">OpenClaw<br><span style="color:#f5e642">知识图谱</span></div>
+            <div style="font-size:0.4rem;color:#888;margin-bottom:0.6rem;">从部署到实践全指南</div>
+            <div style="display:flex;gap:0.3rem;">
+                <div style="background:#f5e642;color:#000;font-size:0.4rem;font-weight:700;padding:0.25rem 0.5rem;border-radius:3px;">三层架构</div>
+                <div style="background:#ff2d7c;color:#fff;font-size:0.4rem;font-weight:700;padding:0.25rem 0.5rem;border-radius:3px;">四层记忆</div>
+            </div>
+        </div>`
+    },
+    {
+        id: 'f', name: 'Notebook Tabs',
+        previewFile: 'slide-previews/style-f-notebook-tabs.html',
+        file: 'slide-previews/style-f-notebook-tabs.html',
+        desc: '杂志编辑风，彩色标签页',
+        tags: ['编辑', '杂志', '品牌'],
+        preview: `<div style="padding:1.2rem;font-family:'Nunito',sans-serif;background:#faf9f7;height:100%;display:flex;flex-direction:column;justify-content:center;">
+            <div style="display:flex;gap:0.3rem;margin-bottom:0.7rem;">
+                <div style="background:#e07a5f;color:#fff;font-size:0.4rem;font-weight:700;padding:0.2rem 0.5rem;border-radius:3px 3px 0 0;">概览</div>
+                <div style="background:#ddd;color:#888;font-size:0.4rem;font-weight:700;padding:0.2rem 0.5rem;border-radius:3px 3px 0 0;">架构</div>
+                <div style="background:#81b29a;color:#fff;font-size:0.4rem;font-weight:700;padding:0.2rem 0.5rem;border-radius:3px 3px 0 0;">场景</div>
+            </div>
+            <div style="font-size:1rem;font-weight:700;color:#2d2d2d;margin-bottom:0.4rem;line-height:1.2;">OpenClaw<br><span style="color:#e07a5f">知识图谱</span></div>
+            <div style="font-size:0.4rem;color:#888;">从部署到实践全指南</div>
+        </div>`
+    },
+    {
+        id: 'g', name: 'Pastel Geometry',
+        previewFile: 'slide-previews/style-g-pastel-geometry.html',
+        file: 'slide-previews/style-g-pastel-geometry.html',
+        desc: '柔和粉彩，友好圆角药丸形',
+        tags: ['柔和', '友好', '粉彩'],
+        preview: `<div style="padding:1.2rem;font-family:'Nunito',sans-serif;background:#f8f6f3;height:100%;display:flex;flex-direction:column;justify-content:center;">
+            <div style="font-size:0.45rem;text-transform:uppercase;letter-spacing:0.15em;color:#c9b8e8;margin-bottom:0.5rem;font-weight:600;">OpenClaw</div>
+            <div style="font-size:1rem;font-weight:700;color:#555;margin-bottom:0.4rem;line-height:1.2;">OpenClaw <span style="color:#c9b8e8">知识图谱</span></div>
+            <div style="font-size:0.4rem;color:#aaa;margin-bottom:0.6rem;">从部署到实践全指南</div>
+            <div style="display:flex;gap:0.3rem;flex-wrap:wrap;">
+                <div style="background:rgba(201,184,232,0.2);border:1px solid rgba(201,184,232,0.4);border-radius:20px;padding:0.2rem 0.6rem;font-size:0.4rem;color:#888;">三层架构</div>
+                <div style="background:rgba(184,224,210,0.2);border:1px solid rgba(184,224,210,0.4);border-radius:20px;padding:0.2rem 0.6rem;font-size:0.4rem;color:#888;">四层记忆</div>
+            </div>
+        </div>`
+    },
+    {
+        id: 'h', name: 'Split Pastel',
+        previewFile: 'slide-previews/style-h-split-pastel.html',
+        file: 'slide-previews/style-h-split-pastel.html',
+        desc: '粉彩斜角分割，现代活泼',
+        tags: ['现代', '活泼', '斜角'],
+        preview: `<div style="height:100%;background:linear-gradient(135deg,#ffd6e0 0%,#c4d7f2 100%);position:relative;overflow:hidden;font-family:'Poppins',sans-serif;">
+            <div style="position:absolute;top:0;right:0;width:55%;height:100%;background:linear-gradient(160deg,#c4d7f2 0%,#e8d4f0 100%);clip-path:polygon(15% 0,100% 0,100% 100%,0% 100%);"></div>
+            <div style="position:relative;z-index:1;padding:1.2rem;">
+                <div style="font-size:0.4rem;color:#888;margin-bottom:0.4rem;">OpenClaw</div>
+                <div style="font-size:0.9rem;font-weight:700;color:#555;margin-bottom:0.3rem;line-height:1.2;">OpenClaw<br>知识图谱</div>
+                <div style="font-size:0.4rem;color:#aaa;">从部署到实践全指南</div>
+            </div>
+        </div>`
+    },
+    {
+        id: 'i', name: 'Vintage Editorial',
+        previewFile: 'slide-previews/style-i-vintage-editorial.html',
+        file: 'slide-previews/style-i-vintage-editorial.html',
+        desc: '复古印刷风，文艺衬线，个性幽默',
+        tags: ['复古', '文艺', '幽默'],
+        preview: `<div style="padding:1.2rem;font-family:'Playfair Display',serif;background:#f5f0e8;height:100%;display:flex;flex-direction:column;justify-content:center;">
+            <div style="font-size:0.4rem;text-transform:uppercase;letter-spacing:0.3em;color:#8b2635;margin-bottom:0.6rem;font-family:'IBM Plex Sans',sans-serif;">OpenClaw · Est. 2024</div>
+            <div style="font-size:1rem;font-weight:700;color:#2c2c2c;margin-bottom:0.4rem;font-style:italic;line-height:1.2;">OpenClaw<br><span style="color:#8b2635;">知识图谱</span></div>
+            <div style="font-size:0.4rem;color:#888;line-height:1.8;border-left:2px solid #c9a84c;padding-left:0.5rem;margin-bottom:0.6rem;">从部署到实践全指南<br>一份完整技术解析</div>
+            <div style="font-size:0.5rem;color:#8b2635;font-weight:700;">—— 路线图 ——</div>
+        </div>`
+    },
+    {
+        id: 'j', name: 'Swiss Modern',
+        previewFile: 'slide-previews/style-j-swiss-modern.html',
+        file: 'slide-previews/style-j-swiss-modern.html',
+        desc: '极简精确网格，瑞士风格',
+        tags: ['极简', '网格', '精确'],
+        preview: `<div style="padding:1.2rem;font-family:'Unbounded',sans-serif;background:#ffffff;height:100%;display:flex;flex-direction:column;justify-content:center;border-left:4px solid #e63329;">
+            <div style="font-size:0.35rem;text-transform:uppercase;letter-spacing:0.2em;color:#e63329;margin-bottom:0.6rem;">OpenClaw</div>
+            <div style="font-size:0.9rem;font-weight:700;color:#0d0d0d;margin-bottom:0.4rem;line-height:1.2;">OpenClaw<br>知识图谱</div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.3rem;margin-bottom:0.5rem;">
+                <div style="background:#0d0d0d;color:#fff;font-size:0.4rem;font-weight:700;padding:0.3rem;text-align:center;">三层架构</div>
+                <div style="background:#e63329;color:#fff;font-size:0.4rem;font-weight:700;padding:0.3rem;text-align:center;">四层记忆</div>
+            </div>
+            <div style="font-size:0.35rem;color:#888;">从部署到实践全指南</div>
+        </div>`
+    },
+    {
+        id: 'k', name: 'Paper & Ink',
+        previewFile: 'slide-previews/style-k-paper-ink.html',
+        file: 'slide-previews/style-k-paper-ink.html',
+        desc: '暖纸色文学衬线，沉稳思考感',
+        tags: ['文学', '沉稳', '思考'],
+        preview: `<div style="padding:1.2rem;font-family:'Merriweather',serif;background:#f4efe6;height:100%;display:flex;flex-direction:column;justify-content:center;">
+            <div style="font-size:0.4rem;text-transform:uppercase;letter-spacing:0.2em;color:#8b7355;margin-bottom:0.7rem;font-family:'IBM Plex Sans',sans-serif;">OpenClaw</div>
+            <div style="font-size:1rem;font-weight:700;color:#2c2416;margin-bottom:0.5rem;line-height:1.3;">OpenClaw<br><span style="color:#8b7355;">知识图谱</span></div>
+            <div style="font-size:0.4rem;color:#8a8578;line-height:1.8;margin-bottom:0.7rem;">从部署到实践全指南<br>一份完整技术解析与实战手册</div>
+            <div style="border-top:1px solid #8b7355;padding-top:0.4rem;font-size:0.4rem;color:#8a8578;font-family:'IBM Plex Sans',sans-serif;">三层架构 · 四层记忆 · 八大场景</div>
+        </div>`
+    }
+];
+
+// State
+let selectedId = 'a';
+
+// DOM refs
+const cardsList = document.getElementById('cardsList');
+const previewLabel = document.getElementById('previewLabel');
+const btnFullscreen = document.getElementById('btnFullscreen');
+const previewFrame = document.getElementById('previewFrame');
+
+// Build cards
+function buildCards() {
+    cardsList.innerHTML = '';
+    presentations.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'style-card' + (p.id === selectedId ? ' selected' : '');
+        card.dataset.style = p.id;
+        card.dataset.id = p.id;
+
+        const tagsHtml = p.tags.map(t => `<span class="card-tag">${t}</span>`).join('');
+
+        card.innerHTML = `
+            <div class="selected-badge">当前选中</div>
+            <div class="card-preview">${p.preview}</div>
+            <div class="card-info">
+                <div class="card-name">${p.name}</div>
+                <div class="card-desc">${p.desc}</div>
+                <div class="card-tags">${tagsHtml}</div>
+            </div>
+        `;
+
+        card.addEventListener('click', () => selectPresentation(p));
+        cardsList.appendChild(card);
+    });
+
+    document.getElementById('totalCount').textContent = presentations.length;
+}
+
+// Select presentation
+function selectPresentation(p) {
+    selectedId = p.id;
+
+    // Update card states
+    document.querySelectorAll('.style-card').forEach(c => {
+        c.classList.toggle('selected', c.dataset.id === p.id);
+    });
+
+    // Update preview
+    previewLabel.textContent = p.name;
+    btnFullscreen.href = p.file;
+    previewFrame.src = p.previewFile;
+}
+
+// Initialize
+buildCards();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenClaw 知识图谱 — Paper &amp; Ink</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'Source Sans Pro', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background-color: #f4efe6;
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(140, 115, 85, 0.025) 2px,
+          rgba(140, 115, 85, 0.025) 4px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 2px,
+          rgba(140, 115, 85, 0.018) 2px,
+          rgba(140, 115, 85, 0.018) 4px
+        ),
+        radial-gradient(ellipse at 20% 15%, rgba(200, 175, 145, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 85%, rgba(180, 155, 120, 0.14) 0%, transparent 55%),
+        linear-gradient(160deg, #f7f2ea 0%, #f0ebe0 40%, #e8e2d5 100%);
+      color: #2c2416;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: clamp(1rem, 3vw, 2.5rem);
+    }
+
+    .slide {
+      width: 100%;
+      max-width: clamp(320px, 90vw, 860px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: clamp(1.2rem, 3vh, 2.4rem);
+      opacity: 0;
+      animation: fadeIn 2.4s ease-out 0.3s forwards;
+    }
+
+    @keyframes fadeIn {
+      0%   { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .eyebrow {
+      font-family: 'Source Sans Pro', sans-serif;
+      font-size: clamp(0.55rem, 1.4vw, 0.72rem);
+      font-weight: 600;
+      letter-spacing: clamp(0.18em, 0.5vw, 0.32em);
+      text-transform: uppercase;
+      color: #8b7355;
+      opacity: 0;
+      animation: fadeIn 2s ease-out 0.8s forwards;
+    }
+
+    .title {
+      font-family: 'EB Garamond', 'PingFang SC', 'Microsoft YaHei', serif;
+      font-size: clamp(2rem, 6vw, 3.8rem);
+      font-weight: 600;
+      line-height: 1.18;
+      letter-spacing: clamp(0.02em, 0.08vw, 0.06em);
+      color: #2c2416;
+      opacity: 0;
+      animation: fadeIn 2.2s ease-out 0.5s forwards;
+    }
+
+    .subtitle {
+      font-family: 'EB Garamond', 'PingFang SC', 'Microsoft YaHei', serif;
+      font-size: clamp(1rem, 2.6vw, 1.65rem);
+      font-weight: 400;
+      line-height: 1.5;
+      letter-spacing: clamp(0.04em, 0.12vw, 0.1em);
+      color: #5a4a38;
+      opacity: 0;
+      animation: fadeIn 2.2s ease-out 0.7s forwards;
+    }
+
+    .divider {
+      width: clamp(3rem, 8vw, 5.5rem);
+      height: 1px;
+      background: linear-gradient(to right, transparent, #8b7355, transparent);
+      opacity: 0;
+      animation: fadeIn 2s ease-out 1s forwards;
+    }
+
+    .quote-block {
+      position: relative;
+      padding: clamp(1.4rem, 4vw, 2.8rem) clamp(1.2rem, 5vw, 4rem);
+      opacity: 0;
+      animation: fadeIn 2.4s ease-out 1.1s forwards;
+    }
+
+    .quote-block::before {
+      content: '\201C';
+      position: absolute;
+      top: clamp(-0.4rem, -1.5vw, -1.2rem);
+      left: clamp(0.4rem, 2vw, 1.6rem);
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: clamp(4rem, 14vw, 9rem);
+      line-height: 1;
+      color: #8b7355;
+      opacity: 0.22;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .quote-block::after {
+      content: '\201D';
+      position: absolute;
+      bottom: clamp(-1.2rem, -3.5vw, -2rem);
+      right: clamp(0.4rem, 2vw, 1.6rem);
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: clamp(4rem, 14vw, 9rem);
+      line-height: 1;
+      color: #8b7355;
+      opacity: 0.22;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    blockquote {
+      font-family: 'EB Garamond', 'PingFang SC', 'Microsoft YaHei', serif;
+      font-size: clamp(0.95rem, 2.4vw, 1.45rem);
+      font-style: italic;
+      font-weight: 400;
+      line-height: clamp(1.7, 3.5vw, 2.1);
+      letter-spacing: clamp(0.015em, 0.06vw, 0.04em);
+      color: #3d3020;
+      position: relative;
+      z-index: 1;
+    }
+
+    .items {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(1rem, 3vw, 2.2rem);
+      opacity: 0;
+      animation: fadeIn 2s ease-out 1.3s forwards;
+    }
+
+    .item {
+      font-family: 'Source Sans Pro', sans-serif;
+      font-size: clamp(0.7rem, 1.8vw, 0.92rem);
+      font-weight: 300;
+      letter-spacing: clamp(0.12em, 0.35vw, 0.26em);
+      color: #8b7355;
+    }
+
+    .item-dot {
+      display: inline-block;
+      width: clamp(2px, 0.4vw, 3px);
+      height: clamp(2px, 0.4vw, 3px);
+      border-radius: 50%;
+      background-color: #c4a97a;
+      opacity: 0.6;
+      position: relative;
+      top: -1px;
+    }
+
+    .footer {
+      margin-top: clamp(0.6rem, 2vh, 1.4rem);
+      font-family: 'Source Sans Pro', sans-serif;
+      font-size: clamp(0.52rem, 1.2vw, 0.65rem);
+      font-weight: 300;
+      letter-spacing: clamp(0.1em, 0.28vw, 0.2em);
+      color: #a89880;
+      opacity: 0;
+      animation: fadeIn 2s ease-out 1.6s forwards;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+
+    <p class="eyebrow">OpenClaw AI Agent</p>
+
+    <h1 class="title">OpenClaw 知识图谱</h1>
+
+    <p class="subtitle">从部署到实践全指南</p>
+
+    <div class="divider"></div>
+
+    <div class="quote-block">
+      <blockquote>
+        理解一个工具的局限，<br>
+        比盲目吹捧它更重要。
+      </blockquote>
+    </div>
+
+    <div class="items">
+      <span class="item">架构</span>
+      <span class="item-dot"></span>
+      <span class="item">记忆</span>
+      <span class="item-dot"></span>
+      <span class="item">场景</span>
+    </div>
+
+    <p class="footer">Style K: Paper &amp; Ink &middot; Literary thoughtful</p>
+
+  </div>
+</body>
+</html>

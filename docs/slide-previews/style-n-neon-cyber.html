@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style N: Neon Cyber</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg: #070b14;
+        --bg-card: #0d1526;
+        --accent: #00e5cc;
+        --accent2: #0066ff;
+        --accent-glow: rgba(0, 229, 204, 0.4);
+        --text: #e8f4f8;
+        --text-muted: #5a7a8a;
+        --font-display: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+        --font-body: 'Noto Sans SC', sans-serif;
+        --title-size: clamp(2rem, 6vw, 4.5rem);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+        font-family: var(--font-body);
+        background: var(--bg);
+        color: var(--text);
+        overflow-x: hidden;
+    }
+    .slide {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: clamp(1.5rem, 5vw, 5rem);
+        position: relative;
+        overflow: hidden;
+    }
+    .slide-content {
+        max-width: 1000px;
+        margin: 0 auto;
+        width: 100%;
+    }
+    .eyebrow {
+        font-family: var(--font-display);
+        font-size: clamp(0.65rem, 1.2vw, 0.85rem);
+        text-transform: uppercase;
+        letter-spacing: 0.25em;
+        color: var(--accent);
+        margin-bottom: clamp(0.5rem, 1.5vw, 1.2rem);
+        font-weight: 700;
+        text-shadow: 0 0 20px var(--accent-glow);
+    }
+    .title {
+        font-family: var(--font-display);
+        font-size: var(--title-size);
+        font-weight: 900;
+        line-height: 1.05;
+        margin-bottom: clamp(1rem, 2.5vw, 2rem);
+        letter-spacing: -0.03em;
+        text-shadow: 0 0 40px var(--accent-glow);
+    }
+    .title .highlight { color: var(--accent); }
+    .title .highlight2 { color: var(--accent2); text-shadow: 0 0 30px rgba(0, 102, 255, 0.5); }
+    .subtitle {
+        font-size: clamp(0.9rem, 1.8vw, 1.3rem);
+        color: var(--text-muted);
+        line-height: 1.6;
+        max-width: 600px;
+        margin-bottom: clamp(1.5rem, 3vw, 3rem);
+    }
+    .pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: clamp(0.5rem, 1.2vw, 0.8rem);
+        margin-bottom: clamp(1.5rem, 3vw, 3rem);
+    }
+    .pill {
+        background: var(--bg-card);
+        border: 1px solid rgba(0, 229, 204, 0.3);
+        border-radius: 50px;
+        padding: clamp(0.4rem, 1vw, 0.7rem) clamp(0.8rem, 1.5vw, 1.2rem);
+        font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+        color: var(--accent);
+        font-family: var(--font-display);
+        font-weight: 700;
+        text-shadow: 0 0 10px var(--accent-glow);
+        box-shadow: 0 0 15px rgba(0, 229, 204, 0.1), inset 0 0 15px rgba(0, 229, 204, 0.05);
+        transition: all 0.3s;
+    }
+    .pill:nth-child(2) { border-color: rgba(0, 102, 255, 0.4); color: var(--accent2); text-shadow: 0 0 10px rgba(0, 102, 255, 0.4); box-shadow: 0 0 15px rgba(0, 102, 255, 0.1), inset 0 0 15px rgba(0, 102, 255, 0.05); }
+    .pill:nth-child(3) { border-color: rgba(0, 229, 204, 0.3); color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); box-shadow: 0 0 15px rgba(0, 229, 204, 0.1), inset 0 0 15px rgba(0, 229, 204, 0.05); }
+    .pill:nth-child(4) { border-color: rgba(0, 102, 255, 0.4); color: var(--accent2); text-shadow: 0 0 10px rgba(0, 102, 255, 0.4); box-shadow: 0 0 15px rgba(0, 102, 255, 0.1), inset 0 0 15px rgba(0, 102, 255, 0.05); }
+    .pill:hover { transform: translateY(-2px); box-shadow: 0 0 25px var(--accent-glow), inset 0 0 20px rgba(0, 229, 204, 0.1); }
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(0.6rem, 1.5vw, 1.2rem);
+    }
+    @media (max-width: 700px) { .cards { grid-template-columns: 1fr; } }
+    .card {
+        background: var(--bg-card);
+        border: 1px solid rgba(0, 229, 204, 0.2);
+        border-radius: 12px;
+        padding: clamp(0.8rem, 2vw, 1.5rem);
+        box-shadow: 0 0 20px rgba(0, 229, 204, 0.08), inset 0 0 30px rgba(0, 229, 204, 0.03);
+        transition: all 0.3s;
+    }
+    .card:nth-child(2) { border-color: rgba(0, 102, 255, 0.3); box-shadow: 0 0 20px rgba(0, 102, 255, 0.08), inset 0 0 30px rgba(0, 102, 255, 0.03); }
+    .card:nth-child(3) { border-color: rgba(0, 229, 204, 0.2); box-shadow: 0 0 20px rgba(0, 229, 204, 0.08), inset 0 0 30px rgba(0, 229, 204, 0.03); }
+    .card:hover { transform: translateY(-3px); box-shadow: 0 0 30px var(--accent-glow), inset 0 0 40px rgba(0, 229, 204, 0.05); }
+    .card-icon { font-size: clamp(1.5rem, 3vw, 2rem); margin-bottom: 0.5rem; }
+    .card-title { font-family: var(--font-display); font-size: clamp(0.85rem, 1.5vw, 1.1rem); font-weight: 700; margin-bottom: 0.3rem; color: var(--accent); text-shadow: 0 0 15px var(--accent-glow); }
+    .card:nth-child(2) .card-title { color: var(--accent2); text-shadow: 0 0 15px rgba(0, 102, 255, 0.4); }
+    .card-text { font-size: clamp(0.7rem, 1.2vw, 0.9rem); color: var(--text-muted); }
+    .accent-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+        box-shadow: 0 0 20px var(--accent-glow), 0 0 40px rgba(0, 102, 255, 0.3);
+    }
+    .bg-shape {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.15;
+        pointer-events: none;
+    }
+    .bg-shape-1 { width: 500px; height: 500px; background: var(--accent); top: -150px; right: -100px; }
+    .bg-shape-2 { width: 400px; height: 400px; background: var(--accent2); bottom: -100px; left: -50px; }
+    .grid-lines {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image:
+            linear-gradient(rgba(0, 229, 204, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 229, 204, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        pointer-events: none;
+    }
+    .reveal { animation: fadeUp 0.8s ease forwards; opacity: 0; }
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .reveal:nth-child(1) { animation-delay: 0.1s; }
+    .reveal:nth-child(2) { animation-delay: 0.25s; }
+    .reveal:nth-child(3) { animation-delay: 0.4s; }
+    .reveal:nth-child(4) { animation-delay: 0.55s; }
+    </style>
+</head>
+<body>
+    <div class="slide">
+        <div class="grid-lines"></div>
+        <div class="bg-shape bg-shape-1"></div>
+        <div class="bg-shape bg-shape-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal">OpenClaw Knowledge Graph</div>
+            <h1 class="title reveal">
+                OpenClaw<br><span class="highlight">知识图谱</span>
+            </h1>
+            <p class="subtitle reveal">从部署到实践全指南 — 开源 AI Agent 平台的完整技术解析与实战指南</p>
+            <div class="pills reveal">
+                <span class="pill">AI Tech</span>
+                <span class="pill">Cyber</span>
+                <span class="pill">Neon Glow</span>
+                <span class="pill">Tech Future</span>
+            </div>
+            <div class="cards reveal">
+                <div class="card">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">能动嘴更能动手</div>
+                    <div class="card-text">自主执行复杂多步骤任务</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔓</div>
+                    <div class="card-title">开源完全透明</div>
+                    <div class="card-text">代码公开，数据完全私有</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🤖</div>
+                    <div class="card-title">20+ 平台接入</div>
+                    <div class="card-text">微信、飞书、钉钉统一管理</div>
+                </div>
+            </div>
+        </div>
+        <div class="accent-bar"></div>
+    </div>
+</body>
+</html>

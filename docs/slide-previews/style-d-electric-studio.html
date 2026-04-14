@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Style D: Electric Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-dark: #0a0f1a;
+      --blue-primary: #3b82f6;
+      --purple-secondary: #8b5cf6;
+      --white: #ffffff;
+      --white-70: rgba(255, 255, 255, 0.7);
+      --white-40: rgba(255, 255, 255, 0.4);
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slide {
+      position: relative;
+      width: min(100vw, 177.78vh);
+      height: min(100vh, 56.25vw);
+      max-width: 1920px;
+      max-height: 1080px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(1.5rem, 5vw, 4rem);
+      overflow: hidden;
+    }
+
+    /* Background grid pattern */
+    .slide::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+      background-size: clamp(2rem, 4vw, 4rem) clamp(2rem, 4vw, 4rem);
+      pointer-events: none;
+    }
+
+    /* Radial glow */
+    .slide::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      height: 80%;
+      background: radial-gradient(ellipse at center, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(1.5rem, 4vw, 3rem);
+      width: 100%;
+    }
+
+    .header {
+      text-align: center;
+      opacity: 0;
+      transform: translateY(clamp(1rem, 3vw, 2rem));
+      animation: fadeUp 0.8s ease-out 0.2s forwards;
+    }
+
+    .label-top {
+      display: inline-block;
+      font-size: clamp(0.6rem, 1.2vw, 0.85rem);
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--blue-primary);
+      margin-bottom: clamp(0.5rem, 1.5vw, 1rem);
+      padding: clamp(0.3rem, 0.8vw, 0.6rem) clamp(0.8rem, 2vw, 1.5rem);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 100px;
+      background: rgba(59, 130, 246, 0.08);
+    }
+
+    .title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.5rem, 7vw, 5.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--white) 0%, rgba(255, 255, 255, 0.85) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(1rem, 2.5vw, 2rem);
+      font-weight: 400;
+      color: var(--white-70);
+      margin-top: clamp(0.5rem, 1.5vw, 1rem);
+      letter-spacing: 0.05em;
+    }
+
+    .cards {
+      display: flex;
+      gap: clamp(1rem, 2.5vw, 2rem);
+      width: 100%;
+      max-width: 1400px;
+    }
+
+    .card {
+      flex: 1;
+      position: relative;
+      padding: clamp(1rem, 2vw, 1.5px);
+      border-radius: clamp(1rem, 2vw, 1.5rem);
+      background: linear-gradient(135deg, var(--blue-primary), var(--purple-secondary));
+      opacity: 0;
+      transform: translateY(clamp(1.5rem, 4vw, 3rem));
+    }
+
+    .card:nth-child(1) { animation: fadeUp 0.8s ease-out 0.4s forwards; }
+    .card:nth-child(2) { animation: fadeUp 0.8s ease-out 0.55s forwards; }
+    .card:nth-child(3) { animation: fadeUp 0.8s ease-out 0.7s forwards; }
+
+    .card-inner {
+      height: 100%;
+      padding: clamp(1.2rem, 3vw, 2.5rem);
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(10, 15, 26, 0.98));
+      border-radius: calc(clamp(1rem, 2vw, 1.5rem) - 2px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: clamp(0.5rem, 1.2vw, 0.9rem);
+    }
+
+    .card-icon {
+      width: clamp(2rem, 4vw, 3.5rem);
+      height: clamp(2rem, 4vw, 3.5rem);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: clamp(0.5rem, 1vw, 0.75rem);
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+      margin-bottom: clamp(0.3rem, 0.8vw, 0.5rem);
+    }
+
+    .card-icon svg {
+      width: clamp(1.2rem, 2.5vw, 2rem);
+      height: clamp(1.2rem, 2.5vw, 2rem);
+      stroke: var(--blue-primary);
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(0.9rem, 1.8vw, 1.4rem);
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.3;
+    }
+
+    .card-desc {
+      font-size: clamp(0.7rem, 1.3vw, 1rem);
+      color: var(--white-40);
+      line-height: 1.5;
+    }
+
+    .footer {
+      position: absolute;
+      bottom: clamp(1rem, 2vw, 1.5rem);
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: clamp(0.6rem, 1vw, 0.75rem);
+      color: var(--white-40);
+      letter-spacing: 0.08em;
+      opacity: 0;
+      animation: fadeUp 0.8s ease-out 1s forwards;
+    }
+
+    .footer span {
+      color: rgba(139, 92, 246, 0.6);
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Decorative orbs */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+    }
+
+    .orb-1 {
+      width: clamp(15rem, 30vw, 30rem);
+      height: clamp(15rem, 30vw, 30rem);
+      background: rgba(59, 130, 246, 0.12);
+      top: -10%;
+      right: -5%;
+    }
+
+    .orb-2 {
+      width: clamp(12rem, 25vw, 25rem);
+      height: clamp(12rem, 25vw, 25rem);
+      background: rgba(139, 92, 246, 0.1);
+      bottom: -5%;
+      left: -5%;
+    }
+  </style>
+</head>
+<body>
+  <div class="slide">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="content">
+      <div class="header">
+        <div class="label-top">AI Agent 知识图谱</div>
+        <h1 class="title">OpenClaw 知识图谱</h1>
+        <p class="subtitle">从部署到实践全指南</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="card-inner">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <h3 class="card-title">三层架构</h3>
+            <p class="card-desc">Gateway · Channel · Node</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-inner">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <h3 class="card-title">四层记忆</h3>
+            <p class="card-desc">SOUL · TOOLS · USER · Session</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-inner">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+              </svg>
+            </div>
+            <h3 class="card-title">8大场景</h3>
+            <p class="card-desc">企业微信 · 禅道 · 小红书</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">Style D: Electric Studio <span>&middot;</span> Clean professional</div>
+  </div>
+</body>
+</html>
