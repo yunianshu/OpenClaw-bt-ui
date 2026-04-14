@@ -1,0 +1,3754 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw - AI Agent Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #faf9f7;
+            --text: #1a1a1a;
+            --coral: #e07a5f;
+            --sage: #81b29a;
+            --gold: #d4a373;
+            --blue: #457b9d;
+            --text-muted: #666;
+            --coral-light: #f5e6e3;
+            --sage-light: #e8f0eb;
+            --gold-light: #f7f0e6;
+            --blue-light: #e6ecf0;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        body {
+            font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .presentation {
+            height: 100vh;
+            height: 100dvh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        .slide {
+            min-height: 100vh;
+            min-height: 100dvh;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            padding: clamp(1.5rem, 4vw, 3rem);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-number {
+            position: absolute;
+            bottom: clamp(0.75rem, 2vw, 1.25rem);
+            right: clamp(0.75rem, 2vw, 1.25rem);
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--coral), var(--gold));
+            z-index: 1000;
+            transition: width 0.3s ease;
+        }
+
+        .nav-dots {
+            position: fixed;
+            right: clamp(0.5rem, 1.5vw, 1rem);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .nav-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            opacity: 0.3;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            padding: 0;
+        }
+
+        .nav-dot:hover {
+            opacity: 0.6;
+            transform: scale(1.2);
+        }
+
+        .nav-dot.active {
+            opacity: 1;
+            background: var(--coral);
+            transform: scale(1.3);
+        }
+
+        .section-tab {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35em 0.85em;
+            border-radius: 20px;
+            font-size: clamp(0.7rem, 1.2vw, 0.8rem);
+            font-weight: 600;
+            font-family: 'Source Sans Pro', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: white;
+            margin-right: 0.5em;
+            margin-bottom: 0.5em;
+        }
+
+        .section-tab.coral { background: var(--coral); }
+        .section-tab.sage { background: var(--sage); }
+        .section-tab.gold { background: var(--gold); }
+        .section-tab.blue { background: var(--blue); }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1rem, 2.5vw, 1.5rem);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--text-muted), transparent);
+            opacity: 0.2;
+            margin: clamp(1rem, 2vw, 1.5rem) 0;
+        }
+
+        .pull-quote {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+            font-style: italic;
+            color: var(--text);
+            border-left: 4px solid var(--coral);
+            padding-left: clamp(1rem, 2vw, 1.5rem);
+            margin: clamp(1rem, 2vw, 1.5rem) 0;
+        }
+
+        /* Slide 1: Cover */
+        .slide-cover {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: var(--bg);
+        }
+
+        .slide-cover h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-cover .accent-line {
+            width: clamp(60px, 15vw, 120px);
+            height: 3px;
+            background: linear-gradient(90deg, var(--coral), var(--gold));
+            margin: clamp(1rem, 2vw, 1.5rem) auto;
+        }
+
+        .slide-cover .subtitle {
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            color: var(--text-muted);
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-top: 1rem;
+        }
+
+        .slide-cover .tagline {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.1rem, 2vw, 1.5rem);
+            color: var(--text);
+            margin-top: 2rem;
+            font-style: italic;
+        }
+
+        /* Slide 2: TOC */
+        .toc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(2rem, 4vw, 3rem);
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .toc-item {
+            text-align: center;
+            padding: clamp(1.5rem, 3vw, 2rem);
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .toc-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        }
+
+        .toc-item .tab {
+            display: inline-block;
+            padding: 0.5em 1.2em;
+            border-radius: 25px;
+            color: white;
+            font-weight: 700;
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+            margin-bottom: 0.75rem;
+        }
+
+        .toc-item .tab.coral { background: var(--coral); }
+        .toc-item .tab.sage { background: var(--sage); }
+        .toc-item .tab.gold { background: var(--gold); }
+        .toc-item .tab.blue { background: var(--blue); }
+        .toc-item .tab.purple { background: #7c5295; }
+
+        .toc-item h3 {
+            font-size: clamp(1rem, 1.8vw, 1.25rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-item p {
+            font-size: clamp(0.75rem, 1.2vw, 0.875rem);
+            color: var(--text-muted);
+        }
+
+        /* Slide 3: Problem */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1.5rem, 3vw, 2.5rem);
+            align-items: center;
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .two-column { grid-template-columns: 1fr; }
+        }
+
+        .col-muted {
+            color: var(--text-muted);
+            font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+        }
+
+        .col-muted h3 {
+            font-size: clamp(1.5rem, 3vw, 2.25rem);
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+
+        .col-accent {
+            position: relative;
+        }
+
+        .col-accent::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--coral);
+            border-radius: 2px;
+        }
+
+        .col-accent {
+            padding-left: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        .col-accent h3 {
+            font-size: clamp(1.5rem, 3vw, 2.25rem);
+            color: var(--coral);
+            margin-bottom: 1rem;
+        }
+
+        /* Slide 4: Positioning */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        .position-card {
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1rem, 2vw, 1.5rem);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            border-top: 4px solid;
+            transition: transform 0.3s ease;
+        }
+
+        .position-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .position-card.coral { border-color: var(--coral); }
+        .position-card.sage { border-color: var(--sage); }
+        .position-card.gold { border-color: var(--gold); }
+        .position-card.blue { border-color: var(--blue); }
+
+        .position-card h4 {
+            font-size: clamp(1rem, 1.5vw, 1.25rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .position-card p {
+            font-size: clamp(0.8rem, 1.2vw, 0.9rem);
+            color: var(--text-muted);
+        }
+
+        /* Slide 5: Architecture */
+        .arch-bars {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        .arch-bar {
+            display: flex;
+            align-items: stretch;
+            gap: clamp(0.75rem, 1.5vw, 1rem);
+        }
+
+        .arch-label {
+            min-width: clamp(80px, 12vw, 120px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75em 1em;
+            border-radius: 8px;
+            color: white;
+            font-weight: 700;
+            font-size: clamp(0.7rem, 1vw, 0.85rem);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .arch-label.coral { background: var(--coral); }
+        .arch-label.sage { background: var(--sage); }
+        .arch-label.gold { background: var(--gold); }
+
+        .arch-content {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            padding: clamp(0.75rem, 1.5vw, 1rem);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            gap: clamp(0.5rem, 1vw, 0.75rem);
+            flex-wrap: wrap;
+        }
+
+        .arch-item {
+            background: var(--bg);
+            padding: 0.5em 1em;
+            border-radius: 6px;
+            font-size: clamp(0.75rem, 1.2vw, 0.85rem);
+            font-weight: 500;
+        }
+
+        /* Slide 6: Channel */
+        .three-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 900px) {
+            .three-columns { grid-template-columns: 1fr; }
+        }
+
+        .channel-col {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .channel-header {
+            padding: 0.75em 1em;
+            color: white;
+            font-weight: 700;
+            text-align: center;
+            font-size: clamp(0.85rem, 1.3vw, 1rem);
+        }
+
+        .channel-header.coral { background: var(--coral); }
+        .channel-header.sage { background: var(--sage); }
+        .channel-header.blue { background: var(--blue); }
+
+        .channel-body {
+            padding: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        .channel-item {
+            font-size: clamp(0.8rem, 1.2vw, 0.9rem);
+            padding: 0.5em 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .channel-item:last-child { border-bottom: none; }
+
+        /* Slide 7: Gateway */
+        .centered-card {
+            max-width: 600px;
+            margin: clamp(2rem, 4vw, 3rem) auto;
+            text-align: center;
+        }
+
+        .gateway-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--coral), var(--gold));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+        }
+
+        /* Slide 8: Node */
+        .four-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        .node-card {
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1rem, 2vw, 1.5rem);
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .node-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .node-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .node-icon.coral { background: var(--coral-light); color: var(--coral); }
+        .node-icon.sage { background: var(--sage-light); color: var(--sage); }
+        .node-icon.gold { background: var(--gold-light); color: var(--gold); }
+        .node-icon.blue { background: var(--blue-light); color: var(--blue); }
+
+        .node-card h4 {
+            font-size: clamp(0.9rem, 1.3vw, 1rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .node-card p {
+            font-size: clamp(0.75rem, 1vw, 0.8rem);
+            color: var(--text-muted);
+        }
+
+        /* Slide 9: Message Flow */
+        .flow-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: clamp(2rem, 4vw, 3rem);
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+            position: relative;
+        }
+
+        .flow-step::after {
+            content: '';
+            position: absolute;
+            top: 25px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--coral), var(--sage));
+        }
+
+        .flow-step:last-child::after { display: none; }
+
+        .flow-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--coral);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin: 0 auto 0.75rem;
+        }
+
+        .flow-step:nth-child(2) .flow-number { background: var(--sage); }
+        .flow-step:nth-child(3) .flow-number { background: var(--gold); }
+        .flow-step:nth-child(4) .flow-number { background: var(--blue); }
+        .flow-step:nth-child(5) .flow-number { background: var(--coral); }
+        .flow-step:nth-child(6) .flow-number { background: var(--sage); }
+
+        .flow-label {
+            font-size: clamp(0.7rem, 1vw, 0.8rem);
+            font-weight: 600;
+        }
+
+        /* Slide 10: Memory Pyramid */
+        .pyramid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(0.5rem, 1vw, 0.75rem);
+            margin-top: clamp(2rem, 4vw, 3rem);
+        }
+
+        .pyramid-layer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            text-align: center;
+            border-radius: 8px;
+            padding: clamp(0.75rem, 1.5vw, 1rem);
+            transition: transform 0.3s ease;
+        }
+
+        .pyramid-layer:hover {
+            transform: scale(1.02);
+        }
+
+        .pyramid-layer:nth-child(1) {
+            width: 30%;
+            background: var(--coral);
+        }
+
+        .pyramid-layer:nth-child(2) {
+            width: 45%;
+            background: var(--sage);
+        }
+
+        .pyramid-layer:nth-child(3) {
+            width: 60%;
+            background: var(--gold);
+        }
+
+        .pyramid-layer:nth-child(4) {
+            width: 75%;
+            background: var(--blue);
+        }
+
+        .pyramid-layer span {
+            font-size: clamp(0.8rem, 1.3vw, 1rem);
+        }
+
+        .pyramid-layer small {
+            display: block;
+            font-size: clamp(0.65rem, 0.9vw, 0.75rem);
+            font-weight: 400;
+            opacity: 0.9;
+            margin-top: 0.25rem;
+        }
+
+        /* Slide 11: SOUL */
+        .soul-card {
+            max-width: 700px;
+            margin: clamp(2rem, 4vw, 3rem) auto;
+            border: 3px solid var(--gold);
+            background: white;
+            border-radius: 16px;
+            padding: clamp(2rem, 4vw, 3rem);
+            text-align: center;
+        }
+
+        .soul-card h3 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+
+        .soul-card .soul-desc {
+            font-size: clamp(1rem, 1.5vw, 1.15rem);
+            color: var(--text);
+            line-height: 1.8;
+        }
+
+        .soul-features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 600px) {
+            .soul-features { grid-template-columns: 1fr; }
+        }
+
+        .soul-feature {
+            padding: 1rem;
+            background: var(--gold-light);
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: clamp(0.85rem, 1.2vw, 0.95rem);
+        }
+
+        /* Slide 12: TOOLS */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1.5rem, 3vw, 2.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 768px) {
+            .tools-grid { grid-template-columns: 1fr; }
+        }
+
+        .tool-col {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .tool-header {
+            padding: 1em;
+            color: white;
+            font-weight: 700;
+            font-size: clamp(0.9rem, 1.3vw, 1.1rem);
+            text-align: center;
+        }
+
+        .tool-header.coral { background: var(--coral); }
+        .tool-header.sage { background: var(--sage); }
+
+        .tool-list {
+            padding: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        .tool-item {
+            padding: 0.75em 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: clamp(0.85rem, 1.2vw, 0.95rem);
+        }
+
+        .tool-item:last-child { border-bottom: none; }
+
+        /* Slide 13: USER */
+        .user-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 600px) {
+            .user-cards { grid-template-columns: 1fr; }
+        }
+
+        .user-card {
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1.5rem, 3vw, 2rem);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .user-card h4 {
+            font-size: clamp(1.1rem, 1.5vw, 1.3rem);
+            margin-bottom: 0.75rem;
+            color: var(--coral);
+        }
+
+        .user-card p {
+            font-size: clamp(0.85rem, 1.2vw, 0.95rem);
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        /* Slide 14: Session */
+        .session-steps {
+            display: flex;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(2rem, 4vw, 3rem);
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .session-steps { flex-direction: column; }
+        }
+
+        .session-step {
+            flex: 1;
+            max-width: 280px;
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1.5rem, 2.5vw, 2rem);
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .session-step::after {
+            content: '→';
+            position: absolute;
+            right: -1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: var(--coral);
+        }
+
+        .session-step:last-child::after { display: none; }
+
+        .step-num {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--coral);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin: 0 auto 1rem;
+        }
+
+        .session-step:nth-child(2) .step-num { background: var(--sage); }
+        .session-step:nth-child(3) .step-num { background: var(--gold); }
+
+        .session-step h4 {
+            font-size: clamp(1rem, 1.3vw, 1.15rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .session-step p {
+            font-size: clamp(0.8rem, 1vw, 0.85rem);
+            color: var(--text-muted);
+        }
+
+        /* Slide 15: Workspace */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: clamp(0.5rem, 1vw, 0.75rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        .file-card {
+            background: white;
+            border-radius: 8px;
+            padding: clamp(0.75rem, 1.2vw, 1rem);
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: transform 0.2s ease;
+        }
+
+        .file-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .file-icon {
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .file-name {
+            font-size: clamp(0.65rem, 0.9vw, 0.75rem);
+            font-weight: 600;
+            color: var(--text);
+            word-break: break-word;
+        }
+
+        .file-type {
+            font-size: clamp(0.6rem, 0.8vw, 0.7rem);
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Slide 16: Memory Flow */
+        .memory-flow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-top: clamp(2rem, 4vw, 3rem);
+            flex-wrap: wrap;
+        }
+
+        .mem-step {
+            flex: 1;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .mem-box {
+            background: white;
+            border-radius: 8px;
+            padding: clamp(0.75rem, 1.2vw, 1rem);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 0.5rem;
+        }
+
+        .mem-box.coral { border-bottom: 3px solid var(--coral); }
+        .mem-box.sage { border-bottom: 3px solid var(--sage); }
+        .mem-box.gold { border-bottom: 3px solid var(--gold); }
+        .mem-box.blue { border-bottom: 3px solid var(--blue); }
+
+        .mem-label {
+            font-size: clamp(0.7rem, 0.9vw, 0.8rem);
+            font-weight: 600;
+        }
+
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        /* Slide 17: Deployment */
+        .deploy-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 768px) {
+            .deploy-cards { grid-template-columns: 1fr; }
+        }
+
+        .deploy-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .deploy-header {
+            padding: 1em;
+            color: white;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .deploy-header.coral { background: var(--coral); }
+        .deploy-header.sage { background: var(--sage); }
+        .deploy-header.blue { background: var(--blue); }
+
+        .deploy-body {
+            padding: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        .deploy-item {
+            font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+            padding: 0.5em 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Slide 18: Platform Table */
+        .platform-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .platform-table th {
+            background: var(--text);
+            color: white;
+            padding: clamp(0.75rem, 1.5vw, 1rem);
+            text-align: left;
+            font-weight: 600;
+            font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+        }
+
+        .platform-table td {
+            padding: clamp(0.75rem, 1.5vw, 1rem);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+        }
+
+        .platform-table tr:last-child td { border-bottom: none; }
+
+        .platform-table tr:hover td {
+            background: rgba(0,0,0,0.02);
+        }
+
+        /* Slide 19: Tencent */
+        .tencent-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1.5rem, 3vw, 2.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .tencent-grid { grid-template-columns: 1fr; }
+        }
+
+        .tencent-visual {
+            background: linear-gradient(135deg, var(--coral-light), var(--gold-light));
+            border-radius: 16px;
+            padding: clamp(2rem, 4vw, 3rem);
+            text-align: center;
+        }
+
+        .tencent-visual .big-num {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(4rem, 8vw, 6rem);
+            font-weight: 700;
+            color: var(--coral);
+        }
+
+        .tencent-text h3 {
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            margin-bottom: 1rem;
+        }
+
+        .tencent-text p {
+            font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        /* Slide 20: Server */
+        .server-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 768px) {
+            .server-layout { grid-template-columns: 1fr; }
+        }
+
+        .server-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .server-table th {
+            background: var(--sage);
+            color: white;
+            padding: 0.75em 1em;
+            text-align: left;
+            font-weight: 600;
+            font-size: clamp(0.75rem, 1vw, 0.85rem);
+        }
+
+        .server-table td {
+            padding: 0.75em 1em;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: clamp(0.75rem, 1vw, 0.85rem);
+        }
+
+        .warning-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .warning-card {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 8px;
+            padding: 0.75em 1em;
+            font-size: clamp(0.75rem, 1vw, 0.85rem);
+        }
+
+        .warning-card strong {
+            display: block;
+            color: #856404;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Slide 21: Model Table */
+        .model-tiers {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(0.75rem, 1.5vw, 1rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 900px) {
+            .model-tiers { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 500px) {
+            .model-tiers { grid-template-columns: 1fr; }
+        }
+
+        .model-tier {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .tier-header {
+            padding: 0.75em;
+            color: white;
+            font-weight: 700;
+            text-align: center;
+            font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+        }
+
+        .tier-header.free { background: var(--sage); }
+        .tier-header.basic { background: var(--gold); }
+        .tier-header.pro { background: var(--coral); }
+        .tier-header.enterprise { background: var(--blue); }
+
+        .tier-body {
+            padding: clamp(0.75rem, 1.2vw, 1rem);
+        }
+
+        .tier-item {
+            font-size: clamp(0.7rem, 0.95vw, 0.8rem);
+            padding: 0.4em 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Slide 22: 4-step flow */
+        .four-steps {
+            display: flex;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(2rem, 4vw, 3rem);
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .four-steps { flex-direction: column; align-items: center; }
+        }
+
+        .four-step {
+            flex: 1;
+            max-width: 220px;
+            text-align: center;
+            position: relative;
+        }
+
+        .four-step::after {
+            content: '→';
+            position: absolute;
+            right: -1rem;
+            top: 1.5rem;
+            font-size: 1.5rem;
+            color: var(--coral);
+        }
+
+        .four-step:last-child::after { display: none; }
+
+        .four-num {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+        }
+
+        .four-step:nth-child(1) .four-num { background: var(--coral); }
+        .four-step:nth-child(2) .four-num { background: var(--sage); }
+        .four-step:nth-child(3) .four-num { background: var(--gold); }
+        .four-step:nth-child(4) .four-num { background: var(--blue); }
+
+        .four-step h4 {
+            font-size: clamp(0.95rem, 1.2vw, 1.05rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .four-step p {
+            font-size: clamp(0.75rem, 0.95vw, 0.85rem);
+            color: var(--text-muted);
+        }
+
+        /* Slide 23: Pitfall */
+        .single-warning {
+            max-width: 600px;
+            margin: clamp(2rem, 4vw, 3rem) auto;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 12px;
+            padding: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        .warning-box h3 {
+            color: #856404;
+            font-size: clamp(1.25rem, 2vw, 1.5rem);
+            margin-bottom: 1rem;
+        }
+
+        .warning-box p {
+            color: #856404;
+            font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+            line-height: 1.7;
+        }
+
+        /* Slide 24: Pitfalls */
+        .two-warnings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 768px) {
+            .two-warnings { grid-template-columns: 1fr; }
+        }
+
+        .pitfall-card {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 12px;
+            padding: clamp(1.25rem, 2vw, 1.5rem);
+        }
+
+        .pitfall-card h4 {
+            color: #856404;
+            font-size: clamp(1rem, 1.3vw, 1.1rem);
+            margin-bottom: 0.75rem;
+        }
+
+        .pitfall-card p {
+            color: #856404;
+            font-size: clamp(0.85rem, 1.1vw, 0.9rem);
+            line-height: 1.6;
+        }
+
+        /* Slide 25: AI Install */
+        .install-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 768px) {
+            .install-cards { grid-template-columns: 1fr; }
+        }
+
+        .install-card {
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1.25rem, 2vw, 1.5rem);
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .install-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+        }
+
+        .install-icon.coral { background: var(--coral-light); }
+        .install-icon.sage { background: var(--sage-light); }
+        .install-icon.gold { background: var(--gold-light); }
+
+        .install-card h4 {
+            font-size: clamp(1rem, 1.3vw, 1.15rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .install-card p {
+            font-size: clamp(0.8rem, 1vw, 0.85rem);
+            color: var(--text-muted);
+        }
+
+        /* Slide 26: Checklist */
+        .checklist {
+            max-width: 600px;
+            margin: clamp(2rem, 4vw, 3rem) auto;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.75em 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .check-box {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--sage);
+            border-radius: 6px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--sage);
+            font-weight: bold;
+        }
+
+        .check-text {
+            font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+        }
+
+        /* Slide 27: 8 Scenes */
+        .scenes-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(0.75rem, 1.5vw, 1rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 900px) {
+            .scenes-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 500px) {
+            .scenes-grid { grid-template-columns: 1fr; }
+        }
+
+        .scene-card {
+            background: white;
+            border-radius: 10px;
+            padding: clamp(0.75rem, 1.2vw, 1rem);
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: transform 0.2s ease;
+        }
+
+        .scene-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .scene-icon {
+            font-size: clamp(1.25rem, 2vw, 1.5rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .scene-name {
+            font-size: clamp(0.75rem, 0.95vw, 0.85rem);
+            font-weight: 600;
+        }
+
+        /* Slide 28: Wecom */
+        .wecom-cards {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.75rem, 1.5vw, 1rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        .wecom-card {
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1rem, 2vw, 1.5rem);
+            display: flex;
+            align-items: center;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .wecom-num {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--sage);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .wecom-content h4 {
+            font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+            margin-bottom: 0.25rem;
+        }
+
+        .wecom-content p {
+            font-size: clamp(0.8rem, 1vw, 0.85rem);
+            color: var(--text-muted);
+        }
+
+        /* Slide 29: Zentao */
+        .zentao-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 768px) {
+            .zentao-columns { grid-template-columns: 1fr; }
+        }
+
+        .zentao-col {
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1rem, 2vw, 1.5rem);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .zentao-col h4 {
+            font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid;
+        }
+
+        .zentao-col:nth-child(1) h4 { border-color: var(--coral); }
+        .zentao-col:nth-child(2) h4 { border-color: var(--sage); }
+        .zentao-col:nth-child(3) h4 { border-color: var(--gold); }
+
+        .zentao-item {
+            font-size: clamp(0.8rem, 1vw, 0.85rem);
+            padding: 0.5em 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Slide 30: Xiaohongshu */
+        .xhs-flow {
+            display: flex;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(2rem, 4vw, 3rem);
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .xhs-flow { flex-direction: column; align-items: center; }
+        }
+
+        .xhs-step {
+            flex: 1;
+            max-width: 280px;
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1.25rem, 2vw, 1.5rem);
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .xhs-step::after {
+            content: '→';
+            position: absolute;
+            right: -1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            color: var(--coral);
+        }
+
+        .xhs-step:last-child::after { display: none; }
+
+        .xhs-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .xhs-step:nth-child(1) .xhs-icon { background: var(--coral-light); }
+        .xhs-step:nth-child(2) .xhs-icon { background: var(--sage-light); }
+        .xhs-step:nth-child(3) .xhs-icon { background: var(--gold-light); }
+
+        .xhs-step h4 {
+            font-size: clamp(1rem, 1.3vw, 1.1rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .xhs-step p {
+            font-size: clamp(0.8rem, 1vw, 0.85rem);
+            color: var(--text-muted);
+        }
+
+        /* Slide 31: Article */
+        .article-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1.5rem, 3vw, 2.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .article-grid { grid-template-columns: 1fr; }
+        }
+
+        .article-visual {
+            background: linear-gradient(135deg, var(--blue-light), var(--sage-light));
+            border-radius: 16px;
+            padding: clamp(2rem, 4vw, 3rem);
+            text-align: center;
+        }
+
+        .article-text h3 {
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            margin-bottom: 1rem;
+        }
+
+        .article-text p {
+            font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        /* Slide 32: Scheduled */
+        .scheduled-bars {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(2rem, 4vw, 3rem);
+        }
+
+        .sched-bar {
+            display: flex;
+            align-items: center;
+            gap: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        .sched-label {
+            min-width: 100px;
+            font-weight: 700;
+            font-size: clamp(0.85rem, 1.2vw, 0.95rem);
+        }
+
+        .sched-bar-fill {
+            flex: 1;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 0 1em;
+            color: white;
+            font-weight: 600;
+            font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+        }
+
+        .sched-bar:nth-child(1) .sched-bar-fill { background: var(--coral); }
+        .sched-bar:nth-child(2) .sched-bar-fill { background: var(--sage); }
+        .sched-bar:nth-child(3) .sched-bar-fill { background: var(--gold); }
+
+        /* Slide 33: PPT Generation */
+        .ppt-flow {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: clamp(2rem, 4vw, 3rem);
+            flex-wrap: wrap;
+        }
+
+        .ppt-step {
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+            position: relative;
+        }
+
+        .ppt-step::after {
+            content: '→';
+            position: absolute;
+            top: 20px;
+            right: -30%;
+            width: 60%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--coral), var(--sage));
+        }
+
+        .ppt-step:last-child::after { display: none; }
+
+        .ppt-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 auto 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .ppt-step:nth-child(1) .ppt-icon { background: var(--coral); }
+        .ppt-step:nth-child(2) .ppt-icon { background: var(--sage); }
+        .ppt-step:nth-child(3) .ppt-icon { background: var(--gold); }
+        .ppt-step:nth-child(4) .ppt-icon { background: var(--blue); }
+
+        .ppt-label {
+            font-size: clamp(0.75rem, 1vw, 0.85rem);
+            font-weight: 600;
+        }
+
+        /* Slide 34: Group Messages */
+        .group-steps {
+            display: flex;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(2rem, 4vw, 3rem);
+            justify-content: center;
+        }
+
+        @media (max-width: 768px) {
+            .group-steps { flex-direction: column; align-items: center; }
+        }
+
+        .group-step {
+            flex: 1;
+            max-width: 280px;
+            text-align: center;
+            position: relative;
+        }
+
+        .group-step::after {
+            content: '→';
+            position: absolute;
+            right: -1.5rem;
+            top: 1.5rem;
+            font-size: 1.5rem;
+            color: var(--coral);
+        }
+
+        .group-step:last-child::after { display: none; }
+
+        .group-num {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+        }
+
+        .group-step:nth-child(1) .group-num { background: var(--coral); }
+        .group-step:nth-child(2) .group-num { background: var(--sage); }
+        .group-step:nth-child(3) .group-num { background: var(--gold); }
+
+        .group-step h4 {
+            font-size: clamp(1rem, 1.3vw, 1.1rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .group-step p {
+            font-size: clamp(0.8rem, 1vw, 0.85rem);
+            color: var(--text-muted);
+        }
+
+        /* Slide 35: Code Review */
+        .review-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 768px) {
+            .review-columns { grid-template-columns: 1fr; }
+        }
+
+        .review-col {
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1rem, 2vw, 1.5rem);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .review-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .review-col:nth-child(1) .review-icon { background: var(--coral-light); }
+        .review-col:nth-child(2) .review-icon { background: var(--sage-light); }
+        .review-col:nth-child(3) .review-icon { background: var(--gold-light); }
+
+        .review-col h4 {
+            font-size: clamp(1rem, 1.3vw, 1.1rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .review-col p {
+            font-size: clamp(0.8rem, 1vw, 0.85rem);
+            color: var(--text-muted);
+        }
+
+        /* Slide 36: Browser Layers */
+        .browser-layers {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: clamp(2rem, 4vw, 3rem);
+        }
+
+        .browser-layer {
+            display: flex;
+            align-items: center;
+            gap: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        .layer-label {
+            min-width: 120px;
+            font-weight: 700;
+            font-size: clamp(0.85rem, 1.2vw, 0.95rem);
+            text-align: right;
+        }
+
+        .layer-bar {
+            flex: 1;
+            height: 45px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            padding: 0 1em;
+            color: white;
+            font-size: clamp(0.8rem, 1.1vw, 0.9rem);
+        }
+
+        .browser-layer:nth-child(1) .layer-bar { background: var(--coral); }
+        .browser-layer:nth-child(2) .layer-bar { background: var(--sage); }
+        .browser-layer:nth-child(3) .layer-bar { background: var(--gold); }
+        .browser-layer:nth-child(4) .layer-bar { background: var(--blue); }
+
+        /* Slide 37: Advantages */
+        .advantages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: clamp(0.75rem, 1.5vw, 1rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        .advantage-card {
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1rem, 1.5vw, 1.25rem);
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .advantage-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .adv-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 auto 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .advantage-card:nth-child(1) .adv-icon { background: var(--coral-light); color: var(--coral); }
+        .advantage-card:nth-child(2) .adv-icon { background: var(--sage-light); color: var(--sage); }
+        .advantage-card:nth-child(3) .adv-icon { background: var(--gold-light); color: var(--gold); }
+        .advantage-card:nth-child(4) .adv-icon { background: var(--blue-light); color: var(--blue); }
+        .advantage-card:nth-child(5) .adv-icon { background: #f0e6f6; color: #7c5295; }
+
+        .advantage-card h4 {
+            font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+            margin-bottom: 0.25rem;
+        }
+
+        .advantage-card p {
+            font-size: clamp(0.7rem, 0.85vw, 0.75rem);
+            color: var(--text-muted);
+        }
+
+        /* Slide 38: Advantage Compare */
+        .compare-layout {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(2rem, 4vw, 3rem);
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .compare-layout { grid-template-columns: 1fr; }
+        }
+
+        .compare-col {
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1.25rem, 2vw, 1.5rem);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .compare-col h4 {
+            font-size: clamp(1.1rem, 1.5vw, 1.25rem);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .compare-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5em 0;
+            font-size: clamp(0.85rem, 1.1vw, 0.9rem);
+        }
+
+        .compare-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+
+        .compare-icon.plus { background: var(--sage); color: white; }
+        .compare-icon.minus { background: var(--coral); color: white; }
+
+        .vs-badge {
+            background: var(--gold);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        /* Slide 39: Open Source */
+        .opensource-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1.5rem, 3vw, 2.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .opensource-grid { grid-template-columns: 1fr; }
+        }
+
+        .opensource-visual {
+            background: linear-gradient(135deg, var(--sage-light), var(--blue-light));
+            border-radius: 16px;
+            padding: clamp(2rem, 4vw, 3rem);
+            text-align: center;
+        }
+
+        .opensource-visual .big-icon {
+            font-size: clamp(4rem, 8vw, 6rem);
+        }
+
+        .opensource-text h3 {
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            margin-bottom: 1rem;
+        }
+
+        .opensource-text p {
+            font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        /* Slide 40: 89.5% */
+        .big-stat {
+            text-align: center;
+            padding: clamp(3rem, 6vw, 5rem) 0;
+        }
+
+        .big-stat .number {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(5rem, 12vw, 10rem);
+            font-weight: 700;
+            color: var(--coral);
+            line-height: 1;
+        }
+
+        .big-stat .label {
+            font-size: clamp(1.25rem, 2vw, 1.75rem);
+            color: var(--text);
+            margin-top: 1rem;
+        }
+
+        .big-stat .desc {
+            font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 1rem auto 0;
+        }
+
+        /* Slide 41: 5 Drawbacks */
+        .drawbacks-list {
+            max-width: 700px;
+            margin: clamp(2rem, 4vw, 3rem) auto;
+        }
+
+        .drawback-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0.75em 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .drawback-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #fff3cd;
+            color: #ffc107;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-weight: bold;
+        }
+
+        .drawback-text {
+            font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+        }
+
+        /* Slide 42: Token Cost */
+        .token-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 600px) {
+            .token-cards { grid-template-columns: 1fr; }
+        }
+
+        .token-card {
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1.25rem, 2vw, 1.5rem);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .token-card h4 {
+            font-size: clamp(1rem, 1.3vw, 1.15rem);
+            margin-bottom: 0.75rem;
+        }
+
+        .token-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5em 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: clamp(0.8rem, 1vw, 0.85rem);
+        }
+
+        .token-item:last-child { border-bottom: none; }
+
+        .token-cost {
+            font-weight: 700;
+            color: var(--coral);
+        }
+
+        /* Slide 43: Security */
+        .security-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1.5rem, 3vw, 2.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 768px) {
+            .security-grid { grid-template-columns: 1fr; }
+        }
+
+        .security-col {
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1.25rem, 2vw, 1.5rem);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .security-col h4 {
+            font-size: clamp(1.1rem, 1.5vw, 1.25rem);
+            margin-bottom: 1rem;
+            color: var(--blue);
+        }
+
+        .security-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5em 0;
+            font-size: clamp(0.85rem, 1.1vw, 0.9rem);
+        }
+
+        .security-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--sage-light);
+            color: var(--sage);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Slide 44: Skills + Roadmap */
+        .skills-roadmap {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1.5rem, 3vw, 2.5rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        @media (max-width: 768px) {
+            .skills-roadmap { grid-template-columns: 1fr; }
+        }
+
+        .skills-section h4,
+        .roadmap-section h4 {
+            font-size: clamp(1.1rem, 1.5vw, 1.25rem);
+            margin-bottom: 1rem;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .skill-tag {
+            background: var(--blue-light);
+            color: var(--blue);
+            padding: 0.4em 0.8em;
+            border-radius: 20px;
+            font-size: clamp(0.75rem, 1vw, 0.85rem);
+            font-weight: 600;
+        }
+
+        .roadmap-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .roadmap-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: clamp(0.85rem, 1.1vw, 0.9rem);
+        }
+
+        .roadmap-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .roadmap-item:nth-child(1) .roadmap-dot { background: var(--coral); }
+        .roadmap-item:nth-child(2) .roadmap-dot { background: var(--sage); }
+        .roadmap-item:nth-child(3) .roadmap-dot { background: var(--gold); }
+        .roadmap-item:nth-child(4) .roadmap-dot { background: var(--blue); }
+
+        /* Slide 45: Closing */
+        .closing-content {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(1rem, 2vw, 1.5rem);
+            margin-top: clamp(2rem, 4vw, 3rem);
+        }
+
+        @media (max-width: 768px) {
+            .closing-content { grid-template-columns: 1fr; }
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 12px;
+            padding: clamp(1.25rem, 2vw, 1.5rem);
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        }
+
+        .summary-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .summary-card:nth-child(1) .summary-icon { background: var(--coral-light); color: var(--coral); }
+        .summary-card:nth-child(2) .summary-icon { background: var(--sage-light); color: var(--sage); }
+        .summary-card:nth-child(3) .summary-icon { background: var(--gold-light); color: var(--gold); }
+
+        .summary-card h4 {
+            font-size: clamp(1rem, 1.3vw, 1.15rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-card p {
+            font-size: clamp(0.8rem, 1vw, 0.85rem);
+            color: var(--text-muted);
+        }
+
+        .action-steps {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            gap: clamp(1rem, 2vw, 2rem);
+            margin-top: clamp(1.5rem, 3vw, 2rem);
+            flex-wrap: wrap;
+        }
+
+        .action-step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .action-num {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--coral);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .action-text {
+            font-size: clamp(0.9rem, 1.2vw, 1rem);
+            font-weight: 600;
+        }
+
+        /* Slide header styles */
+        .slide-header {
+            margin-bottom: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        .slide-header h2 {
+            font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .slide-header p {
+            font-size: clamp(0.95rem, 1.3vw, 1.05rem);
+            color: var(--text-muted);
+            max-width: 700px;
+        }
+
+        /* Slide footer */
+        .slide-footer {
+            margin-top: auto;
+            padding-top: clamp(1rem, 2vw, 1.5rem);
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <nav class="nav-dots" id="navDots"></nav>
+
+    <div class="presentation" id="presentation">
+
+        <!-- SLIDE 1: Cover -->
+        <section class="slide slide-cover" data-slide="1">
+            <h1>OpenClaw</h1>
+            <div class="accent-line"></div>
+            <p class="subtitle">AI Agent Platform</p>
+            <p class="tagline">智能代理 · 无限可能</p>
+            <span class="slide-number">01 / 45</span>
+        </section>
+
+        <!-- SLIDE 2: TOC -->
+        <section class="slide" data-slide="2">
+            <div class="slide-header">
+                <h2>目录</h2>
+                <p>全面了解 OpenClaw 平台</p>
+            </div>
+            <div class="toc-grid">
+                <div class="toc-item">
+                    <span class="tab coral">认识</span>
+                    <h3>了解 OpenClaw</h3>
+                    <p>平台概述与核心价值</p>
+                </div>
+                <div class="toc-item">
+                    <span class="tab sage">部署</span>
+                    <h3>快速部署</h3>
+                    <p>本地与云端安装指南</p>
+                </div>
+                <div class="toc-item">
+                    <span class="tab gold">场景</span>
+                    <h3>应用场景</h3>
+                    <p>8大场景实战案例</p>
+                </div>
+                <div class="toc-item">
+                    <span class="tab blue">分析</span>
+                    <h3>深度分析</h3>
+                    <p>优势与挑战并存</p>
+                </div>
+                <div class="toc-item">
+                    <span class="tab purple">安全</span>
+                    <h3>安全合规</h3>
+                    <p>数据安全与隐私保护</p>
+                </div>
+            </div>
+            <span class="slide-number">02 / 45</span>
+        </section>
+
+        <!-- SLIDE 3: Problem -->
+        <section class="slide" data-slide="3">
+            <div class="slide-header">
+                <h2>企业面临的挑战</h2>
+                <p>传统 AI 集成的困境</p>
+            </div>
+            <div class="two-column">
+                <div class="col-muted">
+                    <h3>现状分析</h3>
+                    <p>企业在引入 AI 能力时，往往面临多重挑战：系统孤岛、数据割裂、集成复杂、运维困难等问题层出不穷。</p>
+                    <div class="divider"></div>
+                    <p>传统的点对点集成方式，导致每次接入新渠道都需要重新开发，效率低下且成本高昂。</p>
+                </div>
+                <div class="col-accent">
+                    <h3>核心痛点</h3>
+                    <p>• 渠道分散 - 微信、钉钉、企业微信等各自独立</p>
+                    <p>• 数据孤岛 - 用户数据无法有效整合</p>
+                    <p>• 集成复杂 - 每次接入都需要大量开发工作</p>
+                    <p>• 运维困难 - 多系统维护成本高昂</p>
+                    <p>• 扩展性差 - 难以快速响应业务变化</p>
+                </div>
+            </div>
+            <span class="slide-number">03 / 45</span>
+        </section>
+
+        <!-- SLIDE 4: Positioning -->
+        <section class="slide" data-slide="4">
+            <div class="slide-header">
+                <h2>OpenClaw 定位</h2>
+                <p>新一代 AI Agent 中台解决方案</p>
+            </div>
+            <div class="cards-grid">
+                <div class="position-card coral">
+                    <h4>统一入口</h4>
+                    <p>一个平台对接所有主流渠道，打破信息孤岛</p>
+                </div>
+                <div class="position-card sage">
+                    <h4>智能中枢</h4>
+                    <p>强大的 AI 推理能力，支持复杂任务处理</p>
+                </div>
+                <div class="position-card gold">
+                    <h4>记忆管理</h4>
+                    <p>多层次记忆系统，实现上下文理解与连续对话</p>
+                </div>
+                <div class="position-card blue">
+                    <h4>工具生态</h4>
+                    <p>丰富的内置工具箱，开箱即用的解决方案</p>
+                </div>
+            </div>
+            <span class="slide-number">04 / 45</span>
+        </section>
+
+        <!-- SLIDE 5: Architecture -->
+        <section class="slide" data-slide="5">
+            <div class="slide-header">
+                <h2>系统架构</h2>
+                <p>三层架构设计，清晰高效</p>
+            </div>
+            <div class="arch-bars">
+                <div class="arch-bar">
+                    <div class="arch-label coral">渠道层</div>
+                    <div class="arch-content">
+                        <span class="arch-item">企业微信</span>
+                        <span class="arch-item">钉钉</span>
+                        <span class="arch-item">飞书</span>
+                        <span class="arch-item">Slack</span>
+                        <span class="arch-item">WhatsApp</span>
+                    </div>
+                </div>
+                <div class="arch-bar">
+                    <div class="arch-label sage">核心层</div>
+                    <div class="arch-content">
+                        <span class="arch-item">OpenClaw Core</span>
+                        <span class="arch-item">SOUL Engine</span>
+                        <span class="arch-item">Memory System</span>
+                        <span class="arch-item">Tool Manager</span>
+                    </div>
+                </div>
+                <div class="arch-bar">
+                    <div class="arch-label gold">模型层</div>
+                    <div class="arch-content">
+                        <span class="arch-item">Claude</span>
+                        <span class="arch-item">GPT-4</span>
+                        <span class="arch-item">Gemini</span>
+                        <span class="arch-item">通义千问</span>
+                        <span class="arch-item">文心一言</span>
+                    </div>
+                </div>
+            </div>
+            <span class="slide-number">05 / 45</span>
+        </section>
+
+        <!-- SLIDE 6: Channel -->
+        <section class="slide" data-slide="6">
+            <div class="slide-header">
+                <h2>多渠道支持</h2>
+                <p>一站式接入所有主流企业通讯平台</p>
+            </div>
+            <div class="three-columns">
+                <div class="channel-col">
+                    <div class="channel-header coral">国内平台</div>
+                    <div class="channel-body">
+                        <div class="channel-item">企业微信 WeCom</div>
+                        <div class="channel-item">钉钉 DingTalk</div>
+                        <div class="channel-item">飞书 Lark</div>
+                        <div class="channel-item">微信小程序</div>
+                        <div class="channel-item">小红书</div>
+                    </div>
+                </div>
+                <div class="channel-col">
+                    <div class="channel-header sage">海外平台</div>
+                    <div class="channel-body">
+                        <div class="channel-item">Slack</div>
+                        <div class="channel-item">Microsoft Teams</div>
+                        <div class="channel-item">WhatsApp</div>
+                        <div class="channel-item">Telegram</div>
+                        <div class="channel-item">Discord</div>
+                    </div>
+                </div>
+                <div class="channel-col">
+                    <div class="channel-header blue">开放接口</div>
+                    <div class="channel-body">
+                        <div class="channel-item">REST API</div>
+                        <div class="channel-item">WebSocket</div>
+                        <div class="channel-item">Webhook</div>
+                        <div class="channel-item">SDK (Python/JS)</div>
+                        <div class="channel-item">GraphQL</div>
+                    </div>
+                </div>
+            </div>
+            <span class="slide-number">06 / 45</span>
+        </section>
+
+        <!-- SLIDE 7: Gateway -->
+        <section class="slide" data-slide="7">
+            <div class="slide-header">
+                <h2>智能网关</h2>
+                <p>统一接入，智能路由</p>
+            </div>
+            <div class="centered-card card">
+                <div class="gateway-icon">⚡</div>
+                <h3>API Gateway</h3>
+                <p>OpenClaw 网关层负责所有外部请求的接收、认证、限流和路由转发，确保系统安全稳定运行。</p>
+                <div class="divider"></div>
+                <p>支持 OAuth 2.0、JWT、API Key 等多种认证方式，智能识别请求类型并分发至对应处理器。</p>
+            </div>
+            <span class="slide-number">07 / 45</span>
+        </section>
+
+        <!-- SLIDE 8: Node -->
+        <section class="slide" data-slide="8">
+            <div class="slide-header">
+                <h2>节点管理</h2>
+                <p>灵活的节点配置与扩展</p>
+            </div>
+            <div class="four-cards">
+                <div class="node-card">
+                    <div class="node-icon coral">🔧</div>
+                    <h4>配置节点</h4>
+                    <p>系统参数配置与初始化</p>
+                </div>
+                <div class="node-card">
+                    <div class="node-icon sage">🔄</div>
+                    <h4>流程节点</h4>
+                    <p>业务流程编排与执行</p>
+                </div>
+                <div class="node-card">
+                    <div class="node-icon gold">📊</div>
+                    <h4>数据节点</h4>
+                    <p>数据采集与处理分析</p>
+                </div>
+                <div class="node-card">
+                    <div class="node-icon blue">🔗</div>
+                    <h4>集成节点</h4>
+                    <p>第三方服务对接</p>
+                </div>
+            </div>
+            <span class="slide-number">08 / 45</span>
+        </section>
+
+        <!-- SLIDE 9: Message Flow -->
+        <section class="slide" data-slide="9">
+            <div class="slide-header">
+                <h2>消息处理流程</h2>
+                <p>六步完成智能消息处理</p>
+            </div>
+            <div class="flow-steps">
+                <div class="flow-step">
+                    <div class="flow-number">1</div>
+                    <div class="flow-label">消息接收</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">2</div>
+                    <div class="flow-label">格式解析</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">3</div>
+                    <div class="flow-label">意图识别</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">4</div>
+                    <div class="flow-label">上下文检索</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">5</div>
+                    <div class="flow-label">AI 生成</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-number">6</div>
+                    <div class="flow-label">安全输出</div>
+                </div>
+            </div>
+            <span class="slide-number">09 / 45</span>
+        </section>
+
+        <!-- SLIDE 10: Memory Pyramid -->
+        <section class="slide" data-slide="10">
+            <div class="slide-header">
+                <h2>记忆金字塔</h2>
+                <p>四层架构实现持久化智能</p>
+            </div>
+            <div class="pyramid">
+                <div class="pyramid-layer">
+                    <span>长期记忆 <small>向量数据库 · 持久存储</small></span>
+                </div>
+                <div class="pyramid-layer">
+                    <span>会话记忆 <small>上下文窗口 · 跨会话</small></span>
+                </div>
+                <div class="pyramid-layer">
+                    <span>工作记忆 <small>短期缓存 · 当前任务</small></span>
+                </div>
+                <div class="pyramid-layer">
+                    <span>即时感知 <small>实时输入 · 当前时刻</small></span>
+                </div>
+            </div>
+            <span class="slide-number">10 / 45</span>
+        </section>
+
+        <!-- SLIDE 11: SOUL -->
+        <section class="slide" data-slide="11">
+            <div class="slide-header">
+                <h2>SOUL 核心引擎</h2>
+                <p>AI Agent 的灵魂所在</p>
+            </div>
+            <div class="soul-card">
+                <h3>SOUL</h3>
+                <p class="soul-desc">Social · Organized · Universal · Learning — 社交化、有序化、通用化、可进化</p>
+                <div class="soul-features">
+                    <div class="soul-feature">意图理解</div>
+                    <div class="soul-feature">情感识别</div>
+                    <div class="soul-feature">自主学习</div>
+                </div>
+            </div>
+            <span class="slide-number">11 / 45</span>
+        </section>
+
+        <!-- SLIDE 12: TOOLS -->
+        <section class="slide" data-slide="12">
+            <div class="slide-header">
+                <h2>工具生态</h2>
+                <p>丰富的内置工具与自定义扩展</p>
+            </div>
+            <div class="tools-grid">
+                <div class="tool-col">
+                    <div class="tool-header coral">内置工具</div>
+                    <div class="tool-list">
+                        <div class="tool-item">🌐 网页搜索与爬虫</div>
+                        <div class="tool-item">📄 文档解析 (PDF/Word)</div>
+                        <div class="tool-item">🖼️ 图片识别与处理</div>
+                        <div class="tool-item">📊 数据分析与可视化</div>
+                        <div class="tool-item">🔍 代码审查与执行</div>
+                        <div class="tool-item">📧 邮件发送与接收</div>
+                    </div>
+                </div>
+                <div class="tool-col">
+                    <div class="tool-header sage">自定义工具</div>
+                    <div class="tool-list">
+                        <div class="tool-item">🔌 API 调用封装</div>
+                        <div class="tool-item">📨 企业内部系统集成</div>
+                        <div class="tool-item">💾 数据库操作</div>
+                        <div class="tool-item">🔐 安全审计工具</div>
+                        <div class="tool-item">📱 移动端能力封装</div>
+                        <div class="tool-item">☁️ 云服务集成</div>
+                    </div>
+                </div>
+            </div>
+            <span class="slide-number">12 / 45</span>
+        </section>
+
+        <!-- SLIDE 13: USER -->
+        <section class="slide" data-slide="13">
+            <div class="slide-header">
+                <h2>用户画像与记忆</h2>
+                <p>个性化服务的基石</p>
+            </div>
+            <div class="user-cards">
+                <div class="user-card">
+                    <h4>用户画像</h4>
+                    <p>基于交互数据自动构建用户画像，包括：基本信息、偏好设置、行为模式、需求预测。支持实时更新与动态调整。</p>
+                </div>
+                <div class="user-card">
+                    <h4>记忆系统</h4>
+                    <p>多层次记忆存储：即时印象 (5min)、短期记忆 (24h)、中期记忆 (7d)、长期记忆 (永久)。支持向量检索与语义匹配。</p>
+                </div>
+            </div>
+            <span class="slide-number">13 / 45</span>
+        </section>
+
+        <!-- SLIDE 14: Session -->
+        <section class="slide" data-slide="14">
+            <div class="slide-header">
+                <h2>会话管理</h2>
+                <p>三层会话体系，精准追踪</p>
+            </div>
+            <div class="session-steps">
+                <div class="session-step">
+                    <div class="step-num">1</div>
+                    <h4>Channel Session</h4>
+                    <p>渠道级会话，同一用户在不同渠道的会话关联</p>
+                </div>
+                <div class="session-step">
+                    <div class="step-num">2</div>
+                    <h4>User Session</h4>
+                    <p>用户级会话，整合跨渠道的用户完整交互历史</p>
+                </div>
+                <div class="session-step">
+                    <div class="step-num">3</div>
+                    <h4>Task Session</h4>
+                    <p>任务级会话，针对复杂任务的多轮交互上下文</p>
+                </div>
+            </div>
+            <span class="slide-number">14 / 45</span>
+        </section>
+
+        <!-- SLIDE 15: Workspace -->
+        <section class="slide" data-slide="15">
+            <div class="slide-header">
+                <h2>工作空间</h2>
+                <p>文件管理与协作中心</p>
+            </div>
+            <div class="workspace-grid">
+                <div class="file-card">
+                    <div class="file-icon">📄</div>
+                    <div class="file-name">project.md</div>
+                    <div class="file-type">Markdown</div>
+                </div>
+                <div class="file-card">
+                    <div class="file-icon">📊</div>
+                    <div class="file-name">data.xlsx</div>
+                    <div class="file-type">Excel</div>
+                </div>
+                <div class="file-card">
+                    <div class="file-icon">🖼️</div>
+                    <div class="file-name">design.png</div>
+                    <div class="file-type">Image</div>
+                </div>
+                <div class="file-card">
+                    <div class="file-icon">📝</div>
+                    <div class="file-name">notes.txt</div>
+                    <div class="file-type">Text</div>
+                </div>
+                <div class="file-card">
+                    <div class="file-icon">📑</div>
+                    <div class="file-name">report.pdf</div>
+                    <div class="file-type">PDF</div>
+                </div>
+                <div class="file-card">
+                    <div class="file-icon">📁</div>
+                    <div class="file-name">assets/</div>
+                    <div class="file-type">Folder</div>
+                </div>
+                <div class="file-card">
+                    <div class="file-icon">🔧</div>
+                    <div class="file-name">config.json</div>
+                    <div class="file-type">Config</div>
+                </div>
+            </div>
+            <span class="slide-number">15 / 45</span>
+        </section>
+
+        <!-- SLIDE 16: Memory Flow -->
+        <section class="slide" data-slide="16">
+            <div class="slide-header">
+                <h2>记忆流转</h2>
+                <p>信息在四层记忆间的动态流转</p>
+            </div>
+            <div class="memory-flow">
+                <div class="mem-step">
+                    <div class="mem-box coral">即时感知</div>
+                    <div class="mem-label">Input</div>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="mem-step">
+                    <div class="mem-box sage">工作记忆</div>
+                    <div class="mem-label">Process</div>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="mem-step">
+                    <div class="mem-box gold">会话记忆</div>
+                    <div class="mem-label">Context</div>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="mem-step">
+                    <div class="mem-box blue">长期记忆</div>
+                    <div class="mem-label">Storage</div>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="mem-step">
+                    <div class="mem-box coral">检索召回</div>
+                    <div class="mem-label">Recall</div>
+                </div>
+            </div>
+            <span class="slide-number">16 / 45</span>
+        </section>
+
+        <!-- SLIDE 17: Deployment -->
+        <section class="slide" data-slide="17">
+            <div class="slide-header">
+                <h2>部署方式</h2>
+                <p>灵活适配不同规模与场景</p>
+            </div>
+            <div class="deploy-cards">
+                <div class="deploy-card">
+                    <div class="deploy-header coral">SaaS 云服务</div>
+                    <div class="deploy-body">
+                        <div class="deploy-item">• 开箱即用</div>
+                        <div class="deploy-item">• 自动弹性扩缩</div>
+                        <div class="deploy-item">• 7×24 专业运维</div>
+                        <div class="deploy-item">• 按量计费</div>
+                    </div>
+                </div>
+                <div class="deploy-card">
+                    <div class="deploy-header sage">私有化部署</div>
+                    <div class="deploy-body">
+                        <div class="deploy-item">• 数据完全自主</div>
+                        <div class="deploy-item">• 定制化开发</div>
+                        <div class="deploy-item">• 企业内网隔离</div>
+                        <div class="deploy-item">• 专属技术支持</div>
+                    </div>
+                </div>
+                <div class="deploy-card">
+                    <div class="deploy-header blue">混合部署</div>
+                    <div class="deploy-body">
+                        <div class="deploy-item">• 核心数据本地</div>
+                        <div class="deploy-item">• 弹性能力云端</div>
+                        <div class="deploy-item">• 灵活切换</div>
+                        <div class="deploy-item">• 成本优化</div>
+                    </div>
+                </div>
+            </div>
+            <span class="slide-number">17 / 45</span>
+        </section>
+
+        <!-- SLIDE 18: Platform Table -->
+        <section class="slide" data-slide="18">
+            <div class="slide-header">
+                <h2>平台支持矩阵</h2>
+                <p>全平台覆盖，多端协同</p>
+            </div>
+            <table class="platform-table">
+                <thead>
+                    <tr>
+                        <th>平台</th>
+                        <th>消息</th>
+                        <th>文件</th>
+                        <th>语音</th>
+                        <th>视频</th>
+                        <th>状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>企业微信</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>生产就绪</td>
+                    </tr>
+                    <tr>
+                        <td>钉钉</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>生产就绪</td>
+                    </tr>
+                    <tr>
+                        <td>飞书</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>-</td>
+                        <td>Beta</td>
+                    </tr>
+                    <tr>
+                        <td>Slack</td>
+                        <td>✓</td>
+                        <td>✓</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>生产就绪</td>
+                    </tr>
+                </tbody>
+            </table>
+            <span class="slide-number">18 / 45</span>
+        </section>
+
+        <!-- SLIDE 19: Tencent -->
+        <section class="slide" data-slide="19">
+            <div class="slide-header">
+                <h2>腾讯云集成</h2>
+                <p>深度融合腾讯云生态</p>
+            </div>
+            <div class="tencent-grid">
+                <div class="tencent-visual">
+                    <div class="big-num">30+</div>
+                    <p>集成服务</p>
+                </div>
+                <div class="tencent-text">
+                    <h3>云端一体化</h3>
+                    <p>OpenClaw 与腾讯云深度集成，支持云函数 SCF、容器服务 TKE、数据库 CDB、对象存储 COS 等核心服务，开箱即用。</p>
+                    <div class="divider"></div>
+                    <p>依托腾讯云安全底座，提供企业级安全保障与合规支持。</p>
+                </div>
+            </div>
+            <span class="slide-number">19 / 45</span>
+        </section>
+
+        <!-- SLIDE 20: Server -->
+        <section class="slide" data-slide="20">
+            <div class="slide-header">
+                <h2>服务器配置</h2>
+                <p>生产环境推荐规格</p>
+            </div>
+            <div class="server-layout">
+                <table class="server-table">
+                    <thead>
+                        <tr>
+                            <th>规模</th>
+                            <th>CPU</th>
+                            <th>内存</th>
+                            <th>存储</th>
+                            <th>并发</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>小型</td>
+                            <td>2核</td>
+                            <td>4GB</td>
+                            <td>50GB</td>
+                            <td>100</td>
+                        </tr>
+                        <tr>
+                            <td>中型</td>
+                            <td>4核</td>
+                            <td>8GB</td>
+                            <td>100GB</td>
+                            <td>500</td>
+                        </tr>
+                        <tr>
+                            <td>大型</td>
+                            <td>8核</td>
+                            <td>16GB</td>
+                            <td>200GB</td>
+                            <td>2000</td>
+                        </tr>
+                        <tr>
+                            <td>超大型</td>
+                            <td>16核+</td>
+                            <td>32GB+</td>
+                            <td>500GB+</td>
+                            <td>10000+</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="warning-cards">
+                    <div class="warning-card">
+                        <strong>⚠️ 注意</strong>
+                        并发数为单实例参考值，实际视业务复杂度而定
+                    </div>
+                    <div class="warning-card">
+                        <strong>💡 建议</strong>
+                        生产环境建议至少选择中型配置
+                    </div>
+                </div>
+            </div>
+            <span class="slide-number">20 / 45</span>
+        </section>
+
+        <!-- SLIDE 21: Model Table -->
+        <section class="slide" data-slide="21">
+            <div class="slide-header">
+                <h2>模型定价层级</h2>
+                <p>四档方案，灵活选择</p>
+            </div>
+            <div class="model-tiers">
+                <div class="model-tier">
+                    <div class="tier-header free">Free</div>
+                    <div class="tier-body">
+                        <div class="tier-item">Claude Haiku</div>
+                        <div class="tier-item">GPT-3.5</div>
+                        <div class="tier-item">100次/日</div>
+                        <div class="tier-item">基础支持</div>
+                    </div>
+                </div>
+                <div class="model-tier">
+                    <div class="tier-header basic">Basic</div>
+                    <div class="tier-body">
+                        <div class="tier-item">Claude Sonnet</div>
+                        <div class="tier-item">GPT-4o Mini</div>
+                        <div class="tier-item">1000次/日</div>
+                        <div class="tier-item">邮件支持</div>
+                    </div>
+                </div>
+                <div class="model-tier">
+                    <div class="tier-header pro">Pro</div>
+                    <div class="tier-body">
+                        <div class="tier-item">Claude Opus</div>
+                        <div class="tier-item">GPT-4o</div>
+                        <div class="tier-item">无限次</div>
+                        <div class="tier-item">优先支持</div>
+                    </div>
+                </div>
+                <div class="model-tier">
+                    <div class="tier-header enterprise">Enterprise</div>
+                    <div class="tier-body">
+                        <div class="tier-item">自定义模型</div>
+                        <div class="tier-item">私有化部署</div>
+                        <div class="tier-item">SLA保障</div>
+                        <div class="tier-item">专属客服</div>
+                    </div>
+                </div>
+            </div>
+            <span class="slide-number">21 / 45</span>
+        </section>
+
+        <!-- SLIDE 22: 4-step Flow -->
+        <section class="slide" data-slide="22">
+            <div class="slide-header">
+                <h2>快速上手</h2>
+                <p>四步完成 OpenClaw 部署</p>
+            </div>
+            <div class="four-steps">
+                <div class="four-step">
+                    <div class="four-num">1</div>
+                    <h4>注册账号</h4>
+                    <p>访问官网，完成企业认证</p>
+                </div>
+                <div class="four-step">
+                    <div class="four-num">2</div>
+                    <h4>创建实例</h4>
+                    <p>选择配置，初始化环境</p>
+                </div>
+                <div class="four-step">
+                    <div class="four-num">3</div>
+                    <h4>接入渠道</h4>
+                    <p>配置企业微信/钉钉等</p>
+                </div>
+                <div class="four-step">
+                    <div class="four-num">4</div>
+                    <h4>开始使用</h4>
+                    <p>体验 AI Agent 能力</p>
+                </div>
+            </div>
+            <span class="slide-number">22 / 45</span>
+        </section>
+
+        <!-- SLIDE 23: Pitfall -->
+        <section class="slide" data-slide="23">
+            <div class="slide-header">
+                <h2>常见陷阱</h2>
+                <p>部署前必读注意事项</p>
+            </div>
+            <div class="single-warning">
+                <div class="warning-box">
+                    <h3>⚠️ API 密钥管理</h3>
+                    <p>切勿将 API 密钥硬编码在代码中或提交至版本控制系统。建议使用环境变量或密钥管理服务，确保密钥安全性。泄露的密钥可能导致巨额账单和未授权访问。</p>
+                </div>
+            </div>
+            <span class="slide-number">23 / 45</span>
+        </section>
+
+        <!-- SLIDE 24: Pitfalls -->
+        <section class="slide" data-slide="24">
+            <div class="slide-header">
+                <h2>更多陷阱</h2>
+                <p>生产环境常见问题</p>
+            </div>
+            <div class="two-warnings">
+                <div class="pitfall-card">
+                    <h4>⚠️ 上下文长度限制</h4>
+                    <p>大语言模型对输入长度有限制，超长对话会导致性能下降和成本增加。建议实施对话摘要策略，定期压缩历史消息。</p>
+                </div>
+                <div class="pitfall-card">
+                    <h4>⚠️ Rate Limiting</h4>
+                    <p>大多数 AI API 都有速率限制。实现指数退避重试机制，合理使用批量处理，避免触发限流导致服务中断。</p>
+                </div>
+            </div>
+            <span class="slide-number">24 / 45</span>
+        </section>
+
+        <!-- SLIDE 25: AI Install -->
+        <section class="slide" data-slide="25">
+            <div class="slide-header">
+                <h2>AI 工具安装</h2>
+                <p>三大核心工具快速部署</p>
+            </div>
+            <div class="install-cards">
+                <div class="install-card">
+                    <div class="install-icon coral">🐍</div>
+                    <h4>Python</h4>
+                    <p>pip install openclaw-sdk</p>
+                </div>
+                <div class="install-card">
+                    <div class="install-icon sage">📦</div>
+                    <h4>Node.js</h4>
+                    <p>npm install openclaw-sdk</p>
+                </div>
+                <div class="install-card">
+                    <div class="install-icon gold">🐳</div>
+                    <h4>Docker</h4>
+                    <p>docker pull openclaw/latest</p>
+                </div>
+            </div>
+            <span class="slide-number">25 / 45</span>
+        </section>
+
+        <!-- SLIDE 26: Checklist -->
+        <section class="slide" data-slide="26">
+            <div class="slide-header">
+                <h2>部署检查清单</h2>
+                <p>上线前必查项目</p>
+            </div>
+            <div class="checklist">
+                <div class="check-item">
+                    <div class="check-box">✓</div>
+                    <div class="check-text">已完成 API 密钥配置与环境变量设置</div>
+                </div>
+                <div class="check-item">
+                    <div class="check-box">✓</div>
+                    <div class="check-text">渠道接入凭证已正确配置</div>
+                </div>
+                <div class="check-item">
+                    <div class="check-box">✓</div>
+                    <div class="check-text">数据库连接与迁移已完成</div>
+                </div>
+                <div class="check-item">
+                    <div class="check-box">✓</div>
+                    <div class="check-text">日志系统与监控告警已启用</div>
+                </div>
+                <div class="check-item">
+                    <div class="check-box">✓</div>
+                    <div class="check-text">安全加固与访问控制已配置</div>
+                </div>
+                <div class="check-item">
+                    <div class="check-box">✓</div>
+                    <div class="check-text">备份策略与灾难恢复计划已制定</div>
+                </div>
+            </div>
+            <span class="slide-number">26 / 45</span>
+        </section>
+
+        <!-- SLIDE 27: 8 Scenes -->
+        <section class="slide" data-slide="27">
+            <div class="slide-header">
+                <h2>八大应用场景</h2>
+                <p>覆盖企业核心业务需求</p>
+            </div>
+            <div class="scenes-grid">
+                <div class="scene-card">
+                    <div class="scene-icon">💬</div>
+                    <div class="scene-name">智能客服</div>
+                </div>
+                <div class="scene-card">
+                    <div class="scene-icon">📊</div>
+                    <div class="scene-name">数据分析</div>
+                </div>
+                <div class="scene-card">
+                    <div class="scene-icon">📝</div>
+                    <div class="scene-name">内容生成</div>
+                </div>
+                <div class="scene-card">
+                    <div class="scene-icon">🔍</div>
+                    <div class="scene-name">代码审查</div>
+                </div>
+                <div class="scene-card">
+                    <div class="scene-icon">📅</div>
+                    <div class="scene-name">日程管理</div>
+                </div>
+                <div class="scene-card">
+                    <div class="scene-icon">📧</div>
+                    <div class="scene-name">邮件处理</div>
+                </div>
+                <div class="scene-card">
+                    <div class="scene-icon">📄</div>
+                    <div class="scene-name">文档处理</div>
+                </div>
+                <div class="scene-card">
+                    <div class="scene-icon">🤝</div>
+                    <div class="scene-name">协同办公</div>
+                </div>
+            </div>
+            <span class="slide-number">27 / 45</span>
+        </section>
+
+        <!-- SLIDE 28: Wecom -->
+        <section class="slide" data-slide="28">
+            <div class="slide-header">
+                <h2>企业微信场景</h2>
+                <p>三步构建智能客服</p>
+            </div>
+            <div class="wecom-cards">
+                <div class="wecom-card">
+                    <div class="wecom-num">1</div>
+                    <div class="wecom-content">
+                        <h4>接收用户消息</h4>
+                        <p>通过企业微信应用接收员工或客户的咨询消息</p>
+                    </div>
+                </div>
+                <div class="wecom-card">
+                    <div class="wecom-num">2</div>
+                    <div class="wecom-content">
+                        <h4>AI 智能回复</h4>
+                        <p>基于知识库和上下文理解，生成专业准确的回复</p>
+                    </div>
+                </div>
+                <div class="wecom-card">
+                    <div class="wecom-num">3</div>
+                    <div class="wecom-content">
+                        <h4>持续学习优化</h4>
+                        <p>根据反馈自动更新知识库，不断提升回答质量</p>
+                    </div>
+                </div>
+            </div>
+            <span class="slide-number">28 / 45</span>
+        </section>
+
+        <!-- SLIDE 29: Zentao -->
+        <section class="slide" data-slide="29">
+            <div class="slide-header">
+                <h2>禅道集成</h2>
+                <p>项目管理智能化</p>
+            </div>
+            <div class="zentao-columns">
+                <div class="zentao-col">
+                    <h4>任务管理</h4>
+                    <div class="zentao-item">任务创建与分配</div>
+                    <div class="zentao-item">进度自动追踪</div>
+                    <div class="zentao-item">逾期预警提醒</div>
+                </div>
+                <div class="zentao-col">
+                    <h4>文档处理</h4>
+                    <div class="zentao-item">文档智能分类</div>
+                    <div class="zentao-item">内容自动摘要</div>
+                    <div class="zentao-item">版本对比分析</div>
+                </div>
+                <div class="zentao-col">
+                    <h4>流程自动化</h4>
+                    <div class="zentao-item">审批流程编排</div>
+                    <div class="zentao-item">状态自动流转</div>
+                    <div class="zentao-item">数据自动同步</div>
+                </div>
+            </div>
+            <span class="slide-number">29 / 45</span>
+        </section>
+
+        <!-- SLIDE 30: Xiaohongshu -->
+        <section class="slide" data-slide="30">
+            <div class="slide-header">
+                <h2>小红书运营</h2>
+                <p>AI 助力内容创作与发布</p>
+            </div>
+            <div class="xhs-flow">
+                <div class="xhs-step">
+                    <div class="xhs-icon">📝</div>
+                    <h4>选题策划</h4>
+                    <p>分析热门话题，生成创意选题</p>
+                </div>
+                <div class="xhs-step">
+                    <div class="xhs-icon">✍️</div>
+                    <h4>内容创作</h4>
+                    <p>AI 辅助写作，生成优质文案</p>
+                </div>
+                <div class="xhs-step">
+                    <div class="xhs-icon">📤</div>
+                    <h4>定时发布</h4>
+                    <p>设置发布时间，自动推送上线</p>
+                </div>
+            </div>
+            <span class="slide-number">30 / 45</span>
+        </section>
+
+        <!-- SLIDE 31: Article -->
+        <section class="slide" data-slide="31">
+            <div class="slide-header">
+                <h2>文章发布</h2>
+                <p>多平台一键分发</p>
+            </div>
+            <div class="article-grid">
+                <div class="article-visual">
+                    <div style="font-size: clamp(4rem, 8vw, 6rem);">📰</div>
+                    <p style="margin-top: 1rem; font-weight: 600;">一键发布</p>
+                </div>
+                <div class="article-text">
+                    <h3>全平台覆盖</h3>
+                    <p>支持微信公众号、知乎、掘金、CSDN 等主流内容平台。AI 自动适配各平台格式规范，优化标题和标签，提升内容曝光率。</p>
+                    <div class="divider"></div>
+                    <p>内置 SEO 优化建议，让你的文章获得更多自然流量。</p>
+                </div>
+            </div>
+            <span class="slide-number">31 / 45</span>
+        </section>
+
+        <!-- SLIDE 32: Scheduled -->
+        <section class="slide" data-slide="32">
+            <div class="slide-header">
+                <h2>定时任务</h2>
+                <p>自动化调度，释放人力</p>
+            </div>
+            <div class="scheduled-bars">
+                <div class="sched-bar">
+                    <div class="sched-label">每日早报</div>
+                    <div class="sched-bar-fill" style="width: 40%;">08:00 - 行业资讯汇总</div>
+                </div>
+                <div class="sched-bar">
+                    <div class="sched-label">周报生成</div>
+                    <div class="sched-bar-fill" style="width: 65%;">周一 09:00 - 数据分析</div>
+                </div>
+                <div class="sched-bar">
+                    <div class="sched-label">月度报告</div>
+                    <div class="sched-bar-fill" style="width: 85%;">每月1日 - 汇总分析</div>
+                </div>
+            </div>
+            <span class="slide-number">32 / 45</span>
+        </section>
+
+        <!-- SLIDE 33: PPT Generation -->
+        <section class="slide" data-slide="33">
+            <div class="slide-header">
+                <h2>PPT 自动生成</h2>
+                <p>从文档到演示，一键完成</p>
+            </div>
+            <div class="ppt-flow">
+                <div class="ppt-step">
+                    <div class="ppt-icon">📄</div>
+                    <div class="ppt-label">上传文档</div>
+                </div>
+                <div class="ppt-step">
+                    <div class="ppt-icon">🧠</div>
+                    <div class="ppt-label">AI 分析</div>
+                </div>
+                <div class="ppt-step">
+                    <div class="ppt-icon">🎨</div>
+                    <div class="ppt-label">设计排版</div>
+                </div>
+                <div class="ppt-step">
+                    <div class="ppt-icon">📊</div>
+                    <div class="ppt-label">导出 PPT</div>
+                </div>
+            </div>
+            <span class="slide-number">33 / 45</span>
+        </section>
+
+        <!-- SLIDE 34: Group Messages -->
+        <section class="slide" data-slide="34">
+            <div class="slide-header">
+                <h2>群消息处理</h2>
+                <p>智能聚合与分析</p>
+            </div>
+            <div class="group-steps">
+                <div class="group-step">
+                    <div class="group-num">1</div>
+                    <h4>消息收集</h4>
+                    <p>实时接收群内所有消息</p>
+                </div>
+                <div class="group-step">
+                    <div class="group-num">2</div>
+                    <h4>智能摘要</h4>
+                    <p>AI 自动提炼关键信息</p>
+                </div>
+                <div class="group-step">
+                    <div class="group-num">3</div>
+                    <h4>定期播报</h4>
+                    <p>定时向相关人员推送汇总</p>
+                </div>
+            </div>
+            <span class="slide-number">34 / 45</span>
+        </section>
+
+        <!-- SLIDE 35: Code Review -->
+        <section class="slide" data-slide="35">
+            <div class="slide-header">
+                <h2>代码审查</h2>
+                <p>AI 驱动的代码质量保障</p>
+            </div>
+            <div class="review-columns">
+                <div class="review-col">
+                    <div class="review-icon">🔍</div>
+                    <h4>代码分析</h4>
+                    <p>自动检测代码质量问题、安全漏洞和性能瓶颈</p>
+                </div>
+                <div class="review-col">
+                    <div class="review-icon">💡</div>
+                    <h4>优化建议</h4>
+                    <p>提供具体的重构建议和最佳实践推荐</p>
+                </div>
+                <div class="review-col">
+                    <div class="review-icon">✅</div>
+                    <h4>质量报告</h4>
+                    <p>生成详细的代码质量报告和趋势分析</p>
+                </div>
+            </div>
+            <span class="slide-number">35 / 45</span>
+        </section>
+
+        <!-- SLIDE 36: Browser Layers -->
+        <section class="slide" data-slide="36">
+            <div class="slide-header">
+                <h2>浏览器自动化</h2>
+                <p>四层架构实现智能操控</p>
+            </div>
+            <div class="browser-layers">
+                <div class="browser-layer">
+                    <div class="layer-label">交互层</div>
+                    <div class="layer-bar">模拟用户操作 - 点击、输入、滚动</div>
+                </div>
+                <div class="browser-layer">
+                    <div class="layer-label">页面解析</div>
+                    <div class="layer-bar">DOM 元素提取与内容理解</div>
+                </div>
+                <div class="browser-layer">
+                    <div class="layer-label">网络处理</div>
+                    <div class="layer-bar">请求拦截与响应处理</div>
+                </div>
+                <div class="browser-layer">
+                    <div class="layer-label">引擎核心</div>
+                    <div class="layer-bar">浏览器实例管理与任务调度</div>
+                </div>
+            </div>
+            <span class="slide-number">36 / 45</span>
+        </section>
+
+        <!-- SLIDE 37: Advantages -->
+        <section class="slide" data-slide="37">
+            <div class="slide-header">
+                <h2>核心优势</h2>
+                <p>五大亮点，差异化领先</p>
+            </div>
+            <div class="advantages-grid">
+                <div class="advantage-card">
+                    <div class="adv-icon">🚀</div>
+                    <h4>开箱即用</h4>
+                    <p>30分钟快速上线</p>
+                </div>
+                <div class="advantage-card">
+                    <div class="adv-icon">🔌</div>
+                    <h4>无缝集成</h4>
+                    <p>适配各类企业系统</p>
+                </div>
+                <div class="advantage-card">
+                    <div class="adv-icon">🧠</div>
+                    <h4>智能记忆</h4>
+                    <p>真正的上下文理解</p>
+                </div>
+                <div class="advantage-card">
+                    <div class="adv-icon">🔒</div>
+                    <h4>安全合规</h4>
+                    <p>企业级安全保障</p>
+                </div>
+                <div class="advantage-card">
+                    <div class="adv-icon">💰</div>
+                    <h4>成本可控</h4>
+                    <p>按需付费无浪费</p>
+                </div>
+            </div>
+            <span class="slide-number">37 / 45</span>
+        </section>
+
+        <!-- SLIDE 38: Advantage Compare -->
+        <section class="slide" data-slide="38">
+            <div class="slide-header">
+                <h2>竞品对比</h2>
+                <p>OpenClaw vs 传统方案</p>
+            </div>
+            <div class="compare-layout">
+                <div class="compare-col">
+                    <h4 style="color: var(--sage);">✓ OpenClaw</h4>
+                    <div class="compare-item">
+                        <div class="compare-icon plus">+</div>
+                        <span>一站式全渠道覆盖</span>
+                    </div>
+                    <div class="compare-item">
+                        <div class="compare-icon plus">+</div>
+                        <span>零代码配置</span>
+                    </div>
+                    <div class="compare-item">
+                        <div class="compare-icon plus">+</div>
+                        <span>内置 AI 记忆系统</span>
+                    </div>
+                    <div class="compare-item">
+                        <div class="compare-icon plus">+</div>
+                        <span>按需弹性扩展</span>
+                    </div>
+                </div>
+                <div class="vs-badge">VS</div>
+                <div class="compare-col">
+                    <h4 style="color: var(--coral);">传统方案</h4>
+                    <div class="compare-item">
+                        <div class="compare-icon minus">−</div>
+                        <span>逐个渠道独立开发</span>
+                    </div>
+                    <div class="compare-item">
+                        <div class="compare-icon minus">−</div>
+                        <span>大量代码定制</span>
+                    </div>
+                    <div class="compare-item">
+                        <div class="compare-icon minus">−</div>
+                        <span>无上下文理解能力</span>
+                    </div>
+                    <div class="compare-item">
+                        <div class="compare-icon minus">−</div>
+                        <span>固定容量扩容贵</span>
+                    </div>
+                </div>
+            </div>
+            <span class="slide-number">38 / 45</span>
+        </section>
+
+        <!-- SLIDE 39: Open Source -->
+        <section class="slide" data-slide="39">
+            <div class="slide-header">
+                <h2>开源共建</h2>
+                <p>开放核心，共建生态</p>
+            </div>
+            <div class="opensource-grid">
+                <div class="opensource-visual">
+                    <div class="big-icon">🐙</div>
+                </div>
+                <div class="opensource-text">
+                    <h3>开源核心模块</h3>
+                    <p>OpenClaw 核心框架采用 Apache 2.0 协议开源，欢迎开发者参与贡献。丰富的插件生态正在快速成长。</p>
+                    <div class="divider"></div>
+                    <p>GitHub Stars: 12.5k | Forks: 2.3k | Contributors: 180+</p>
+                </div>
+            </div>
+            <span class="slide-number">39 / 45</span>
+        </section>
+
+        <!-- SLIDE 40: 89.5% -->
+        <section class="slide" data-slide="40">
+            <div class="slide-header">
+                <h2>效果显著</h2>
+                <p>客户真实反馈数据</p>
+            </div>
+            <div class="big-stat">
+                <div class="number">89.5%</div>
+                <div class="label">问题解决率</div>
+                <div class="desc">基于 500+ 企业客户三个月真实运营数据统计，平均每100个用户咨询中近90个可通过 AI 自主完成解决</div>
+            </div>
+            <span class="slide-number">40 / 45</span>
+        </section>
+
+        <!-- SLIDE 41: 5 Drawbacks -->
+        <section class="slide" data-slide="41">
+            <div class="slide-header">
+                <h2>局限性分析</h2>
+                <p>诚实面对挑战</p>
+            </div>
+            <div class="drawbacks-list">
+                <div class="drawback-item">
+                    <div class="drawback-icon">!</div>
+                    <div class="drawback-text"><strong>响应延迟</strong> — AI 生成需要时间，对实时性要求高的场景需优化</div>
+                </div>
+                <div class="drawback-item">
+                    <div class="drawback-icon">!</div>
+                    <div class="drawback-text"><strong>上下文限制</strong> — 单次对话有 token 上限，超长对话需策略性截断</div>
+                </div>
+                <div class="drawback-item">
+                    <div class="drawback-icon">!</div>
+                    <div class="drawback-text"><strong>成本波动</strong> — API 按量计费，大规模使用时需关注成本控制</div>
+                </div>
+                <div class="drawback-item">
+                    <div class="drawback-icon">!</div>
+                    <div class="drawback-text"><strong>专业知识</strong> — 垂直领域需要额外训练，通用模型可能不够专业</div>
+                </div>
+                <div class="drawback-item">
+                    <div class="drawback-icon">!</div>
+                    <div class="drawback-text"><strong>部署复杂度</strong> — 私有化部署需要一定技术能力，初期投入较高</div>
+                </div>
+            </div>
+            <span class="slide-number">41 / 45</span>
+        </section>
+
+        <!-- SLIDE 42: Token Cost -->
+        <section class="slide" data-slide="42">
+            <div class="slide-header">
+                <h2>Token 成本</h2>
+                <p>透明定价，按需消费</p>
+            </div>
+            <div class="token-cards">
+                <div class="token-card">
+                    <h4>输入成本 (1M tokens)</h4>
+                    <div class="token-item">
+                        <span>Claude 3.5 Sonnet</span>
+                        <span class="token-cost">$3.00</span>
+                    </div>
+                    <div class="token-item">
+                        <span>GPT-4o</span>
+                        <span class="token-cost">$5.00</span>
+                    </div>
+                    <div class="token-item">
+                        <span>Gemini 1.5 Pro</span>
+                        <span class="token-cost">$1.25</span>
+                    </div>
+                </div>
+                <div class="token-card">
+                    <h4>输出成本 (1M tokens)</h4>
+                    <div class="token-item">
+                        <span>Claude 3.5 Sonnet</span>
+                        <span class="token-cost">$15.00</span>
+                    </div>
+                    <div class="token-item">
+                        <span>GPT-4o</span>
+                        <span class="token-cost">$15.00</span>
+                    </div>
+                    <div class="token-item">
+                        <span>Gemini 1.5 Pro</span>
+                        <span class="token-cost">$5.00</span>
+                    </div>
+                </div>
+            </div>
+            <span class="slide-number">42 / 45</span>
+        </section>
+
+        <!-- SLIDE 43: Security -->
+        <section class="slide" data-slide="43">
+            <div class="slide-header">
+                <h2>安全与合规</h2>
+                <p>企业级安全保障体系</p>
+            </div>
+            <div class="security-grid">
+                <div class="security-col">
+                    <h4>数据安全</h4>
+                    <div class="security-item">
+                        <div class="security-icon">🔐</div>
+                        <span>端到端加密传输</span>
+                    </div>
+                    <div class="security-item">
+                        <div class="security-icon">🛡️</div>
+                        <span>数据隔离存储</span>
+                    </div>
+                    <div class="security-item">
+                        <div class="security-icon">🔄</div>
+                        <span>定期安全审计</span>
+                    </div>
+                    <div class="security-item">
+                        <div class="security-icon">📋</div>
+                        <span>操作日志追溯</span>
+                    </div>
+                </div>
+                <div class="security-col">
+                    <h4>合规认证</h4>
+                    <div class="security-item">
+                        <div class="security-icon">✅</div>
+                        <span>ISO 27001 认证</span>
+                    </div>
+                    <div class="security-item">
+                        <div class="security-icon">📜</div>
+                        <span>GDPR 合规</span>
+                    </div>
+                    <div class="security-item">
+                        <div class="security-icon">🏛️</div>
+                        <span>等保三级</span>
+                    </div>
+                    <div class="security-item">
+                        <div class="security-icon">📨</div>
+                        <span>SOC 2 Type II</span>
+                    </div>
+                </div>
+            </div>
+            <span class="slide-number">43 / 45</span>
+        </section>
+
+        <!-- SLIDE 44: Skills + Roadmap -->
+        <section class="slide" data-slide="44">
+            <div class="slide-header">
+                <h2>技能与路线图</h2>
+                <p>持续进化，不断超越</p>
+            </div>
+            <div class="skills-roadmap">
+                <div class="skills-section">
+                    <h4>当前技能</h4>
+                    <div class="skill-tags">
+                        <span class="skill-tag">多渠道接入</span>
+                        <span class="skill-tag">智能客服</span>
+                        <span class="skill-tag">代码审查</span>
+                        <span class="skill-tag">内容生成</span>
+                        <span class="skill-tag">数据分析</span>
+                        <span class="skill-tag">定时任务</span>
+                    </div>
+                </div>
+                <div class="roadmap-section">
+                    <h4>Roadmap 2024-2025</h4>
+                    <div class="roadmap-items">
+                        <div class="roadmap-item">
+                            <div class="roadmap-dot"></div>
+                            <span>Q3: 多模态交互支持</span>
+                        </div>
+                        <div class="roadmap-item">
+                            <div class="roadmap-dot"></div>
+                            <span>Q4: 私有知识库增强</span>
+                        </div>
+                        <div class="roadmap-item">
+                            <div class="roadmap-dot"></div>
+                            <span>Q1: 自主学习框架</span>
+                        </div>
+                        <div class="roadmap-item">
+                            <div class="roadmap-dot"></div>
+                            <span>Q2: Agent 协作网络</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <span class="slide-number">44 / 45</span>
+        </section>
+
+        <!-- SLIDE 45: Closing -->
+        <section class="slide" data-slide="45">
+            <div class="slide-header">
+                <h2>立即开始</h2>
+                <p>三步开启 AI Agent 新时代</p>
+            </div>
+            <div class="closing-content">
+                <div class="summary-card">
+                    <div class="summary-icon">🚀</div>
+                    <h4>快速部署</h4>
+                    <p>30分钟即可上线运行</p>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">💡</div>
+                    <h4>智能体验</h4>
+                    <p>重新定义人机协作</p>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-icon">🤝</div>
+                    <h4>生态共建</h4>
+                    <p>与伙伴共同成长</p>
+                </div>
+            </div>
+            <div class="action-steps">
+                <div class="action-step">
+                    <div class="action-num">1</div>
+                    <div class="action-text">访问 openclaw.ai</div>
+                </div>
+                <div class="action-step">
+                    <div class="action-num">2</div>
+                    <div class="action-text">注册免费试用</div>
+                </div>
+                <div class="action-step">
+                    <div class="action-num">3</div>
+                    <div class="action-text">对接企业微信</div>
+                </div>
+                <div class="action-step">
+                    <div class="action-num">4</div>
+                    <div class="action-text">开始智能运营</div>
+                </div>
+            </div>
+            <span class="slide-number">45 / 45</span>
+        </section>
+
+    </div>
+
+    <script>
+        class SlidePresentation {
+            constructor() {
+                this.presentation = document.getElementById('presentation');
+                this.progressBar = document.getElementById('progressBar');
+                this.navDots = document.getElementById('navDots');
+                this.slides = document.querySelectorAll('.slide');
+                this.totalSlides = this.slides.length;
+                this.currentSlide = 1;
+                this.isScrolling = false;
+                this.scrollTimeout = null;
+
+                this.init();
+            }
+
+            init() {
+                this.createNavDots();
+                this.bindEvents();
+                this.updateProgress();
+                this.setupIntersectionObserver();
+            }
+
+            createNavDots() {
+                for (let i = 1; i <= this.totalSlides; i++) {
+                    const dot = document.createElement('button');
+                    dot.className = 'nav-dot' + (i === 1 ? ' active' : '');
+                    dot.setAttribute('aria-label', `Go to slide ${i}`);
+                    dot.addEventListener('click', () => this.goToSlide(i));
+                    this.navDots.appendChild(dot);
+                }
+            }
+
+            bindEvents() {
+                // Scroll event
+                this.presentation.addEventListener('scroll', () => {
+                    this.handleScroll();
+                });
+
+                // Keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    this.handleKeyboard(e);
+                });
+
+                // Wheel event for smoother scrolling
+                this.presentation.addEventListener('wheel', (e) => {
+                    if (e.deltaY > 0) {
+                        this.nextSlide();
+                    } else {
+                        this.prevSlide();
+                    }
+                }, { passive: true });
+            }
+
+            setupIntersectionObserver() {
+                const options = {
+                    root: this.presentation,
+                    threshold: 0.5
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const slideNum = parseInt(entry.target.dataset.slide);
+                            this.currentSlide = slideNum;
+                            this.updateProgress();
+                            this.updateNavDots();
+                        }
+                    });
+                }, options);
+
+                this.slides.forEach(slide => observer.observe(slide));
+            }
+
+            handleScroll() {
+                if (this.scrollTimeout) {
+                    clearTimeout(this.scrollTimeout);
+                }
+
+                this.scrollTimeout = setTimeout(() => {
+                    const scrollTop = this.presentation.scrollTop;
+                    const slideHeight = window.innerHeight;
+                    const currentSlide = Math.round(scrollTop / slideHeight) + 1;
+
+                    if (currentSlide !== this.currentSlide && currentSlide >= 1 && currentSlide <= this.totalSlides) {
+                        this.currentSlide = currentSlide;
+                        this.updateProgress();
+                        this.updateNavDots();
+                    }
+                }, 50);
+            }
+
+            handleKeyboard(e) {
+                switch(e.key) {
+                    case 'ArrowDown':
+                    case 'ArrowRight':
+                    case ' ':
+                    case 'PageDown':
+                        e.preventDefault();
+                        this.nextSlide();
+                        break;
+                    case 'ArrowUp':
+                    case 'ArrowLeft':
+                    case 'PageUp':
+                        e.preventDefault();
+                        this.prevSlide();
+                        break;
+                    case 'Home':
+                        e.preventDefault();
+                        this.goToSlide(1);
+                        break;
+                    case 'End':
+                        e.preventDefault();
+                        this.goToSlide(this.totalSlides);
+                        break;
+                }
+            }
+
+            nextSlide() {
+                if (this.currentSlide < this.totalSlides) {
+                    this.goToSlide(this.currentSlide + 1);
+                }
+            }
+
+            prevSlide() {
+                if (this.currentSlide > 1) {
+                    this.goToSlide(this.currentSlide - 1);
+                }
+            }
+
+            goToSlide(n) {
+                if (n >= 1 && n <= this.totalSlides) {
+                    this.currentSlide = n;
+                    const targetScroll = (n - 1) * window.innerHeight;
+                    this.presentation.scrollTo({
+                        top: targetScroll,
+                        behavior: 'smooth'
+                    });
+                    this.updateProgress();
+                    this.updateNavDots();
+                }
+            }
+
+            updateProgress() {
+                const progress = (this.currentSlide / this.totalSlides) * 100;
+                this.progressBar.style.width = `${progress}%`;
+            }
+
+            updateNavDots() {
+                const dots = this.navDots.querySelectorAll('.nav-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index + 1 === this.currentSlide);
+                });
+            }
+        }
+
+        // Initialize presentation
+        document.addEventListener('DOMContentLoaded', () => {
+            new SlidePresentation();
+        });
+
+        // Handle reduced motion preference
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.style.scrollBehavior = 'auto';
+        }
+    </script>
+</body>
+</html>

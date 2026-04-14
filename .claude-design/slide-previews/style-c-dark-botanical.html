@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style C: Dark Botanical</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg: #0b0d0b;
+        --bg-warm: #0f120f;
+        --text: #e8e4dc;
+        --text-muted: #8a8578;
+        --accent: #c4a35a;
+        --accent-soft: rgba(196, 163, 90, 0.2);
+        --accent2: #7a9e7a;
+        --font-display: 'Cormorant Garamond', 'Noto Sans SC', serif;
+        --font-body: 'DM Sans', 'Noto Sans SC', sans-serif;
+        --title-size: clamp(2rem, 6vw, 5rem);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+        font-family: var(--font-body);
+        background: var(--bg);
+        color: var(--text);
+        overflow-x: hidden;
+    }
+    .slide {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: clamp(1.5rem, 5vw, 5rem);
+        position: relative;
+        overflow: hidden;
+    }
+    .slide-content { max-width: 1100px; margin: 0 auto; width: 100%; }
+    .bg-oval {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(100px);
+        opacity: 0.08;
+        pointer-events: none;
+    }
+    .bg-oval-1 { width: 600px; height: 800px; background: #c4a35a; top: -200px; right: -100px; }
+    .bg-oval-2 { width: 500px; height: 600px; background: #7a9e7a; bottom: -150px; left: -100px; }
+    .eyebrow {
+        font-family: var(--font-body);
+        font-size: clamp(0.65rem, 1vw, 0.8rem);
+        text-transform: uppercase;
+        letter-spacing: 0.3em;
+        color: var(--accent);
+        margin-bottom: clamp(0.8rem, 2vw, 1.5rem);
+        font-weight: 500;
+    }
+    .title {
+        font-family: var(--font-display);
+        font-size: var(--title-size);
+        font-weight: 600;
+        line-height: 1.1;
+        color: var(--text);
+        margin-bottom: clamp(1rem, 2.5vw, 2rem);
+        font-style: italic;
+    }
+    .title .accent { color: var(--accent); font-style: normal; }
+    .subtitle {
+        font-size: clamp(0.9rem, 1.6vw, 1.2rem);
+        color: var(--text-muted);
+        line-height: 1.8;
+        max-width: 550px;
+        margin-bottom: clamp(2rem, 4vw, 4rem);
+        font-weight: 300;
+    }
+    .features {
+        display: flex;
+        gap: clamp(1rem, 3vw, 3rem);
+        flex-wrap: wrap;
+    }
+    .feature {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+    .feature-line {
+        width: 30px;
+        height: 1px;
+        background: var(--accent);
+        margin-top: 0.7em;
+        flex-shrink: 0;
+    }
+    .feature-text {
+        font-size: clamp(0.8rem, 1.4vw, 1rem);
+        color: var(--text-muted);
+        line-height: 1.6;
+        max-width: 200px;
+    }
+    .feature-text strong { color: var(--text); display: block; font-weight: 500; margin-bottom: 0.2rem; }
+    .botanical-decoration {
+        position: absolute;
+        right: clamp(2rem, 6vw, 8rem);
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: clamp(8rem, 20vw, 18rem);
+        opacity: 0.03;
+        line-height: 1;
+        pointer-events: none;
+        user-select: none;
+    }
+    .accent-bar {
+        position: absolute;
+        left: clamp(1.5rem, 5vw, 5rem);
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+        opacity: 0.3;
+    }
+    .reveal { animation: fadeUp 1s ease forwards; opacity: 0; }
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(25px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .reveal:nth-child(1) { animation-delay: 0.15s; }
+    .reveal:nth-child(2) { animation-delay: 0.3s; }
+    .reveal:nth-child(3) { animation-delay: 0.5s; }
+    .reveal:nth-child(4) { animation-delay: 0.65s; }
+    </style>
+</head>
+<body>
+    <div class="slide">
+        <div class="bg-oval bg-oval-1"></div>
+        <div class="bg-oval bg-oval-2"></div>
+        <div class="botanical-decoration">❧</div>
+        <div class="accent-bar"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal">OpenClaw Knowledge Graph</div>
+            <h1 class="title reveal">
+                OpenClaw<br><span class="accent">知识图谱</span>
+            </h1>
+            <p class="subtitle reveal">
+                从部署到实践全指南。<br>
+                一份关于开源 AI Agent 平台的<br>
+                完整技术解析与实战手册。
+            </p>
+            <div class="features reveal">
+                <div class="feature">
+                    <div class="feature-line"></div>
+                    <div class="feature-text">
+                        <strong>三层架构</strong>
+                        Channel · Gateway · Node
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-line"></div>
+                    <div class="feature-text">
+                        <strong>四层记忆</strong>
+                        SOUL · TOOLS · USER · Session
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-line"></div>
+                    <div class="feature-text">
+                        <strong>部署实战</strong>
+                        平台 · 云服务器 · 本地
+                    </div>
+                </div>
+                <div class="feature">
+                    <div class="feature-line"></div>
+                    <div class="feature-text">
+                        <strong>八大场景</strong>
+                        企业微信 · 禅道 · 小红书
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

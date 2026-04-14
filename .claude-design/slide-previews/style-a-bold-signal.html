@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style A: Bold Signal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg: #08080c;
+        --bg-card: #111118;
+        --accent: #ff3b3b;
+        --accent2: #ffb800;
+        --accent3: #3bff7a;
+        --text: #ffffff;
+        --text-muted: #888;
+        --font-display: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+        --font-body: 'Noto Sans SC', sans-serif;
+        --title-size: clamp(2rem, 6vw, 4.5rem);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+        font-family: var(--font-body);
+        background: var(--bg);
+        color: var(--text);
+        overflow-x: hidden;
+    }
+    .slide {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: clamp(1.5rem, 5vw, 5rem);
+        position: relative;
+        overflow: hidden;
+    }
+    .slide-content {
+        max-width: 1000px;
+        margin: 0 auto;
+        width: 100%;
+    }
+    .eyebrow {
+        font-family: var(--font-display);
+        font-size: clamp(0.65rem, 1.2vw, 0.85rem);
+        text-transform: uppercase;
+        letter-spacing: 0.25em;
+        color: var(--accent);
+        margin-bottom: clamp(0.5rem, 1.5vw, 1.2rem);
+        font-weight: 700;
+    }
+    .title {
+        font-family: var(--font-display);
+        font-size: var(--title-size);
+        font-weight: 900;
+        line-height: 1.05;
+        margin-bottom: clamp(1rem, 2.5vw, 2rem);
+        letter-spacing: -0.03em;
+    }
+    .title .highlight { color: var(--accent); }
+    .title .highlight2 { color: var(--accent2); }
+    .subtitle {
+        font-size: clamp(0.9rem, 1.8vw, 1.3rem);
+        color: var(--text-muted);
+        line-height: 1.6;
+        max-width: 600px;
+        margin-bottom: clamp(1.5rem, 3vw, 3rem);
+    }
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(0.6rem, 1.5vw, 1.2rem);
+    }
+    @media (max-width: 700px) { .cards { grid-template-columns: 1fr; } }
+    .card {
+        background: var(--bg-card);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        padding: clamp(0.8rem, 2vw, 1.5rem);
+        border-left: 3px solid var(--accent);
+        transition: all 0.3s;
+    }
+    .card:nth-child(2) { border-left-color: var(--accent2); }
+    .card:nth-child(3) { border-left-color: var(--accent3); }
+    .card:hover { transform: translateY(-3px); background: #18181f; }
+    .card-icon { font-size: clamp(1.5rem, 3vw, 2rem); margin-bottom: 0.5rem; }
+    .card-title { font-family: var(--font-display); font-size: clamp(0.85rem, 1.5vw, 1.1rem); font-weight: 700; margin-bottom: 0.3rem; }
+    .card-text { font-size: clamp(0.7rem, 1.2vw, 0.9rem); color: var(--text-muted); }
+    .accent-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3));
+    }
+    .bg-shape {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.12;
+        pointer-events: none;
+    }
+    .bg-shape-1 { width: 500px; height: 500px; background: var(--accent); top: -150px; right: -100px; }
+    .bg-shape-2 { width: 400px; height: 400px; background: var(--accent2); bottom: -100px; left: -50px; }
+    .reveal { animation: fadeUp 0.8s ease forwards; opacity: 0; }
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .reveal:nth-child(1) { animation-delay: 0.1s; }
+    .reveal:nth-child(2) { animation-delay: 0.25s; }
+    .reveal:nth-child(3) { animation-delay: 0.4s; }
+    .reveal:nth-child(4) { animation-delay: 0.55s; }
+    </style>
+</head>
+<body>
+    <div class="slide">
+        <div class="bg-shape bg-shape-1"></div>
+        <div class="bg-shape bg-shape-2"></div>
+        <div class="slide-content">
+            <div class="eyebrow reveal">OpenClaw Knowledge Graph</div>
+            <h1 class="title reveal">
+                OpenClaw<br><span class="highlight">知识图谱</span>
+            </h1>
+            <p class="subtitle reveal">从部署到实践全指南 — 开源 AI Agent 平台的完整技术解析与实战指南</p>
+            <div class="cards reveal">
+                <div class="card">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">能动嘴更能动手</div>
+                    <div class="card-text">自主执行复杂多步骤任务</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🔓</div>
+                    <div class="card-title">开源完全透明</div>
+                    <div class="card-text">代码公开，数据完全私有</div>
+                </div>
+                <div class="card">
+                    <div class="card-icon">🤖</div>
+                    <div class="card-title">20+ 平台接入</div>
+                    <div class="card-text">微信、飞书、钉钉统一管理</div>
+                </div>
+            </div>
+        </div>
+        <div class="accent-bar"></div>
+    </div>
+</body>
+</html>

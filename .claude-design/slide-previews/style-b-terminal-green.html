@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Style B: Terminal Green</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg: #050a05;
+        --bg-secondary: #0a140a;
+        --bg-card: #0d1f0d;
+        --accent: #00ff41;
+        --accent-dim: rgba(0, 255, 65, 0.15);
+        --text: #c8ffc8;
+        --text-muted: #4a7a4a;
+        --text-bright: #ffffff;
+        --font-mono: 'JetBrains Mono', monospace;
+        --font-body: 'Noto Sans SC', sans-serif;
+        --title-size: clamp(1.8rem, 5vw, 4rem);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+        font-family: var(--font-body);
+        background: var(--bg);
+        color: var(--text);
+        overflow-x: hidden;
+    }
+    .slide {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: clamp(1.5rem, 5vw, 5rem);
+        position: relative;
+        overflow: hidden;
+    }
+    .slide-content { max-width: 1100px; margin: 0 auto; width: 100%; }
+    .terminal-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: clamp(1rem, 2.5vw, 2rem);
+        font-family: var(--font-mono);
+        font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+        color: var(--text-muted);
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #febc2e; }
+    .dot-g { background: #28c840; }
+    .prompt { color: var(--accent); margin-right: 0.5rem; }
+    .title {
+        font-family: var(--font-mono);
+        font-size: var(--title-size);
+        font-weight: 700;
+        color: var(--text-bright);
+        line-height: 1.2;
+        margin-bottom: clamp(0.8rem, 2vw, 1.5rem);
+    }
+    .title .accent { color: var(--accent); text-shadow: 0 0 20px rgba(0, 255, 65, 0.5); }
+    .subtitle {
+        font-size: clamp(0.8rem, 1.5vw, 1.1rem);
+        color: var(--text-muted);
+        margin-bottom: clamp(1.5rem, 3vw, 3rem);
+        font-family: var(--font-mono);
+    }
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(0.5rem, 1.2vw, 1rem);
+    }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+    .grid-item {
+        background: var(--bg-card);
+        border: 1px solid rgba(0, 255, 65, 0.15);
+        border-radius: 8px;
+        padding: clamp(0.7rem, 1.8vw, 1.3rem);
+        font-family: var(--font-mono);
+        transition: all 0.3s;
+    }
+    .grid-item:hover {
+        background: rgba(0, 255, 65, 0.08);
+        border-color: rgba(0, 255, 65, 0.4);
+        transform: translateY(-2px);
+    }
+    .grid-item::before {
+        content: '> ';
+        color: var(--accent);
+    }
+    .grid-item-title {
+        font-size: clamp(0.8rem, 1.4vw, 1rem);
+        font-weight: 700;
+        color: var(--text-bright);
+        margin-bottom: 0.3rem;
+        display: inline;
+    }
+    .grid-item-text {
+        font-size: clamp(0.65rem, 1vw, 0.8rem);
+        color: var(--text-muted);
+        display: block;
+        margin-top: 0.2rem;
+        margin-left: 1.5em;
+    }
+    .scanlines {
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 0, 0, 0.03) 2px,
+            rgba(0, 0, 0, 0.03) 4px
+        );
+        pointer-events: none;
+        z-index: 100;
+    }
+    .grid-bg {
+        position: fixed;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+    }
+    .cursor-blink {
+        display: inline-block;
+        width: 0.6em;
+        height: 1.2em;
+        background: var(--accent);
+        animation: blink 1s step-end infinite;
+        vertical-align: text-bottom;
+        margin-left: 2px;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    .reveal { animation: fadeUp 0.8s ease forwards; opacity: 0; }
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .reveal:nth-child(1) { animation-delay: 0.1s; }
+    .reveal:nth-child(2) { animation-delay: 0.25s; }
+    .reveal:nth-child(3) { animation-delay: 0.4s; }
+    .reveal:nth-child(4) { animation-delay: 0.55s; }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="scanlines"></div>
+    <div class="slide">
+        <div class="slide-content">
+            <div class="terminal-header reveal">
+                <div class="dot dot-r"></div>
+                <div class="dot dot-y"></div>
+                <div class="dot dot-g"></div>
+                <span style="margin-left:1rem">openclaw_knowledge_graph — bash — 80×24</span>
+            </div>
+            <div class="title reveal">
+                $ <span class="accent">OpenClaw</span> knowledge_graph<span class="cursor-blink"></span>
+            </div>
+            <div class="subtitle reveal">
+                // 从部署到实践全指南 — v2.0 — 开源 AI Agent 平台
+            </div>
+            <div class="grid reveal">
+                <div class="grid-item">
+                    <span class="grid-item-title">gateway</span>
+                    <span class="grid-item-text">三层架构 · 控制平面</span>
+                </div>
+                <div class="grid-item">
+                    <span class="grid-item-title">channel</span>
+                    <span class="grid-item-text">20+ IM 平台接入</span>
+                </div>
+                <div class="grid-item">
+                    <span class="grid-item-title">node</span>
+                    <span class="grid-item-text">工具执行层</span>
+                </div>
+                <div class="grid-item">
+                    <span class="grid-item-title">memory</span>
+                    <span class="grid-item-text">四层记忆系统</span>
+                </div>
+                <div class="grid-item">
+                    <span class="grid-item-title">deploy</span>
+                    <span class="grid-item-text">平台 · 云 · 本地</span>
+                </div>
+                <div class="grid-item">
+                    <span class="grid-item-title">scenes</span>
+                    <span class="grid-item-text">8 大真实场景</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,3207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw - AI Agent Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f0f;
+            --yellow: #f5e642;
+            --pink: #ff2d7c;
+            --cyan: #00f0ff;
+            --text: #ffffff;
+            --text-muted: #888888;
+            --purple: #a855f7;
+            --orange: #ff9500;
+            --green: #22c55e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, h4, h5, h6, .heading {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 700;
+        }
+
+        /* Slide Base */
+        .slide {
+            min-height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: clamp(1.5rem, 4vw, 3rem);
+            position: relative;
+            overflow: hidden;
+            scroll-snap-align: start;
+        }
+
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            z-index: 2;
+            position: relative;
+        }
+
+        /* Floating Geometric Decorations */
+        .slide::before,
+        .slide::after {
+            content: '';
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .slide::before {
+            width: clamp(60px, 10vw, 120px);
+            height: clamp(60px, 10vw, 120px);
+            border: 4px solid var(--yellow);
+            border-radius: 20%;
+            top: 10%;
+            right: 8%;
+            opacity: 0.3;
+            animation: float-rotate 8s ease-in-out infinite;
+        }
+
+        .slide::after {
+            width: clamp(40px, 8vw, 80px);
+            height: clamp(40px, 8vw, 80px);
+            background: var(--pink);
+            border-radius: 50%;
+            bottom: 15%;
+            left: 5%;
+            opacity: 0.2;
+            animation: float-bounce 6s ease-in-out infinite;
+        }
+
+        @keyframes float-rotate {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(15deg); }
+        }
+
+        @keyframes float-bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-30px) scale(1.1); }
+        }
+
+        /* Bounce Animation */
+        @keyframes bounce-in {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes bounce-up {
+            0% { transform: translateY(100px); opacity: 0; }
+            60% { transform: translateY(-10px); }
+            80% { transform: translateY(5px); }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slide-in-right {
+            0% { transform: translateX(100px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(245, 230, 66, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(245, 230, 66, 0.6); }
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+
+        @keyframes dash-flow {
+            to { stroke-dashoffset: -20; }
+        }
+
+        .bounce-in {
+            animation: bounce-in 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+
+        .bounce-up {
+            animation: bounce-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .slide-in-right {
+            animation: slide-in-right 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        /* Pill Shapes */
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(0.5rem, 1.5vw, 0.8rem) clamp(1rem, 2vw, 1.5rem);
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: clamp(0.75rem, 1.5vw, 1rem);
+            gap: 0.5rem;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .pill:hover {
+            transform: scale(1.05) translateY(-2px);
+        }
+
+        .pill-yellow {
+            background: var(--yellow);
+            color: var(--bg);
+        }
+
+        .pill-pink {
+            background: var(--pink);
+            color: var(--text);
+        }
+
+        .pill-cyan {
+            background: var(--cyan);
+            color: var(--bg);
+        }
+
+        .pill-outline {
+            background: transparent;
+            border: 3px solid currentColor;
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: clamp(12px, 2vw, 20px);
+            padding: clamp(1.5rem, 3vw, 2rem);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-yellow {
+            border-color: var(--yellow);
+            box-shadow: 0 0 30px rgba(245, 230, 66, 0.2);
+        }
+
+        .card-pink {
+            border-color: var(--pink);
+            box-shadow: 0 0 30px rgba(255, 45, 124, 0.2);
+        }
+
+        .card-cyan {
+            border-color: var(--cyan);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.2);
+        }
+
+        /* Navigation */
+        .nav-dots {
+            position: fixed;
+            right: clamp(1rem, 2vw, 2rem);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .nav-dot.active {
+            background: var(--yellow);
+            transform: scale(1.3);
+        }
+
+        .nav-dot:hover {
+            background: var(--yellow);
+        }
+
+        /* Slide Number */
+        .slide-number {
+            position: fixed;
+            bottom: clamp(1rem, 2vw, 2rem);
+            right: clamp(1rem, 2vw, 2rem);
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(0.75rem, 1.2vw, 1rem);
+            color: var(--text-muted);
+            z-index: 1000;
+        }
+
+        .slide-number span {
+            color: var(--yellow);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--yellow);
+            z-index: 1001;
+            transition: width 0.3s ease;
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ========== SLIDE 1: COVER ========== */
+        .slide-cover {
+            background: linear-gradient(135deg, var(--bg) 0%, #1a1a1a 100%);
+        }
+
+        .slide-cover .slide-content {
+            text-align: center;
+        }
+
+        .cover-title {
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        .cover-title .highlight {
+            color: var(--yellow);
+            position: relative;
+            display: inline-block;
+        }
+
+        .cover-title .highlight::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            width: 100%;
+            height: 20%;
+            background: var(--pink);
+            z-index: -1;
+            border-radius: 10px;
+            transform: rotate(-1deg);
+        }
+
+        .cover-subtitle {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .cover-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .cover-decoration {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .deco-circle {
+            position: absolute;
+            border-radius: 50%;
+            animation: float-bounce 6s ease-in-out infinite;
+        }
+
+        .deco-circle-1 {
+            width: 150px;
+            height: 150px;
+            background: var(--yellow);
+            top: 10%;
+            left: 5%;
+            opacity: 0.1;
+            animation-delay: 0s;
+        }
+
+        .deco-circle-2 {
+            width: 100px;
+            height: 100px;
+            border: 4px solid var(--pink);
+            top: 60%;
+            right: 10%;
+            opacity: 0.3;
+            animation-delay: 1s;
+        }
+
+        .deco-circle-3 {
+            width: 80px;
+            height: 80px;
+            background: var(--cyan);
+            bottom: 20%;
+            left: 15%;
+            opacity: 0.15;
+            animation-delay: 2s;
+        }
+
+        .deco-square {
+            position: absolute;
+            border-radius: 15px;
+            animation: float-rotate 8s ease-in-out infinite;
+        }
+
+        .deco-square-1 {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--yellow);
+            top: 20%;
+            right: 15%;
+            animation-delay: 0.5s;
+        }
+
+        .deco-square-2 {
+            width: 40px;
+            height: 40px;
+            background: var(--pink);
+            bottom: 30%;
+            right: 25%;
+            opacity: 0.2;
+            animation-delay: 1.5s;
+        }
+
+        /* ========== SLIDE 2: TOC ========== */
+        .toc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .toc-item {
+            animation: bounce-up 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .toc-item:nth-child(1) { animation-delay: 0.1s; }
+        .toc-item:nth-child(2) { animation-delay: 0.2s; }
+        .toc-item:nth-child(3) { animation-delay: 0.3s; }
+        .toc-item:nth-child(4) { animation-delay: 0.4s; }
+        .toc-item:nth-child(5) { animation-delay: 0.5s; }
+
+        .slide-title {
+            font-size: clamp(1.8rem, 5vw, 3.5rem);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .slide-title .highlight-yellow { color: var(--yellow); }
+        .slide-title .highlight-pink { color: var(--pink); }
+        .slide-title .highlight-cyan { color: var(--cyan); }
+
+        /* ========== SLIDE 3: PROBLEM ========== */
+        .problem-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .problem-layout { grid-template-columns: 1fr; }
+        }
+
+        .problem-left {
+            opacity: 0.6;
+        }
+
+        .problem-right {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .problem-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .problem-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        /* ========== SLIDE 4: POSITIONING ========== */
+        .positioning-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .positioning-grid { grid-template-columns: 1fr; }
+        }
+
+        .feature-card {
+            padding: clamp(1.5rem, 3vw, 2.5rem);
+        }
+
+        .feature-card h3 {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: clamp(0.85rem, 1.5vw, 1rem);
+        }
+
+        /* ========== SLIDE 5: ARCHITECTURE ========== */
+        .architecture-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .arch-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .arch-bar-label {
+            width: 120px;
+            font-weight: 700;
+            font-size: clamp(0.8rem, 1.2vw, 1rem);
+        }
+
+        .arch-bar-track {
+            flex: 1;
+            height: clamp(30px, 5vw, 50px);
+            border-radius: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .arch-bar-fill {
+            height: 100%;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            font-weight: 700;
+            font-size: clamp(0.75rem, 1.2vw, 1rem);
+            animation: bounce-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            transform: scaleX(0);
+            transform-origin: left;
+        }
+
+        .arch-bar:nth-child(1) .arch-bar-fill {
+            width: 90%;
+            background: linear-gradient(90deg, var(--yellow), var(--orange));
+            animation-delay: 0.2s;
+        }
+
+        .arch-bar:nth-child(2) .arch-bar-fill {
+            width: 75%;
+            background: linear-gradient(90deg, var(--pink), var(--purple));
+            animation-delay: 0.4s;
+        }
+
+        .arch-bar:nth-child(3) .arch-bar-fill {
+            width: 60%;
+            background: linear-gradient(90deg, var(--cyan), var(--green));
+            animation-delay: 0.6s;
+        }
+
+        /* ========== SLIDE 6: CHANNEL ========== */
+        .channel-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .channel-columns { grid-template-columns: 1fr; }
+        }
+
+        .channel-col {
+            text-align: center;
+        }
+
+        .channel-header {
+            padding: 1rem 2rem;
+            border-radius: 15px 15px 0 0;
+            font-weight: 700;
+            font-size: clamp(1rem, 1.5vw, 1.3rem);
+        }
+
+        .channel-body {
+            padding: 2rem;
+            border: 3px solid;
+            border-top: none;
+            border-radius: 0 0 15px 15px;
+        }
+
+        /* ========== SLIDE 7: GATEWAY ========== */
+        .gateway-card {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+            border-width: 4px;
+        }
+
+        .gateway-card h3 {
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            margin-bottom: 1rem;
+        }
+
+        .gateway-card p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        /* ========== SLIDE 8: NODE ========== */
+        .node-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .node-pill {
+            animation: bounce-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .node-pill:nth-child(1) { animation-delay: 0.1s; }
+        .node-pill:nth-child(2) { animation-delay: 0.2s; }
+        .node-pill:nth-child(3) { animation-delay: 0.3s; }
+        .node-pill:nth-child(4) { animation-delay: 0.4s; }
+
+        /* ========== SLIDE 9: MESSAGE FLOW ========== */
+        .flow-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            animation: bounce-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .flow-step:nth-child(1) { animation-delay: 0.1s; }
+        .flow-step:nth-child(2) { animation-delay: 0.2s; }
+        .flow-step:nth-child(3) { animation-delay: 0.3s; }
+        .flow-step:nth-child(4) { animation-delay: 0.4s; }
+        .flow-step:nth-child(5) { animation-delay: 0.5s; }
+        .flow-step:nth-child(6) { animation-delay: 0.6s; }
+
+        .flow-icon {
+            width: clamp(50px, 8vw, 80px);
+            height: clamp(50px, 8vw, 80px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.2rem, 2vw, 2rem);
+        }
+
+        .flow-label {
+            font-size: clamp(0.7rem, 1.2vw, 0.9rem);
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .flow-arrow {
+            font-size: clamp(1.5rem, 2vw, 2rem);
+            color: var(--yellow);
+            animation: pulse-glow 2s infinite;
+        }
+
+        /* ========== SLIDE 10: MEMORY PYRAMID ========== */
+        .pyramid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .pyramid-layer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(1rem, 2vw, 1.5rem);
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: clamp(0.8rem, 1.5vw, 1.1rem);
+            text-align: center;
+            animation: bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .pyramid-layer:nth-child(1) { width: 40%; background: var(--cyan); color: var(--bg); animation-delay: 0.1s; }
+        .pyramid-layer:nth-child(2) { width: 55%; background: var(--pink); animation-delay: 0.2s; }
+        .pyramid-layer:nth-child(3) { width: 70%; background: var(--orange); animation-delay: 0.3s; }
+        .pyramid-layer:nth-child(4) { width: 85%; background: var(--yellow); color: var(--bg); animation-delay: 0.4s; }
+
+        /* ========== SLIDE 11: SOUL ========== */
+        .soul-card {
+            max-width: 700px;
+            margin: 0 auto;
+            text-align: center;
+            border-width: 5px;
+            padding: clamp(2rem, 4vw, 3rem);
+        }
+
+        .soul-card h3 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            color: var(--yellow);
+            margin-bottom: 1rem;
+        }
+
+        .soul-card p {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            line-height: 1.8;
+        }
+
+        /* ========== SLIDE 12: TOOLS ========== */
+        .tools-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .tools-columns { grid-template-columns: 1fr; }
+        }
+
+        .tools-col h3 {
+            padding: 1rem 1.5rem;
+            border-radius: 10px 10px 0 0;
+            font-size: clamp(1rem, 2vw, 1.3rem);
+        }
+
+        .tools-col-content {
+            padding: 1.5rem;
+            border: 3px solid;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .tools-col-content ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .tools-col-content li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* ========== SLIDE 13: USER ========== */
+        .user-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .user-cards { grid-template-columns: 1fr; }
+        }
+
+        .user-card {
+            padding: clamp(1.5rem, 3vw, 2rem);
+        }
+
+        .user-card h3 {
+            font-size: clamp(1.2rem, 2vw, 1.8rem);
+            margin-bottom: 1rem;
+        }
+
+        /* ========== SLIDE 14: SESSION ========== */
+        .session-steps {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .session-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            animation: bounce-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .session-step:nth-child(1) { animation-delay: 0.1s; }
+        .session-step:nth-child(2) { animation-delay: 0.3s; }
+        .session-step:nth-child(3) { animation-delay: 0.5s; }
+
+        .session-num {
+            width: clamp(60px, 10vw, 80px);
+            height: clamp(60px, 10vw, 80px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 900;
+        }
+
+        /* ========== SLIDE 15: WORKSPACE ========== */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .file-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50px;
+            border: 2px solid;
+            font-weight: 600;
+            font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+            animation: bounce-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .file-pill:nth-child(1) { animation-delay: 0.05s; border-color: var(--yellow); }
+        .file-pill:nth-child(2) { animation-delay: 0.1s; border-color: var(--pink); }
+        .file-pill:nth-child(3) { animation-delay: 0.15s; border-color: var(--cyan); }
+        .file-pill:nth-child(4) { animation-delay: 0.2s; border-color: var(--purple); }
+        .file-pill:nth-child(5) { animation-delay: 0.25s; border-color: var(--orange); }
+        .file-pill:nth-child(6) { animation-delay: 0.3s; border-color: var(--green); }
+        .file-pill:nth-child(7) { animation-delay: 0.35s; border-color: var(--yellow); }
+
+        /* ========== SLIDE 16: MEMORY FLOW ========== */
+        .memory-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .mem-step {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: bounce-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .mem-step:nth-child(1) { animation-delay: 0.1s; }
+        .mem-step:nth-child(2) { animation-delay: 0.2s; }
+        .mem-step:nth-child(3) { animation-delay: 0.3s; }
+        .mem-step:nth-child(4) { animation-delay: 0.4s; }
+        .mem-step:nth-child(5) { animation-delay: 0.5s; }
+        .mem-step:nth-child(6) { animation-delay: 0.6s; }
+
+        .mem-num {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+
+        .mem-text {
+            flex: 1;
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            font-weight: 500;
+        }
+
+        /* ========== SLIDE 17: DEPLOYMENT ========== */
+        .deploy-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .deploy-cards { grid-template-columns: 1fr; }
+        }
+
+        .deploy-card {
+            padding: clamp(1.5rem, 3vw, 2rem);
+            text-align: center;
+        }
+
+        .deploy-card h3 {
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .deploy-card p {
+            color: var(--text-muted);
+            font-size: clamp(0.85rem, 1.2vw, 1rem);
+        }
+
+        /* ========== SLIDE 18: PLATFORM TABLE ========== */
+        .platform-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(0.75rem, 1.2vw, 0.95rem);
+        }
+
+        .platform-table th,
+        .platform-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .platform-table th {
+            font-family: 'Unbounded', sans-serif;
+            font-weight: 700;
+        }
+
+        .platform-table tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* ========== SLIDE 19: TENCENT ========== */
+        .tencent-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .tencent-layout { grid-template-columns: 1fr; }
+        }
+
+        .tencent-col h3 {
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px 10px 0 0;
+            font-size: clamp(1rem, 1.5vw, 1.2rem);
+        }
+
+        .tencent-col-content {
+            padding: 1.5rem;
+            border: 3px solid;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+        }
+
+        /* ========== SLIDE 20: SERVER ========== */
+        .server-layout {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .server-layout { grid-template-columns: 1fr; }
+        }
+
+        .server-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+        }
+
+        .server-table th,
+        .server-table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .server-warning {
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 3px solid var(--pink);
+        }
+
+        .server-warning h4 {
+            color: var(--pink);
+            margin-bottom: 0.5rem;
+        }
+
+        /* ========== SLIDE 21: MODEL TABLE ========== */
+        .model-tiers {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .model-tiers { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 500px) {
+            .model-tiers { grid-template-columns: 1fr; }
+        }
+
+        .model-tier {
+            padding: clamp(1.5rem, 2vw, 2rem);
+            text-align: center;
+            border-radius: 15px;
+        }
+
+        .model-tier h4 {
+            font-size: clamp(1rem, 1.5vw, 1.3rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .model-tier .price {
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            font-weight: 900;
+            margin: 0.5rem 0;
+        }
+
+        .model-tier .desc {
+            color: var(--text-muted);
+            font-size: clamp(0.75rem, 1vw, 0.9rem);
+        }
+
+        /* ========== SLIDE 22: 4-STEP ========== */
+        .four-steps {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .four-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+            animation: bounce-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .four-step:nth-child(1) { animation-delay: 0.1s; }
+        .four-step:nth-child(2) { animation-delay: 0.2s; }
+        .four-step:nth-child(3) { animation-delay: 0.3s; }
+        .four-step:nth-child(4) { animation-delay: 0.4s; }
+
+        .four-icon {
+            width: clamp(70px, 12vw, 100px);
+            height: clamp(70px, 12vw, 100px);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+        }
+
+        /* ========== SLIDE 23: PITFALL ========== */
+        .pitfall-warning {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: clamp(2rem, 4vw, 3rem);
+            border: 4px solid var(--yellow);
+            border-radius: 20px;
+            text-align: center;
+            background: rgba(245, 230, 66, 0.05);
+        }
+
+        .pitfall-warning h3 {
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            color: var(--yellow);
+            margin-bottom: 1rem;
+        }
+
+        .pitfall-warning p {
+            color: var(--text-muted);
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+        }
+
+        /* ========== SLIDE 24: PITFALLS ========== */
+        .pitfalls-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .pitfall-pill {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: 3px solid;
+            font-weight: 700;
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+            animation: bounce-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .pitfall-pill:nth-child(1) { animation-delay: 0.1s; border-color: var(--pink); }
+        .pitfall-pill:nth-child(2) { animation-delay: 0.2s; border-color: var(--yellow); }
+
+        /* ========== SLIDE 25: AI INSTALL ========== */
+        .install-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .install-cards { grid-template-columns: 1fr; }
+        }
+
+        .install-card {
+            padding: clamp(1.5rem, 2vw, 2rem);
+            text-align: center;
+        }
+
+        .install-icon {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 1rem;
+        }
+
+        .install-card h4 {
+            font-size: clamp(1rem, 1.5vw, 1.3rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .install-card p {
+            color: var(--text-muted);
+            font-size: clamp(0.8rem, 1.2vw, 0.95rem);
+        }
+
+        /* ========== SLIDE 26: CHECKLIST ========== */
+        .checklist {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+            animation: bounce-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .check-item:nth-child(1) { animation-delay: 0.05s; }
+        .check-item:nth-child(2) { animation-delay: 0.1s; }
+        .check-item:nth-child(3) { animation-delay: 0.15s; }
+        .check-item:nth-child(4) { animation-delay: 0.2s; }
+        .check-item:nth-child(5) { animation-delay: 0.25s; }
+
+        .check-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* ========== SLIDE 27: 8 SCENES ========== */
+        .scenes-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .scenes-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 500px) {
+            .scenes-grid { grid-template-columns: 1fr; }
+        }
+
+        .scene-pill {
+            padding: 1rem;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: 700;
+            font-size: clamp(0.8rem, 1.2vw, 1rem);
+            animation: bounce-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .scene-pill:nth-child(1) { animation-delay: 0.05s; background: var(--yellow); color: var(--bg); }
+        .scene-pill:nth-child(2) { animation-delay: 0.1s; background: var(--pink); }
+        .scene-pill:nth-child(3) { animation-delay: 0.15s; background: var(--cyan); color: var(--bg); }
+        .scene-pill:nth-child(4) { animation-delay: 0.2s; background: var(--purple); }
+        .scene-pill:nth-child(5) { animation-delay: 0.25s; background: var(--orange); }
+        .scene-pill:nth-child(6) { animation-delay: 0.3s; background: var(--green); color: var(--bg); }
+        .scene-pill:nth-child(7) { animation-delay: 0.35s; background: var(--yellow); color: var(--bg); }
+        .scene-pill:nth-child(8) { animation-delay: 0.4s; background: var(--pink); }
+
+        /* ========== SLIDE 28: WECOM ========== */
+        .wecom-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .wecom-card {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            border-radius: 15px;
+            animation: slide-in-right 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .wecom-card:nth-child(1) { animation-delay: 0.1s; }
+        .wecom-card:nth-child(2) { animation-delay: 0.2s; }
+        .wecom-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .wecom-num {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Unbounded', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            flex-shrink: 0;
+        }
+
+        /* ========== SLIDE 29: ZENTAO ========== */
+        .zentao-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .zentao-columns { grid-template-columns: 1fr; }
+        }
+
+        .zentao-col {
+            padding: clamp(1.5rem, 2vw, 2rem);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .zentao-col h4 {
+            font-size: clamp(1rem, 1.5vw, 1.3rem);
+            margin-bottom: 0.5rem;
+        }
+
+        /* ========== SLIDE 30: XIAOHONGSHU ========== */
+        .xhs-steps {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .xhs-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+            animation: bounce-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .xhs-step:nth-child(1) { animation-delay: 0.1s; }
+        .xhs-step:nth-child(2) { animation-delay: 0.2s; }
+        .xhs-step:nth-child(3) { animation-delay: 0.3s; }
+
+        .xhs-num {
+            width: clamp(60px, 10vw, 80px);
+            height: clamp(60px, 10vw, 80px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            font-weight: 900;
+        }
+
+        /* ========== SLIDE 31: ARTICLE ========== */
+        .article-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .article-layout { grid-template-columns: 1fr; }
+        }
+
+        .article-col h3 {
+            padding: 0.8rem 1.2rem;
+            border-radius: 10px 10px 0 0;
+            font-size: clamp(1rem, 1.5vw, 1.2rem);
+        }
+
+        .article-col-content {
+            padding: 1.5rem;
+            border: 3px solid;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+        }
+
+        /* ========== SLIDE 32: SCHEDULED ========== */
+        .scheduled-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .sched-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .sched-label {
+            width: 100px;
+            font-weight: 700;
+            font-size: clamp(0.8rem, 1.2vw, 1rem);
+        }
+
+        .sched-track {
+            flex: 1;
+            height: clamp(25px, 4vw, 40px);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .sched-fill {
+            height: 100%;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            font-weight: 700;
+            font-size: clamp(0.7rem, 1vw, 0.9rem);
+            animation: bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            transform: scaleX(0);
+            transform-origin: left;
+        }
+
+        .sched-bar:nth-child(1) .sched-fill {
+            width: 80%;
+            background: var(--yellow);
+            color: var(--bg);
+            animation-delay: 0.2s;
+        }
+
+        .sched-bar:nth-child(2) .sched-fill {
+            width: 60%;
+            background: var(--pink);
+            animation-delay: 0.4s;
+        }
+
+        .sched-bar:nth-child(3) .sched-fill {
+            width: 40%;
+            background: var(--cyan);
+            color: var(--bg);
+            animation-delay: 0.6s;
+        }
+
+        /* ========== SLIDE 33: PPT GENERATION ========== */
+        .ppt-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .ppt-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            animation: bounce-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .ppt-step:nth-child(1) { animation-delay: 0.1s; }
+        .ppt-step:nth-child(2) { animation-delay: 0.2s; }
+        .ppt-step:nth-child(3) { animation-delay: 0.3s; }
+        .ppt-step:nth-child(4) { animation-delay: 0.4s; }
+        .ppt-step:nth-child(5) { animation-delay: 0.5s; }
+
+        .ppt-icon {
+            width: clamp(50px, 8vw, 70px);
+            height: clamp(50px, 8vw, 70px);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.2rem, 2vw, 1.8rem);
+        }
+
+        .ppt-label {
+            font-size: clamp(0.7rem, 1vw, 0.85rem);
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* ========== SLIDE 34: GROUP MESSAGES ========== */
+        .group-steps {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .group-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            animation: bounce-up 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .group-step:nth-child(1) { animation-delay: 0.1s; }
+        .group-step:nth-child(2) { animation-delay: 0.2s; }
+        .group-step:nth-child(3) { animation-delay: 0.3s; }
+
+        .group-num {
+            width: clamp(50px, 8vw, 70px);
+            height: clamp(50px, 8vw, 70px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+            font-weight: 900;
+        }
+
+        .group-label {
+            font-weight: 700;
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+            text-align: center;
+        }
+
+        /* ========== SLIDE 35: CODE REVIEW ========== */
+        .review-columns {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .review-columns { grid-template-columns: 1fr; }
+        }
+
+        .review-col {
+            padding: clamp(1.5rem, 2vw, 2rem);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .review-col h4 {
+            font-size: clamp(1rem, 1.5vw, 1.2rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .review-col p {
+            color: var(--text-muted);
+            font-size: clamp(0.8rem, 1.2vw, 0.95rem);
+        }
+
+        /* ========== SLIDE 36: BROWSER LAYERS ========== */
+        .browser-layers {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .browser-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .browser-label {
+            width: 100px;
+            font-weight: 700;
+            font-size: clamp(0.7rem, 1vw, 0.85rem);
+        }
+
+        .browser-track {
+            flex: 1;
+            height: clamp(35px, 5vw, 50px);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .browser-fill {
+            height: 100%;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            font-weight: 700;
+            font-size: clamp(0.7rem, 1vw, 0.9rem);
+            animation: bounce-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            transform: scaleX(0);
+            transform-origin: left;
+        }
+
+        .browser-bar:nth-child(1) .browser-fill {
+            width: 100%;
+            background: var(--yellow);
+            color: var(--bg);
+            animation-delay: 0.1s;
+        }
+
+        .browser-bar:nth-child(2) .browser-fill {
+            width: 75%;
+            background: var(--pink);
+            animation-delay: 0.2s;
+        }
+
+        .browser-bar:nth-child(3) .browser-fill {
+            width: 50%;
+            background: var(--cyan);
+            color: var(--bg);
+            animation-delay: 0.3s;
+        }
+
+        .browser-bar:nth-child(4) .browser-fill {
+            width: 25%;
+            background: var(--purple);
+            animation-delay: 0.4s;
+        }
+
+        /* ========== SLIDE 37: ADVANTAGES ========== */
+        .advantages-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .adv-pill {
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: clamp(0.85rem, 1.3vw, 1rem);
+            animation: bounce-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .adv-pill:nth-child(1) { animation-delay: 0.05s; background: var(--yellow); color: var(--bg); }
+        .adv-pill:nth-child(2) { animation-delay: 0.1s; background: var(--pink); }
+        .adv-pill:nth-child(3) { animation-delay: 0.15s; background: var(--cyan); color: var(--bg); }
+        .adv-pill:nth-child(4) { animation-delay: 0.2s; background: var(--purple); }
+        .adv-pill:nth-child(5) { animation-delay: 0.25s; background: var(--orange); }
+
+        /* ========== SLIDE 38: ADVANTAGE ========== */
+        .compare-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        @media (max-width: 768px) {
+            .compare-layout { grid-template-columns: 1fr; }
+        }
+
+        .compare-col {
+            padding: clamp(1.5rem, 3vw, 2rem);
+            border-radius: 15px;
+        }
+
+        .compare-col h3 {
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            margin-bottom: 1rem;
+        }
+
+        .compare-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .compare-col li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: clamp(0.85rem, 1.3vw, 1rem);
+        }
+
+        /* ========== SLIDE 39: OPEN SOURCE ========== */
+        .opensource-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .opensource-layout { grid-template-columns: 1fr; }
+        }
+
+        .opensource-col h3 {
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            margin-bottom: 1rem;
+        }
+
+        .opensource-col p {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        /* ========== SLIDE 40: 89.5% ========== */
+        .big-number {
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(5rem, 20vw, 15rem);
+            font-weight: 900;
+            color: var(--yellow);
+            text-align: center;
+            animation: bounce-in 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            text-shadow: 0 0 60px rgba(245, 230, 66, 0.5);
+        }
+
+        .big-number-desc {
+            text-align: center;
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            color: var(--text-muted);
+            margin-top: 1rem;
+        }
+
+        /* ========== SLIDE 41: 5 DRAWBACKS ========== */
+        .drawback-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .drawback-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            border-left: 4px solid;
+            font-size: clamp(0.85rem, 1.3vw, 1rem);
+            animation: bounce-up 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            opacity: 0;
+        }
+
+        .drawback-item:nth-child(1) { animation-delay: 0.05s; border-color: var(--pink); }
+        .drawback-item:nth-child(2) { animation-delay: 0.1s; border-color: var(--yellow); }
+        .drawback-item:nth-child(3) { animation-delay: 0.15s; border-color: var(--cyan); }
+        .drawback-item:nth-child(4) { animation-delay: 0.2s; border-color: var(--orange); }
+        .drawback-item:nth-child(5) { animation-delay: 0.25s; border-color: var(--purple); }
+
+        /* ========== SLIDE 42: TOKEN COST ========== */
+        .token-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        @media (max-width: 768px) {
+            .token-cards { grid-template-columns: 1fr; }
+        }
+
+        .token-card {
+            padding: clamp(1.5rem, 3vw, 2rem);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .token-card h3 {
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .token-card .price {
+            font-family: 'Unbounded', sans-serif;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 900;
+            margin: 0.5rem 0;
+        }
+
+        .token-card p {
+            color: var(--text-muted);
+            font-size: clamp(0.8rem, 1.2vw, 0.95rem);
+        }
+
+        /* ========== SLIDE 43: SECURITY ========== */
+        .security-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .security-layout { grid-template-columns: 1fr; }
+        }
+
+        .security-col {
+            padding: clamp(1.5rem, 2vw, 2rem);
+            border-radius: 15px;
+        }
+
+        .security-col h3 {
+            font-size: clamp(1.1rem, 1.5vw, 1.4rem);
+            margin-bottom: 1rem;
+        }
+
+        .security-col ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .security-col li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: clamp(0.85rem, 1.2vw, 1rem);
+        }
+
+        /* ========== SLIDE 44: SKILLS + ROADMAP ========== */
+        .skills-roadmap {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .skills-roadmap { grid-template-columns: 1fr; }
+        }
+
+        .skills-section h3 {
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            margin-bottom: 1rem;
+        }
+
+        .skills-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .skill-tag {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: clamp(0.75rem, 1vw, 0.9rem);
+        }
+
+        .roadmap-section h3 {
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            margin-bottom: 1rem;
+        }
+
+        .roadmap-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .roadmap-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            font-size: clamp(0.8rem, 1.2vw, 0.95rem);
+        }
+
+        .roadmap-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ========== SLIDE 45: CLOSING ========== */
+        .closing-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .closing-cards { grid-template-columns: 1fr; }
+        }
+
+        .closing-card {
+            padding: clamp(1.5rem, 2vw, 2rem);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .closing-card h4 {
+            font-size: clamp(1rem, 1.5vw, 1.2rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .closing-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .closing-cta {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+            text-decoration: none;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .closing-cta:hover {
+            transform: scale(1.05) translateY(-2px);
+        }
+
+        /* Utility */
+        .text-center { text-align: center; }
+        .text-muted { color: var(--text-muted); }
+        .mt-1 { margin-top: 1rem; }
+        .mt-2 { margin-top: 2rem; }
+        .mb-1 { margin-bottom: 1rem; }
+        .mb-2 { margin-bottom: 2rem; }
+        .gap-1 { gap: 1rem; }
+        .flex { display: flex; }
+        .flex-wrap { flex-wrap: wrap; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navigation Dots -->
+    <nav class="nav-dots" id="navDots"></nav>
+
+    <!-- Slide Number -->
+    <div class="slide-number"><span id="currentSlide">1</span> / 45</div>
+
+    <!-- SLIDE 1: COVER -->
+    <section class="slide slide-cover" data-slide="1">
+        <div class="cover-decoration">
+            <div class="deco-circle deco-circle-1"></div>
+            <div class="deco-circle deco-circle-2"></div>
+            <div class="deco-circle deco-circle-3"></div>
+            <div class="deco-square deco-square-1"></div>
+            <div class="deco-square deco-square-2"></div>
+        </div>
+        <div class="slide-content">
+            <h1 class="cover-title">
+                <span class="highlight">OpenClaw</span>
+            </h1>
+            <p class="cover-subtitle">AI Agent Platform - 智能体协作平台</p>
+            <div class="cover-tags">
+                <span class="pill pill-yellow">多渠道接入</span>
+                <span class="pill pill-pink">多模型支持</span>
+                <span class="pill pill-cyan">企业级架构</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 2: TOC -->
+    <section class="slide" data-slide="2">
+        <div class="slide-content">
+            <h2 class="slide-title">目录 <span class="highlight-yellow">CONTENTS</span></h2>
+            <div class="toc-grid">
+                <div class="toc-item">
+                    <div class="card card-yellow" style="text-align:center;">
+                        <span style="font-size:2rem;">01</span>
+                        <h3 style="font-size:1.2rem;margin-top:0.5rem;">产品概述</h3>
+                    </div>
+                </div>
+                <div class="toc-item">
+                    <div class="card card-pink" style="text-align:center;">
+                        <span style="font-size:2rem;">02</span>
+                        <h3 style="font-size:1.2rem;margin-top:0.5rem;">核心架构</h3>
+                    </div>
+                </div>
+                <div class="toc-item">
+                    <div class="card card-cyan" style="text-align:center;">
+                        <span style="font-size:2rem;">03</span>
+                        <h3 style="font-size:1.2rem;margin-top:0.5rem;">应用场景</h3>
+                    </div>
+                </div>
+                <div class="toc-item">
+                    <div class="card" style="border-color:var(--purple);text-align:center;">
+                        <span style="font-size:2rem;">04</span>
+                        <h3 style="font-size:1.2rem;margin-top:0.5rem;">优劣势分析</h3>
+                    </div>
+                </div>
+                <div class="toc-item">
+                    <div class="card" style="border-color:var(--orange);text-align:center;">
+                        <span style="font-size:2rem;">05</span>
+                        <h3 style="font-size:1.2rem;margin-top:0.5rem;">未来展望</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 3: PROBLEM -->
+    <section class="slide" data-slide="3">
+        <div class="slide-content">
+            <h2 class="slide-title">市场 <span class="highlight-pink">痛点</span></h2>
+            <div class="problem-layout">
+                <div class="problem-left">
+                    <h3 style="font-size:clamp(1.5rem,3vw,2.5rem);margin-bottom:1rem;">企业AI落地面临的挑战</h3>
+                    <p class="text-muted">传统AI解决方案成本高昂、集成复杂、效果不稳定</p>
+                </div>
+                <div class="problem-right">
+                    <div class="problem-item">
+                        <div class="problem-icon" style="background:var(--pink);">!</div>
+                        <div>
+                            <strong>渠道碎片化</strong>
+                            <p class="text-muted" style="font-size:0.9rem;">企业需要对接多个平台，运维成本倍增</p>
+                        </div>
+                    </div>
+                    <div class="problem-item">
+                        <div class="problem-icon" style="background:var(--yellow);color:var(--bg);">!</div>
+                        <div>
+                            <strong>模型切换难</strong>
+                            <p class="text-muted" style="font-size:0.9rem;">无法灵活切换不同AI模型供应商</p>
+                        </div>
+                    </div>
+                    <div class="problem-item">
+                        <div class="problem-icon" style="background:var(--cyan);color:var(--bg);">!</div>
+                        <div>
+                            <strong>部署复杂</strong>
+                            <p class="text-muted" style="font-size:0.9rem;">缺乏一站式解决方案，落地周期长</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 4: POSITIONING -->
+    <section class="slide" data-slide="4">
+        <div class="slide-content">
+            <h2 class="slide-title">产品 <span class="highlight-cyan">定位</span></h2>
+            <div class="positioning-grid">
+                <div class="card feature-card card-yellow">
+                    <h3>多渠道聚合</h3>
+                    <p>统一接入企业微信、钉钉、飞书等主流平台</p>
+                </div>
+                <div class="card feature-card card-pink">
+                    <h3>多模型切换</h3>
+                    <p>支持OpenAI、Claude、国内主流模型灵活切换</p>
+                </div>
+                <div class="card feature-card card-cyan">
+                    <h3>私有化部署</h3>
+                    <p>支持本地私有化部署，数据安全可控</p>
+                </div>
+                <div class="card feature-card" style="border-color:var(--purple);">
+                    <h3>低成本接入</h3>
+                    <p>提供标准化API，快速集成降低开发成本</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 5: ARCHITECTURE -->
+    <section class="slide" data-slide="5">
+        <div class="slide-content">
+            <h2 class="slide-title">系统 <span class="highlight-yellow">架构</span></h2>
+            <div class="architecture-bars">
+                <div class="arch-bar">
+                    <div class="arch-bar-label" style="color:var(--yellow);">接入层</div>
+                    <div class="arch-bar-track">
+                        <div class="arch-bar-fill">Channel Gateway</div>
+                    </div>
+                </div>
+                <div class="arch-bar">
+                    <div class="arch-bar-label" style="color:var(--pink);">核心层</div>
+                    <div class="arch-bar-track">
+                        <div class="arch-bar-fill">Agent Core Engine</div>
+                    </div>
+                </div>
+                <div class="arch-bar">
+                    <div class="arch-bar-label" style="color:var(--cyan);">数据层</div>
+                    <div class="arch-bar-track">
+                        <div class="arch-bar-fill">Memory & Knowledge</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 6: CHANNEL -->
+    <section class="slide" data-slide="6">
+        <div class="slide-content">
+            <h2 class="slide-title">渠道 <span class="highlight-pink">接入</span></h2>
+            <div class="channel-columns">
+                <div class="channel-col">
+                    <div class="channel-header" style="background:var(--yellow);color:var(--bg);">企业微信</div>
+                    <div class="channel-body" style="border-color:var(--yellow);">
+                        <p>企微机器人、Webhook、 应用消息</p>
+                    </div>
+                </div>
+                <div class="channel-col">
+                    <div class="channel-header" style="background:var(--pink);">钉钉</div>
+                    <div class="channel-body" style="border-color:var(--pink);">
+                        <p>钉钉机器人、群消息、卡片消息</p>
+                    </div>
+                </div>
+                <div class="channel-col">
+                    <div class="channel-header" style="background:var(--cyan);color:var(--bg);">飞书</div>
+                    <div class="channel-body" style="border-color:var(--cyan);">
+                        <p>飞书机器人、卡片消息、多元化消息</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 7: GATEWAY -->
+    <section class="slide" data-slide="7">
+        <div class="slide-content">
+            <h2 class="slide-title">消息 <span class="highlight-cyan">网关</span></h2>
+            <div class="card gateway-card card-yellow">
+                <h3>Channel Gateway</h3>
+                <p>统一的消息接入层，处理所有渠道的消息收发、格式转换、路由分发</p>
+                <div class="flex flex-wrap gap-1 mt-2 justify-center">
+                    <span class="pill pill-yellow">协议转换</span>
+                    <span class="pill pill-pink">消息路由</span>
+                    <span class="pill pill-cyan">负载均衡</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 8: NODE -->
+    <section class="slide" data-slide="8">
+        <div class="slide-content">
+            <h2 class="slide-title">Agent <span class="highlight-yellow">节点</span></h2>
+            <div class="node-pills">
+                <div class="pill pill-yellow node-pill">自然语言理解</div>
+                <div class="pill pill-pink node-pill">多轮对话管理</div>
+                <div class="pill pill-cyan node-pill">知识检索</div>
+                <div class="pill" style="background:var(--purple);">任务规划</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 9: MESSAGE FLOW -->
+    <section class="slide" data-slide="9">
+        <div class="slide-content">
+            <h2 class="slide-title">消息 <span class="highlight-pink">流程</span></h2>
+            <div class="flow-steps">
+                <div class="flow-step">
+                    <div class="flow-icon" style="background:var(--yellow);color:var(--bg);">1</div>
+                    <div class="flow-label">用户发送<br>消息</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-icon" style="background:var(--pink);">2</div>
+                    <div class="flow-label">Channel<br>接收</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-icon" style="background:var(--cyan);color:var(--bg);">3</div>
+                    <div class="flow-label">Gateway<br>路由</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-icon" style="background:var(--purple);">4</div>
+                    <div class="flow-label">Agent<br>处理</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-icon" style="background:var(--orange);">5</div>
+                    <div class="flow-label">Memory<br>记忆</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="flow-icon" style="background:var(--green);color:var(--bg);">6</div>
+                    <div class="flow-label">响应<br>返回</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 10: MEMORY PYRAMID -->
+    <section class="slide" data-slide="10">
+        <div class="slide-content">
+            <h2 class="slide-title">记忆 <span class="highlight-cyan">金字塔</span></h2>
+            <div class="pyramid">
+                <div class="pyramid-layer">短期记忆 (Working Memory)</div>
+                <div class="pyramid-layer">会话记忆 (Session Memory)</div>
+                <div class="pyramid-layer">长期记忆 (Long-term)</div>
+                <div class="pyramid-layer">知识图谱 (Knowledge Graph)</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 11: SOUL -->
+    <section class="slide" data-slide="11">
+        <div class="slide-content">
+            <h2 class="slide-title">AI Agent <span class="highlight-yellow">灵魂</span></h2>
+            <div class="card soul-card card-yellow">
+                <h3>SOUL</h3>
+                <p>System - Orchestrator - Understanding - Learning<br><br>
+                系统编排 + 理解认知 + 持续学习 = 真正的智能体</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 12: TOOLS -->
+    <section class="slide" data-slide="12">
+        <div class="slide-content">
+            <h2 class="slide-title">工具 <span class="highlight-pink">调用</span></h2>
+            <div class="tools-columns">
+                <div class="tools-col">
+                    <h3 style="background:var(--pink);">AI 工具</h3>
+                    <div class="tools-col-content" style="border-color:var(--pink);">
+                        <ul>
+                            <li><span style="color:var(--pink);">●</span> 自然语言处理</li>
+                            <li><span style="color:var(--pink);">●</span> 图像识别理解</li>
+                            <li><span style="color:var(--pink);">●</span> 代码生成优化</li>
+                            <li><span style="color:var(--pink);">●</span> 数据分析挖掘</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="tools-col">
+                    <h3 style="background:var(--yellow);color:var(--bg);">业务工具</h3>
+                    <div class="tools-col-content" style="border-color:var(--yellow);">
+                        <ul>
+                            <li><span style="color:var(--yellow);">●</span> 数据库操作</li>
+                            <li><span style="color:var(--yellow);">●</span> API调用集成</li>
+                            <li><span style="color:var(--yellow);">●</span> 文件处理读写</li>
+                            <li><span style="color:var(--yellow);">●</span> 定时任务调度</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 13: USER -->
+    <section class="slide" data-slide="13">
+        <div class="slide-content">
+            <h2 class="slide-title">用户 <span class="highlight-cyan">记忆</span></h2>
+            <div class="user-cards">
+                <div class="card user-card" style="border-color:var(--yellow);">
+                    <h3 style="color:var(--yellow);">用户画像</h3>
+                    <p>基于对话历史构建用户兴趣标签、行为模式、偏好设置</p>
+                    <div class="flex flex-wrap gap-1 mt-1">
+                        <span class="pill pill-outline" style="border-color:var(--yellow);color:var(--yellow);">兴趣</span>
+                        <span class="pill pill-outline" style="border-color:var(--yellow);color:var(--yellow);">习惯</span>
+                    </div>
+                </div>
+                <div class="card user-card" style="border-color:var(--pink);">
+                    <h3 style="color:var(--pink);">会话历史</h3>
+                    <p>完整保存多轮对话上下文，支持跨会话追踪与分析</p>
+                    <div class="flex flex-wrap gap-1 mt-1">
+                        <span class="pill pill-outline" style="border-color:var(--pink);color:var(--pink);">上下文</span>
+                        <span class="pill pill-outline" style="border-color:var(--pink);color:var(--pink);">追溯</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 14: SESSION -->
+    <section class="slide" data-slide="14">
+        <div class="slide-content">
+            <h2 class="slide-title">会话 <span class="highlight-yellow">管理</span></h2>
+            <div class="session-steps">
+                <div class="session-step">
+                    <div class="session-num" style="background:var(--yellow);color:var(--bg);">1</div>
+                    <div style="text-align:center;font-weight:600;">创建会话</div>
+                    <p class="text-muted" style="font-size:0.85rem;text-align:center;">用户发起或系统创建新会话</p>
+                </div>
+                <div class="session-step">
+                    <div class="session-num" style="background:var(--pink);">2</div>
+                    <div style="text-align:center;font-weight:600;">加载记忆</div>
+                    <p class="text-muted" style="font-size:0.85rem;text-align:center;">从Memory系统检索历史上下文</p>
+                </div>
+                <div class="session-step">
+                    <div class="session-num" style="background:var(--cyan);color:var(--bg);">3</div>
+                    <div style="text-align:center;font-weight:600;">智能对话</div>
+                    <p class="text-muted" style="font-size:0.85rem;text-align:center;">多轮交互完成复杂任务</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 15: WORKSPACE -->
+    <section class="slide" data-slide="15">
+        <div class="slide-content">
+            <h2 class="slide-title">工作 <span class="highlight-pink">空间</span></h2>
+            <div class="workspace-grid">
+                <div class="file-pill">
+                    <span style="font-size:1.2rem;">📄</span> 文档
+                </div>
+                <div class="file-pill">
+                    <span style="font-size:1.2rem;">📊</span> 数据
+                </div>
+                <div class="file-pill">
+                    <span style="font-size:1.2rem;">🖼️</span> 图片
+                </div>
+                <div class="file-pill">
+                    <span style="font-size:1.2rem;">📝</span> 笔记
+                </div>
+                <div class="file-pill">
+                    <span style="font-size:1.2rem;">📁</span> 项目
+                </div>
+                <div class="file-pill">
+                    <span style="font-size:1.2rem;">🔧</span> 工具
+                </div>
+                <div class="file-pill">
+                    <span style="font-size:1.2rem;">📦</span> 资源
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 16: MEMORY FLOW -->
+    <section class="slide" data-slide="16">
+        <div class="slide-content">
+            <h2 class="slide-title">记忆 <span class="highlight-cyan">流转</span></h2>
+            <div class="memory-flow">
+                <div class="mem-step">
+                    <div class="mem-num" style="background:var(--yellow);color:var(--bg);">1</div>
+                    <div class="mem-text">用户输入 → 理解编码</div>
+                </div>
+                <div class="mem-step">
+                    <div class="mem-num" style="background:var(--pink);">2</div>
+                    <div class="mem-text">短期记忆 → 上下文处理</div>
+                </div>
+                <div class="mem-step">
+                    <div class="mem-num" style="background:var(--cyan);color:var(--bg);">3</div>
+                    <div class="mem-text">检索匹配 → 知识召回</div>
+                </div>
+                <div class="mem-step">
+                    <div class="mem-num" style="background:var(--purple);">4</div>
+                    <div class="mem-text">生成响应 → 决策推理</div>
+                </div>
+                <div class="mem-step">
+                    <div class="mem-num" style="background:var(--orange);">5</div>
+                    <div class="mem-text">更新会话 → 记忆存储</div>
+                </div>
+                <div class="mem-step">
+                    <div class="mem-num" style="background:var(--green);color:var(--bg);">6</div>
+                    <div class="mem-text">输出响应 → 用户反馈</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 17: DEPLOYMENT -->
+    <section class="slide" data-slide="17">
+        <div class="slide-content">
+            <h2 class="slide-title">部署 <span class="highlight-yellow">模式</span></h2>
+            <div class="deploy-cards">
+                <div class="card deploy-card card-yellow">
+                    <h3>SaaS 云服务</h3>
+                    <p>即开即用<br>按需付费</p>
+                    <span class="pill pill-yellow mt-1">推荐</span>
+                </div>
+                <div class="card deploy-card card-pink">
+                    <h3>私有化部署</h3>
+                    <p>本地运行<br>数据自主</p>
+                </div>
+                <div class="card deploy-card card-cyan">
+                    <h3>混合部署</h3>
+                    <p>灵活配置<br>安全可控</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 18: PLATFORM TABLE -->
+    <section class="slide" data-slide="18">
+        <div class="slide-content">
+            <h2 class="slide-title">支持 <span class="highlight-pink">平台</span></h2>
+            <table class="platform-table">
+                <thead>
+                    <tr>
+                        <th style="color:var(--yellow);">平台</th>
+                        <th style="color:var(--pink);">消息</th>
+                        <th style="color:var(--cyan);">机器人</th>
+                        <th style="color:var(--purple);">Webhook</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>企业微信</td>
+                        <td style="color:var(--green);">✓</td>
+                        <td style="color:var(--green);">✓</td>
+                        <td style="color:var(--green);">✓</td>
+                    </tr>
+                    <tr>
+                        <td>钉钉</td>
+                        <td style="color:var(--green);">✓</td>
+                        <td style="color:var(--green);">✓</td>
+                        <td style="color:var(--green);">✓</td>
+                    </tr>
+                    <tr>
+                        <td>飞书</td>
+                        <td style="color:var(--green);">✓</td>
+                        <td style="color:var(--green);">✓</td>
+                        <td style="color:var(--green);">✓</td>
+                    </tr>
+                    <tr>
+                        <td>Slack</td>
+                        <td style="color:var(--green);">✓</td>
+                        <td style="color:var(--green);">✓</td>
+                        <td style="color:var(--green);">✓</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- SLIDE 19: TENCENT -->
+    <section class="slide" data-slide="19">
+        <div class="slide-content">
+            <h2 class="slide-title">腾讯云 <span class="highlight-cyan">生态</span></h2>
+            <div class="tencent-layout">
+                <div class="tencent-col">
+                    <h3 style="background:var(--yellow);color:var(--bg);">云函数SCF</h3>
+                    <div class="tencent-col-content" style="border-color:var(--yellow);">
+                        <p>事件驱动计算<br>弹性扩展<br>按需付费</p>
+                    </div>
+                </div>
+                <div class="tencent-col">
+                    <h3 style="background:var(--pink);">API Gateway</h3>
+                    <div class="tencent-col-content" style="border-color:var(--pink);">
+                        <p>统一API入口<br>流量管理<br>安全防护</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 20: SERVER -->
+    <section class="slide" data-slide="20">
+        <div class="slide-content">
+            <h2 class="slide-title">服务器 <span class="highlight-pink">配置</span></h2>
+            <div class="server-layout">
+                <div>
+                    <table class="server-table">
+                        <thead>
+                            <tr>
+                                <th>规格</th>
+                                <th>配置</th>
+                                <th>并发</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="color:var(--yellow);">基础版</td>
+                                <td>2核4G</td>
+                                <td>100</td>
+                            </tr>
+                            <tr>
+                                <td style="color:var(--pink);">标准版</td>
+                                <td>4核8G</td>
+                                <td>500</td>
+                            </tr>
+                            <tr>
+                                <td style="color:var(--cyan);">专业版</td>
+                                <td>8核16G</td>
+                                <td>2000</td>
+                            </tr>
+                            <tr>
+                                <td style="color:var(--purple);">企业版</td>
+                                <td>16核32G</td>
+                                <td>10000+</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="server-warning">
+                    <h4>⚠️ 注意</h4>
+                    <p style="font-size:0.9rem;">国内服务器需备案<br>建议使用香港节点</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 21: MODEL TABLE -->
+    <section class="slide" data-slide="21">
+        <div class="slide-content">
+            <h2 class="slide-title">模型 <span class="highlight-yellow">定价</span></h2>
+            <div class="model-tiers">
+                <div class="card model-tier" style="background:rgba(245,230,66,0.1);border:2px solid var(--yellow);">
+                    <h4 style="color:var(--yellow);">GPT-3.5</h4>
+                    <div class="price" style="color:var(--yellow);">$0.002</div>
+                    <p class="desc">/1K tokens</p>
+                    <p style="margin-top:0.5rem;font-size:0.8rem;">性价比之选</p>
+                </div>
+                <div class="card model-tier" style="background:rgba(255,45,124,0.1);border:2px solid var(--pink);">
+                    <h4 style="color:var(--pink);">GPT-4</h4>
+                    <div class="price" style="color:var(--pink);">$0.03</div>
+                    <p class="desc">/1K tokens</p>
+                    <p style="margin-top:0.5rem;font-size:0.8rem;">高性能</p>
+                </div>
+                <div class="card model-tier" style="background:rgba(0,240,255,0.1);border:2px solid var(--cyan);">
+                    <h4 style="color:var(--cyan);">Claude 3</h4>
+                    <div class="price" style="color:var(--cyan);">$0.015</div>
+                    <p class="desc">/1K tokens</p>
+                    <p style="margin-top:0.5rem;font-size:0.8rem;">长文本专家</p>
+                </div>
+                <div class="card model-tier" style="background:rgba(168,85,247,0.1);border:2px solid var(--purple);">
+                    <h4 style="color:var(--purple);">国内模型</h4>
+                    <div class="price" style="color:var(--purple);">¥0.01</div>
+                    <p class="desc">/1K tokens</p>
+                    <p style="margin-top:0.5rem;font-size:0.8rem;">合规首选</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 22: 4-STEP -->
+    <section class="slide" data-slide="22">
+        <div class="slide-content">
+            <h2 class="slide-title">快速 <span class="highlight-pink">上手</span></h2>
+            <div class="four-steps">
+                <div class="four-step">
+                    <div class="four-icon" style="background:var(--yellow);color:var(--bg);">1</div>
+                    <div style="text-align:center;font-weight:700;">注册账号</div>
+                </div>
+                <div class="four-step">
+                    <div class="four-icon" style="background:var(--pink);">2</div>
+                    <div style="text-align:center;font-weight:700;">创建应用</div>
+                </div>
+                <div class="four-step">
+                    <div class="four-icon" style="background:var(--cyan);color:var(--bg);">3</div>
+                    <div style="text-align:center;font-weight:700;">配置渠道</div>
+                </div>
+                <div class="four-step">
+                    <div class="four-icon" style="background:var(--purple);">4</div>
+                    <div style="text-align:center;font-weight:700;">开始使用</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 23: PITFALL -->
+    <section class="slide" data-slide="23">
+        <div class="slide-content">
+            <h2 class="slide-title">注意 <span class="highlight-yellow">事项</span></h2>
+            <div class="pitfall-warning">
+                <h3>⚠️ 部署前必读</h3>
+                <p>确保服务器网络通畅<br>提前准备域名SSL证书<br>合理规划Token预算</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 24: PITFALLS -->
+    <section class="slide" data-slide="24">
+        <div class="slide-content">
+            <h2 class="slide-title">常见 <span class="highlight-pink">问题</span></h2>
+            <div class="pitfalls-pills">
+                <div class="pitfall-pill">⚠️ Token消耗过快</div>
+                <div class="pitfall-pill">⚠️ 响应延迟较高</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 25: AI INSTALL -->
+    <section class="slide" data-slide="25">
+        <div class="slide-content">
+            <h2 class="slide-title">AI 工具 <span class="highlight-cyan">安装</span></h2>
+            <div class="install-cards">
+                <div class="card install-card card-yellow">
+                    <div class="install-icon">🔧</div>
+                    <h4>Python环境</h4>
+                    <p>Python 3.9+<br>推荐Anaconda管理</p>
+                </div>
+                <div class="card install-card card-pink">
+                    <div class="install-icon">📦</div>
+                    <h4>依赖安装</h4>
+                    <p>pip install openclaw<br>一行命令完成</p>
+                </div>
+                <div class="card install-card card-cyan">
+                    <div class="install-icon">🚀</div>
+                    <h4>启动运行</h4>
+                    <p>openclaw init<br>快速启动</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 26: CHECKLIST -->
+    <section class="slide" data-slide="26">
+        <div class="slide-content">
+            <h2 class="slide-title">部署 <span class="highlight-yellow">清单</span></h2>
+            <div class="checklist">
+                <div class="check-item">
+                    <div class="check-icon">✓</div>
+                    <span>服务器环境配置完成</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-icon">✓</div>
+                    <span>域名SSL证书已申请</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-icon">✓</div>
+                    <span>AI模型API密钥已配置</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-icon">✓</div>
+                    <span>渠道Webhook已对接</span>
+                </div>
+                <div class="check-item">
+                    <div class="check-icon">✓</div>
+                    <span>测试用例验证通过</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 27: 8 SCENES -->
+    <section class="slide" data-slide="27">
+        <div class="slide-content">
+            <h2 class="slide-title">适用 <span class="highlight-pink">场景</span></h2>
+            <div class="scenes-grid">
+                <div class="scene-pill">企业客服</div>
+                <div class="scene-pill">智能问答</div>
+                <div class="scene-pill">内容创作</div>
+                <div class="scene-pill">数据分析</div>
+                <div class="scene-pill">代码助手</div>
+                <div class="scene-pill">文档处理</div>
+                <div class="scene-pill">日程管理</div>
+                <div class="scene-pill">项目管理</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 28: WECOM -->
+    <section class="slide" data-slide="28">
+        <div class="slide-content">
+            <h2 class="slide-title">企业微信 <span class="highlight-cyan">应用</span></h2>
+            <div class="wecom-cards">
+                <div class="wecom-card" style="background:rgba(245,230,66,0.1);border:2px solid var(--yellow);">
+                    <div class="wecom-num" style="background:var(--yellow);color:var(--bg);">1</div>
+                    <div>
+                        <strong>接收消息</strong>
+                        <p class="text-muted" style="font-size:0.85rem;">接收用户发送给企业的消息</p>
+                    </div>
+                </div>
+                <div class="wecom-card" style="background:rgba(255,45,124,0.1);border:2px solid var(--pink);">
+                    <div class="wecom-num" style="background:var(--pink);">2</div>
+                    <div>
+                        <strong>推送消息</strong>
+                        <p class="text-muted" style="font-size:0.85rem;">主动推送消息到指定用户或群</p>
+                    </div>
+                </div>
+                <div class="wecom-card" style="background:rgba(0,240,255,0.1);border:2px solid var(--cyan);">
+                    <div class="wecom-num" style="background:var(--cyan);color:var(--bg);">3</div>
+                    <div>
+                        <strong>定时任务</strong>
+                        <p class="text-muted" style="font-size:0.85rem;">按设定时间自动执行并推送</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 29: ZENTAO -->
+    <section class="slide" data-slide="29">
+        <div class="slide-content">
+            <h2 class="slide-title">禅道 <span class="highlight-pink">集成</span></h2>
+            <div class="zentao-columns">
+                <div class="zentao-col" style="background:rgba(255,45,124,0.15);border:2px solid var(--pink);">
+                    <h4 style="color:var(--pink);">任务管理</h4>
+                    <p class="text-muted" style="font-size:0.85rem;">创建、分配、追踪任务</p>
+                </div>
+                <div class="zentao-col" style="background:rgba(245,230,66,0.15);border:2px solid var(--yellow);">
+                    <h4 style="color:var(--yellow);">缺陷跟踪</h4>
+                    <p class="text-muted" style="font-size:0.85rem;">自动化缺陷录入与流转</p>
+                </div>
+                <div class="zentao-col" style="background:rgba(0,240,255,0.15);border:2px solid var(--cyan);">
+                    <h4 style="color:var(--cyan);">进度报告</h4>
+                    <p class="text-muted" style="font-size:0.85rem;">自动生成项目周报</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 30: XIAOHONGSHU -->
+    <section class="slide" data-slide="30">
+        <div class="slide-content">
+            <h2 class="slide-title">小红书 <span class="highlight-yellow">运营</span></h2>
+            <div class="xhs-steps">
+                <div class="xhs-step">
+                    <div class="xhs-num" style="background:var(--yellow);color:var(--bg);">1</div>
+                    <div style="text-align:center;font-weight:700;">热点挖掘</div>
+                    <p class="text-muted" style="font-size:0.8rem;text-align:center;">分析平台热门话题</p>
+                </div>
+                <div class="xhs-step">
+                    <div class="xhs-num" style="background:var(--pink);">2</div>
+                    <div style="text-align:center;font-weight:700;">内容生成</div>
+                    <p class="text-muted" style="font-size:0.8rem;text-align:center;">AI辅助创作文案</p>
+                </div>
+                <div class="xhs-step">
+                    <div class="xhs-num" style="background:var(--cyan);color:var(--bg);">3</div>
+                    <div style="text-align:center;font-weight:700;">发布优化</div>
+                    <p class="text-muted" style="font-size:0.8rem;text-align:center;">标签优化提升曝光</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 31: ARTICLE -->
+    <section class="slide" data-slide="31">
+        <div class="slide-content">
+            <h2 class="slide-title">文章 <span class="highlight-pink">分析</span></h2>
+            <div class="article-layout">
+                <div class="article-col">
+                    <h3 style="background:var(--yellow);color:var(--bg);">输入处理</h3>
+                    <div class="article-col-content" style="border-color:var(--yellow);">
+                        <p>• URL自动抓取<br>• 内容结构化解析<br>• 关键信息提取</p>
+                    </div>
+                </div>
+                <div class="article-col">
+                    <h3 style="background:var(--pink);">智能分析</h3>
+                    <div class="article-col-content" style="border-color:var(--pink);">
+                        <p>• 主题分类<br>• 情感分析<br>• 摘要生成</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 32: SCHEDULED -->
+    <section class="slide" data-slide="32">
+        <div class="slide-content">
+            <h2 class="slide-title">定时 <span class="highlight-cyan">任务</span></h2>
+            <div class="scheduled-bars">
+                <div class="sched-bar">
+                    <div class="sched-label" style="color:var(--yellow);">数据汇总</div>
+                    <div class="sched-track">
+                        <div class="sched-fill">每天 09:00</div>
+                    </div>
+                </div>
+                <div class="sched-bar">
+                    <div class="sched-label" style="color:var(--pink);">周报生成</div>
+                    <div class="sched-track">
+                        <div class="sched-fill">每周一 10:00</div>
+                    </div>
+                </div>
+                <div class="sched-bar">
+                    <div class="sched-label" style="color:var(--cyan);">健康检查</div>
+                    <div class="sched-track">
+                        <div class="sched-fill">每小时</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 33: PPT GENERATION -->
+    <section class="slide" data-slide="33">
+        <div class="slide-content">
+            <h2 class="slide-title">PPT <span class="highlight-yellow">生成</span></h2>
+            <div class="ppt-flow">
+                <div class="ppt-step">
+                    <div class="ppt-icon" style="background:var(--yellow);color:var(--bg);">📝</div>
+                    <div class="ppt-label">输入主题</div>
+                </div>
+                <div class="flow-arrow" style="font-size:1.5rem;color:var(--yellow);">→</div>
+                <div class="ppt-step">
+                    <div class="ppt-icon" style="background:var(--pink);">🧠</div>
+                    <div class="ppt-label">AI生成大纲</div>
+                </div>
+                <div class="flow-arrow" style="font-size:1.5rem;color:var(--yellow);">→</div>
+                <div class="ppt-step">
+                    <div class="ppt-icon" style="background:var(--cyan);color:var(--bg);">🎨</div>
+                    <div class="ppt-label">设计排版</div>
+                </div>
+                <div class="flow-arrow" style="font-size:1.5rem;color:var(--yellow);">→</div>
+                <div class="ppt-step">
+                    <div class="ppt-icon" style="background:var(--purple);">💾</div>
+                    <div class="ppt-label">导出文件</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 34: GROUP MESSAGES -->
+    <section class="slide" data-slide="34">
+        <div class="slide-content">
+            <h2 class="slide-title">群消息 <span class="highlight-pink">汇总</span></h2>
+            <div class="group-steps">
+                <div class="group-step">
+                    <div class="group-num" style="background:var(--yellow);color:var(--bg);">1</div>
+                    <div class="group-label">收集消息</div>
+                    <p class="text-muted" style="font-size:0.8rem;text-align:center;">定时拉取群消息</p>
+                </div>
+                <div class="group-step">
+                    <div class="group-num" style="background:var(--pink);">2</div>
+                    <div class="group-label">智能分类</div>
+                    <p class="text-muted" style="font-size:0.8rem;text-align:center;">按类型主题聚类</p>
+                </div>
+                <div class="group-step">
+                    <div class="group-num" style="background:var(--cyan);color:var(--bg);">3</div>
+                    <div class="group-label">生成摘要</div>
+                    <p class="text-muted" style="font-size:0.8rem;text-align:center;">AI提炼关键信息</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 35: CODE REVIEW -->
+    <section class="slide" data-slide="35">
+        <div class="slide-content">
+            <h2 class="slide-title">代码 <span class="highlight-cyan">审查</span></h2>
+            <div class="review-columns">
+                <div class="review-col" style="background:rgba(245,230,66,0.1);border:2px solid var(--yellow);">
+                    <h4 style="color:var(--yellow);">代码检查</h4>
+                    <p>静态分析<br>潜在Bug检测<br>代码质量评估</p>
+                </div>
+                <div class="review-col" style="background:rgba(255,45,124,0.1);border:2px solid var(--pink);">
+                    <h4 style="color:var(--pink);">优化建议</h4>
+                    <p>性能优化<br>可读性改进<br>最佳实践推荐</p>
+                </div>
+                <div class="review-col" style="background:rgba(0,240,255,0.1);border:2px solid var(--cyan);">
+                    <h4 style="color:var(--cyan);">安全审计</h4>
+                    <p>漏洞扫描<br>权限检查<br>敏感信息检测</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 36: BROWSER LAYERS -->
+    <section class="slide" data-slide="36">
+        <div class="slide-content">
+            <h2 class="slide-title">浏览器 <span class="highlight-yellow">自动化</span></h2>
+            <div class="browser-layers">
+                <div class="browser-bar">
+                    <div class="browser-label">界面层</div>
+                    <div class="browser-track">
+                        <div class="browser-fill">页面渲染 + 用户交互</div>
+                    </div>
+                </div>
+                <div class="browser-bar">
+                    <div class="browser-label">逻辑层</div>
+                    <div class="browser-track">
+                        <div class="browser-fill">JS执行 + 表单处理</div>
+                    </div>
+                </div>
+                <div class="browser-bar">
+                    <div class="browser-label">网络层</div>
+                    <div class="browser-track">
+                        <div class="browser-fill">API请求 + 数据交换</div>
+                    </div>
+                </div>
+                <div class="browser-bar">
+                    <div class="browser-label">数据层</div>
+                    <div class="browser-track">
+                        <div class="browser-fill">本地存储 + Cookie</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 37: ADVANTAGES -->
+    <section class="slide" data-slide="37">
+        <div class="slide-content">
+            <h2 class="slide-title">核心 <span class="highlight-cyan">优势</span></h2>
+            <div class="advantages-pills">
+                <div class="adv-pill">低成本快速部署</div>
+                <div class="adv-pill">多渠道一键接入</div>
+                <div class="adv-pill">灵活模型切换</div>
+                <div class="adv-pill">私有化安全可控</div>
+                <div class="adv-pill">开源可定制</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 38: ADVANTAGE -->
+    <section class="slide" data-slide="38">
+        <div class="slide-content">
+            <h2 class="slide-title">对比 <span class="highlight-pink">优势</span></h2>
+            <div class="compare-layout">
+                <div class="compare-col" style="background:rgba(245,230,66,0.1);border:2px solid var(--yellow);">
+                    <h3 style="color:var(--yellow);">OpenClaw</h3>
+                    <ul>
+                        <li><span style="color:var(--green);">✓</span> 开源免费</li>
+                        <li><span style="color:var(--green);">✓</span> 私有化部署</li>
+                        <li><span style="color:var(--green);">✓</span> 多渠道支持</li>
+                        <li><span style="color:var(--green);">✓</span> 灵活扩展</li>
+                    </ul>
+                </div>
+                <div class="compare-col" style="background:rgba(255,45,124,0.1);border:2px solid var(--pink);">
+                    <h3 style="color:var(--pink);">传统方案</h3>
+                    <ul>
+                        <li><span style="color:var(--pink);">✗</span> 授权费用高</li>
+                        <li><span style="color:var(--pink);">✗</span> 部署周期长</li>
+                        <li><span style="color:var(--pink);">✗</span> 渠道单一</li>
+                        <li><span style="color:var(--pink);">✗</span> 定制困难</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 39: OPEN SOURCE -->
+    <section class="slide" data-slide="39">
+        <div class="slide-content">
+            <h2 class="slide-title">开源 <span class="highlight-yellow">贡献</span></h2>
+            <div class="opensource-layout">
+                <div class="opensource-col">
+                    <h3 style="color:var(--yellow);">代码开源</h3>
+                    <p>核心代码完全开源<br>MIT许可证<br>社区共同维护</p>
+                    <div class="flex flex-wrap gap-1 mt-2">
+                        <span class="pill pill-yellow">GitHub</span>
+                        <span class="pill pill-outline" style="border-color:var(--yellow);color:var(--yellow);">Star 5.2k</span>
+                    </div>
+                </div>
+                <div class="opensource-col">
+                    <h3 style="color:var(--pink);">社区生态</h3>
+                    <p>活跃的开发者社区<br>丰富的插件生态<br>完善的文档支持</p>
+                    <div class="flex flex-wrap gap-1 mt-2">
+                        <span class="pill pill-pink">Discord</span>
+                        <span class="pill pill-outline" style="border-color:var(--pink);color:var(--pink);">5k+ 成员</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 40: 89.5% -->
+    <section class="slide" data-slide="40">
+        <div class="slide-content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div class="big-number">89.5%</div>
+            <p class="big-number-desc">客户满意度 · Customer Satisfaction</p>
+        </div>
+    </section>
+
+    <!-- SLIDE 41: 5 DRAWBACKS -->
+    <section class="slide" data-slide="41">
+        <div class="slide-content">
+            <h2 class="slide-title">需要 <span class="highlight-pink">注意</span></h2>
+            <div class="drawback-list">
+                <div class="drawback-item">
+                    <span>⚠️</span>
+                    <span>需要一定技术能力进行部署配置</span>
+                </div>
+                <div class="drawback-item">
+                    <span>⚠️</span>
+                    <span>AI模型调用有成本支出</span>
+                </div>
+                <div class="drawback-item">
+                    <span>⚠️</span>
+                    <span>复杂场景需要二次开发</span>
+                </div>
+                <div class="drawback-item">
+                    <span>⚠️</span>
+                    <span>部分平台API有限制</span>
+                </div>
+                <div class="drawback-item">
+                    <span>⚠️</span>
+                    <span>需要持续维护更新</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 42: TOKEN COST -->
+    <section class="slide" data-slide="42">
+        <div class="slide-content">
+            <h2 class="slide-title">Token <span class="highlight-cyan">成本</span></h2>
+            <div class="token-cards">
+                <div class="card token-card" style="border-color:var(--yellow);">
+                    <h3 style="color:var(--yellow);">日均消耗</h3>
+                    <div class="price" style="color:var(--yellow);">¥50-200</div>
+                    <p>取决于对话量<br>和模型选择</p>
+                </div>
+                <div class="card token-card" style="border-color:var(--pink);">
+                    <h3 style="color:var(--pink);">月度预算</h3>
+                    <div class="price" style="color:var(--pink);">¥1500-6000</div>
+                    <p>中小企业<br>基础使用场景</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 43: SECURITY -->
+    <section class="slide" data-slide="43">
+        <div class="slide-content">
+            <h2 class="slide-title">安全 <span class="highlight-yellow">保障</span></h2>
+            <div class="security-layout">
+                <div class="security-col" style="background:rgba(245,230,66,0.1);border:2px solid var(--yellow);">
+                    <h3 style="color:var(--yellow);">数据安全</h3>
+                    <ul>
+                        <li><span style="color:var(--green);">✓</span> 传输加密(TLS)</li>
+                        <li><span style="color:var(--green);">✓</span> 存储加密(AES)</li>
+                        <li><span style="color:var(--green);">✓</span> 私有化部署</li>
+                        <li><span style="color:var(--green);">✓</span> 数据隔离</li>
+                    </ul>
+                </div>
+                <div class="security-col" style="background:rgba(255,45,124,0.1);border:2px solid var(--pink);">
+                    <h3 style="color:var(--pink);">访问控制</h3>
+                    <ul>
+                        <li><span style="color:var(--green);">✓</span> API密钥认证</li>
+                        <li><span style="color:var(--green);">✓</span> IP白名单</li>
+                        <li><span style="color:var(--green);">✓</span> 权限管理</li>
+                        <li><span style="color:var(--green);">✓</span> 操作审计</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 44: SKILLS + ROADMAP -->
+    <section class="slide" data-slide="44">
+        <div class="slide-content">
+            <h2 class="slide-title">技能 & <span class="highlight-cyan">路线</span></h2>
+            <div class="skills-roadmap">
+                <div class="skills-section">
+                    <h3>核心技能</h3>
+                    <div class="skills-tags">
+                        <span class="skill-tag" style="background:var(--yellow);color:var(--bg);">多轮对话</span>
+                        <span class="skill-tag" style="background:var(--pink);">知识问答</span>
+                        <span class="skill-tag" style="background:var(--cyan);color:var(--bg);">内容生成</span>
+                        <span class="skill-tag" style="background:var(--purple);">数据分析</span>
+                        <span class="skill-tag" style="background:var(--orange);">代码审查</span>
+                        <span class="skill-tag" style="background:var(--green);color:var(--bg);">自动排程</span>
+                    </div>
+                </div>
+                <div class="roadmap-section">
+                    <h3>发展规划</h3>
+                    <div class="roadmap-items">
+                        <div class="roadmap-item">
+                            <div class="roadmap-dot" style="background:var(--yellow);"></div>
+                            <span>Q2: 更多渠道支持</span>
+                        </div>
+                        <div class="roadmap-item">
+                            <div class="roadmap-dot" style="background:var(--pink);"></div>
+                            <span>Q3: 多模态交互</span>
+                        </div>
+                        <div class="roadmap-item">
+                            <div class="roadmap-dot" style="background:var(--cyan);"></div>
+                            <span>Q4: 企业知识库增强</span>
+                        </div>
+                        <div class="roadmap-item">
+                            <div class="roadmap-dot" style="background:var(--purple);"></div>
+                            <span>未来: Agent协作网络</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 45: CLOSING -->
+    <section class="slide" data-slide="45">
+        <div class="slide-content">
+            <h2 class="slide-title">开始 <span class="highlight-yellow">使用</span></h2>
+            <div class="closing-cards">
+                <div class="card closing-card" style="border-color:var(--yellow);">
+                    <h4 style="color:var(--yellow);">快速上手</h4>
+                    <p class="text-muted" style="font-size:0.9rem;">30分钟<br>完成部署</p>
+                </div>
+                <div class="card closing-card" style="border-color:var(--pink);">
+                    <h4 style="color:var(--pink);">技术支撑</h4>
+                    <p class="text-muted" style="font-size:0.9rem;">完善文档<br>社区支持</p>
+                </div>
+                <div class="card closing-card" style="border-color:var(--cyan);">
+                    <h4 style="color:var(--cyan);">商业合作</h4>
+                    <p class="text-muted" style="font-size:0.9rem;">企业定制<br>专属服务</p>
+                </div>
+            </div>
+            <div class="closing-actions">
+                <a href="#" class="closing-cta pill-yellow">GitHub</a>
+                <a href="#" class="closing-cta pill-pink">文档</a>
+                <a href="#" class="closing-cta pill-cyan">联系我们</a>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.totalSlides = this.slides.length;
+                this.currentSlide = 1;
+                this.navDotsContainer = document.getElementById('navDots');
+                this.progressBar = document.getElementById('progressBar');
+                this.currentSlideEl = document.getElementById('currentSlide');
+                this.isScrolling = false;
+                this.scrollTimeout = null;
+
+                this.init();
+            }
+
+            init() {
+                this.createNavDots();
+                this.bindEvents();
+                this.updateUI();
+                this.setupIntersectionObserver();
+
+                // Initialize animations for first slide
+                this.animateSlide(1);
+            }
+
+            createNavDots() {
+                for (let i = 1; i <= this.totalSlides; i++) {
+                    const dot = document.createElement('button');
+                    dot.className = 'nav-dot' + (i === 1 ? ' active' : '');
+                    dot.setAttribute('aria-label', `Go to slide ${i}`);
+                    dot.addEventListener('click', () => this.goToSlide(i));
+                    this.navDotsContainer.appendChild(dot);
+                }
+            }
+
+            bindEvents() {
+                // Keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+                        e.preventDefault();
+                        this.nextSlide();
+                    } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                        e.preventDefault();
+                        this.prevSlide();
+                    } else if (e.key === 'Home') {
+                        e.preventDefault();
+                        this.goToSlide(1);
+                    } else if (e.key === 'End') {
+                        e.preventDefault();
+                        this.goToSlide(this.totalSlides);
+                    }
+                });
+
+                // Wheel navigation with debounce
+                let wheelTimeout;
+                window.addEventListener('wheel', (e) => {
+                    if (this.isScrolling) return;
+
+                    clearTimeout(wheelTimeout);
+                    wheelTimeout = setTimeout(() => {
+                        if (e.deltaY > 0) {
+                            this.nextSlide();
+                        } else {
+                            this.prevSlide();
+                        }
+                    }, 50);
+                }, { passive: true });
+
+                // Touch navigation
+                let touchStartY = 0;
+                let touchEndY = 0;
+
+                document.addEventListener('touchstart', (e) => {
+                    touchStartY = e.changedTouches[0].screenY;
+                }, { passive: true });
+
+                document.addEventListener('touchend', (e) => {
+                    touchEndY = e.changedTouches[0].screenY;
+                    this.handleSwipe(touchStartY, touchEndY);
+                }, { passive: true });
+            }
+
+            handleSwipe(startY, endY) {
+                const threshold = 50;
+                const diff = startY - endY;
+
+                if (Math.abs(diff) < threshold) return;
+
+                if (diff > 0) {
+                    this.nextSlide();
+                } else {
+                    this.prevSlide();
+                }
+            }
+
+            setupIntersectionObserver() {
+                const options = {
+                    root: null,
+                    rootMargin: '0px',
+                    threshold: 0.5
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const slideNum = parseInt(entry.target.dataset.slide);
+                            this.currentSlide = slideNum;
+                            this.updateUI();
+                            this.animateSlide(slideNum);
+                        }
+                    });
+                }, options);
+
+                this.slides.forEach(slide => observer.observe(slide));
+            }
+
+            animateSlide(slideNum) {
+                const slide = this.slides[slideNum - 1];
+                if (!slide) return;
+
+                // Trigger animations for elements with animation classes
+                const animatedElements = slide.querySelectorAll('.bounce-in, .bounce-up, .slide-in-right, [class*="animate"]');
+                animatedElements.forEach((el, index) => {
+                    el.style.animationPlayState = 'running';
+                });
+            }
+
+            goToSlide(num) {
+                if (num < 1 || num > this.totalSlides || num === this.currentSlide) return;
+
+                this.currentSlide = num;
+                this.slides[num - 1].scrollIntoView({ behavior: 'smooth' });
+                this.updateUI();
+                this.animateSlide(num);
+            }
+
+            nextSlide() {
+                if (this.currentSlide < this.totalSlides) {
+                    this.goToSlide(this.currentSlide + 1);
+                }
+            }
+
+            prevSlide() {
+                if (this.currentSlide > 1) {
+                    this.goToSlide(this.currentSlide - 1);
+                }
+            }
+
+            updateUI() {
+                // Update progress bar
+                const progress = (this.currentSlide / this.totalSlides) * 100;
+                this.progressBar.style.width = `${progress}%`;
+
+                // Update current slide number
+                this.currentSlideEl.textContent = this.currentSlide;
+
+                // Update nav dots
+                const dots = this.navDotsContainer.querySelectorAll('.nav-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index + 1 === this.currentSlide);
+                });
+            }
+        }
+
+        // Initialize presentation when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            new SlidePresentation();
+        });
+
+        // Handle reduced motion preference
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.style.scrollBehavior = 'auto';
+        }
+    </script>
+</body>
+</html>

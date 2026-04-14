@@ -1,0 +1,2653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw - AI 智能体平台</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* ===========================================
+           CSS CUSTOM PROPERTIES (ELECTRIC STUDIO THEME)
+           =========================================== */
+        :root {
+            /* Colors */
+            --bg: #0a0f1a;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2332;
+            --primary: #3b82f6;
+            --secondary: #8b5cf6;
+            --accent: #00e5cc;
+            --text: #ffffff;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --gold: #fbbf24;
+            --danger: #ef4444;
+            --success: #22c55e;
+
+            /* Gradient colors */
+            --gradient-blue-purple: linear-gradient(135deg, var(--primary), var(--secondary));
+            --gradient-blue-cyan: linear-gradient(135deg, var(--primary), var(--accent));
+            --gradient-purple-cyan: linear-gradient(135deg, var(--secondary), var(--accent));
+
+            /* Typography - MUST use clamp() */
+            --font-heading: 'Sora', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --title-size: clamp(1.75rem, 5vw, 3.5rem);
+            --h2-size: clamp(1.25rem, 3.5vw, 2.25rem);
+            --h3-size: clamp(1rem, 2.5vw, 1.5rem);
+            --body-size: clamp(0.75rem, 1.5vw, 1.05rem);
+            --small-size: clamp(0.65rem, 1.2vw, 0.9rem);
+            --tiny-size: clamp(0.6rem, 1vw, 0.8rem);
+
+            /* Spacing - MUST use clamp() */
+            --slide-padding: clamp(1.5rem, 5vw, 4rem);
+            --content-gap: clamp(0.75rem, 2vw, 1.5rem);
+            --element-gap: clamp(0.5rem, 1.5vw, 1rem);
+            --card-padding: clamp(1rem, 2vw, 1.5rem);
+            --border-radius: clamp(0.5rem, 1vw, 1rem);
+            --border-radius-sm: clamp(0.25rem, 0.5vw, 0.5rem);
+
+            /* Animation */
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --duration-normal: 0.6s;
+            --duration-fast: 0.3s;
+        }
+
+        /* ===========================================
+           BASE STYLES
+           =========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            height: 100%;
+            line-height: 1.5;
+        }
+
+        /* ===========================================
+           SLIDE CONTAINER - CRITICAL VIEWPORT FITTING
+           =========================================== */
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            padding: var(--slide-padding);
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-height: 100%;
+            overflow: hidden;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* ===========================================
+           TYPOGRAPHY
+           =========================================== */
+        h1 {
+            font-family: var(--font-heading);
+            font-size: var(--title-size);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: var(--content-gap);
+        }
+
+        h2 {
+            font-family: var(--font-heading);
+            font-size: var(--h2-size);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: var(--content-gap);
+        }
+
+        h3 {
+            font-family: var(--font-heading);
+            font-size: var(--h3-size);
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: var(--element-gap);
+        }
+
+        p {
+            font-size: var(--body-size);
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .text-accent {
+            color: var(--accent);
+        }
+
+        .text-primary {
+            color: var(--primary);
+        }
+
+        .text-secondary {
+            color: var(--secondary);
+        }
+
+        .text-gold {
+            color: var(--gold);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-gradient {
+            background: var(--gradient-blue-purple);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ===========================================
+           GRADIENT DECORATIVE ELEMENTS
+           =========================================== */
+        .gradient-line {
+            height: 4px;
+            background: var(--gradient-blue-purple);
+            border-radius: 2px;
+            margin: var(--content-gap) 0;
+        }
+
+        .gradient-line.centered {
+            width: clamp(100px, 30vw, 300px);
+            margin: var(--content-gap) auto;
+        }
+
+        /* ===========================================
+           CARDS WITH GRADIENT BORDERS
+           =========================================== */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            padding: var(--card-padding);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: var(--border-radius);
+            padding: 1px;
+            background: var(--gradient-blue-purple);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.5;
+            transition: opacity var(--duration-fast) ease;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card.glow-blue {
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .card.glow-purple {
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .card.glow-cyan {
+            box-shadow: 0 0 30px rgba(0, 229, 204, 0.3);
+        }
+
+        .card.glow-gold {
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
+        }
+
+        /* ===========================================
+           GRIDS
+           =========================================== */
+        .grid {
+            display: grid;
+            gap: var(--element-gap);
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+        }
+
+        .grid-5 {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+        }
+
+        .grid-6 {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+        }
+
+        .grid-7 {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));
+        }
+
+        .grid-8 {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 100px), 1fr));
+        }
+
+        /* ===========================================
+           FLEX LAYOUTS
+           =========================================== */
+        .flex {
+            display: flex;
+        }
+
+        .flex-col {
+            flex-direction: column;
+        }
+
+        .flex-center {
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flex-between {
+            justify-content: space-between;
+        }
+
+        .gap-sm { gap: var(--element-gap); }
+        .gap-md { gap: var(--content-gap); }
+        .gap-lg { gap: clamp(1rem, 3vw, 2rem); }
+
+        /* ===========================================
+           BADGES & TAGS
+           =========================================== */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25em;
+            padding: 0.25em 0.75em;
+            border-radius: 999px;
+            font-size: var(--tiny-size);
+            font-weight: 500;
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--primary);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .badge.accent {
+            background: rgba(0, 229, 204, 0.2);
+            color: var(--accent);
+            border-color: rgba(0, 229, 204, 0.3);
+        }
+
+        .badge.secondary {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--secondary);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .badge.gold {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--gold);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        /* ===========================================
+           ICONS (Simple CSS shapes)
+           =========================================== */
+        .icon {
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--h3-size);
+        }
+
+        .icon-circle {
+            width: clamp(40px, 6vw, 60px);
+            height: clamp(40px, 6vw, 60px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            font-weight: 700;
+            background: var(--gradient-blue-purple);
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .icon-box {
+            width: clamp(50px, 8vw, 80px);
+            height: clamp(50px, 8vw, 80px);
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            background: var(--gradient-blue-purple);
+            color: white;
+            flex-shrink: 0;
+        }
+
+        /* ===========================================
+           LISTS
+           =========================================== */
+        .feature-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: var(--element-gap);
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--element-gap);
+            font-size: var(--body-size);
+            color: var(--text-muted);
+        }
+
+        .feature-list li::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            margin-top: 0.5em;
+            flex-shrink: 0;
+        }
+
+        .check-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: var(--element-gap);
+        }
+
+        .check-list li {
+            display: flex;
+            align-items: center;
+            gap: var(--element-gap);
+            font-size: var(--body-size);
+            color: var(--text);
+        }
+
+        .check-list li::before {
+            content: '✓';
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--small-size);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* ===========================================
+           TABLES
+           =========================================== */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: var(--border-radius);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: var(--small-size);
+        }
+
+        th {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--primary);
+            font-weight: 600;
+            text-align: left;
+            padding: var(--element-gap);
+        }
+
+        td {
+            padding: var(--element-gap);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-muted);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+
+        /* ===========================================
+           FLOW DIAGRAMS
+           =========================================== */
+        .flow-horizontal {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(0.5rem, 2vw, 1rem);
+            flex-wrap: wrap;
+        }
+
+        .flow-vertical {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(0.5rem, 2vw, 1rem);
+        }
+
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--element-gap);
+            text-align: center;
+        }
+
+        .flow-arrow {
+            color: var(--primary);
+            font-size: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        /* ===========================================
+           PROGRESS BARS
+           =========================================== */
+        .progress-bar-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--gradient-blue-purple);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: var(--element-gap);
+        }
+
+        .bar-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .bar-label {
+            font-size: var(--small-size);
+            color: var(--text-muted);
+        }
+
+        .bar-track {
+            height: clamp(8px, 1.5vw, 12px);
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s var(--ease-out-expo);
+        }
+
+        .bar-fill.blue { background: var(--primary); }
+        .bar-fill.purple { background: var(--secondary); }
+        .bar-fill.cyan { background: var(--accent); }
+        .bar-fill.gold { background: var(--gold); }
+
+        /* ===========================================
+           WARNING/CALLOUT BOXES
+           =========================================== */
+        .warning-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: var(--border-radius);
+            padding: var(--card-padding);
+            display: flex;
+            gap: var(--element-gap);
+            align-items: flex-start;
+        }
+
+        .warning-box .icon {
+            color: var(--danger);
+        }
+
+        /* ===========================================
+           PYRAMID
+           =========================================== */
+        .pyramid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--element-gap);
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .pyramid-layer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--element-gap) var(--card-padding);
+            text-align: center;
+            font-size: var(--small-size);
+            font-weight: 500;
+            border-radius: var(--border-radius-sm);
+            transition: transform var(--duration-fast) ease;
+        }
+
+        .pyramid-layer:hover {
+            transform: scale(1.02);
+        }
+
+        /* ===========================================
+           ANIMATIONS
+           =========================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity var(--duration-normal) var(--ease-out-expo),
+                        transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .slide.visible .reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal:nth-child(1) { transition-delay: 0.05s; }
+        .reveal:nth-child(2) { transition-delay: 0.1s; }
+        .reveal:nth-child(3) { transition-delay: 0.15s; }
+        .reveal:nth-child(4) { transition-delay: 0.2s; }
+        .reveal:nth-child(5) { transition-delay: 0.25s; }
+        .reveal:nth-child(6) { transition-delay: 0.3s; }
+        .reveal:nth-child(7) { transition-delay: 0.35s; }
+        .reveal:nth-child(8) { transition-delay: 0.4s; }
+
+        .reveal-scale {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity var(--duration-normal) var(--ease-out-expo),
+                        transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .slide.visible .reveal-scale {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal, .reveal-scale {
+                transition: opacity 0.2s ease;
+                transform: none;
+            }
+            html {
+                scroll-behavior: auto;
+            }
+        }
+
+        /* ===========================================
+           NAVIGATION
+           =========================================== */
+        .nav-dots {
+            position: fixed;
+            right: clamp(0.5rem, 2vw, 1.5rem);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .nav-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            cursor: pointer;
+            transition: all var(--duration-fast) ease;
+        }
+
+        .nav-dot:hover {
+            background: rgba(255,255,255,0.4);
+            transform: scale(1.2);
+        }
+
+        .nav-dot.active {
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: clamp(0.5rem, 2vw, 1.5rem);
+            right: clamp(0.5rem, 2vw, 1.5rem);
+            font-size: var(--small-size);
+            color: var(--text-muted);
+            font-weight: 500;
+            z-index: 100;
+        }
+
+        .keyboard-hint {
+            position: fixed;
+            bottom: clamp(0.5rem, 2vw, 1.5rem);
+            left: clamp(0.5rem, 2vw, 1.5rem);
+            font-size: var(--tiny-size);
+            color: var(--text-dim);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .keyboard-hint kbd {
+            background: rgba(255,255,255,0.1);
+            padding: 0.2em 0.5em;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        /* ===========================================
+           BACKGROUND EFFECTS
+           =========================================== */
+        .bg-gradient-radial {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(0, 229, 204, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .bg-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+
+        /* ===========================================
+           LARGE NUMBER DISPLAY
+           =========================================== */
+        .big-number {
+            font-family: var(--font-heading);
+            font-size: clamp(4rem, 15vw, 10rem);
+            font-weight: 800;
+            line-height: 1;
+            background: var(--gradient-blue-purple);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 60px rgba(59, 130, 246, 0.5);
+        }
+
+        /* ===========================================
+           COMPACT LISTS FOR DENSE SLIDES
+           =========================================== */
+        .compact-list {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.25rem, 0.75vw, 0.5rem);
+        }
+
+        .compact-list li {
+            font-size: var(--small-size);
+            color: var(--text-muted);
+            padding-left: 1em;
+            position: relative;
+        }
+
+        .compact-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+
+        /* ===========================================
+           TAG CLOUD
+           =========================================== */
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--element-gap);
+            justify-content: center;
+        }
+
+        .tag {
+            padding: 0.4em 0.8em;
+            border-radius: 999px;
+            font-size: var(--small-size);
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            color: var(--text);
+            transition: all var(--duration-fast) ease;
+        }
+
+        .tag:hover {
+            background: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* ===========================================
+           ROADMAP ITEMS
+           =========================================== */
+        .roadmap {
+            display: flex;
+            flex-direction: column;
+            gap: var(--element-gap);
+        }
+
+        .roadmap-item {
+            display: flex;
+            align-items: center;
+            gap: var(--element-gap);
+            padding: var(--element-gap);
+            background: var(--bg-card);
+            border-radius: var(--border-radius);
+            border-left: 3px solid var(--primary);
+        }
+
+        .roadmap-item.q2 {
+            border-left-color: var(--accent);
+        }
+
+        .roadmap-item.q3 {
+            border-left-color: var(--secondary);
+        }
+
+        .roadmap-item.q4 {
+            border-left-color: var(--gold);
+        }
+
+        .roadmap-quarter {
+            font-size: var(--tiny-size);
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 30px;
+        }
+
+        /* ===========================================
+           PLATFORM ICONS
+           =========================================== */
+        .platform-icon {
+            width: clamp(40px, 6vw, 60px);
+            height: clamp(40px, 6vw, 60px);
+            border-radius: var(--border-radius);
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+        }
+
+        /* ===========================================
+           RESPONSIVE BREAKPOINTS
+           =========================================== */
+        @media (max-height: 700px) {
+            :root {
+                --slide-padding: clamp(1rem, 3vw, 2rem);
+                --content-gap: clamp(0.5rem, 1.5vw, 1rem);
+                --element-gap: clamp(0.3rem, 1vw, 0.75rem);
+            }
+        }
+
+        @media (max-height: 600px) {
+            :root {
+                --slide-padding: clamp(0.75rem, 2.5vw, 1.5rem);
+                --content-gap: clamp(0.4rem, 1vw, 0.75rem);
+                --element-gap: clamp(0.25rem, 0.75vw, 0.5rem);
+            }
+
+            .nav-dots, .keyboard-hint {
+                display: none;
+            }
+        }
+
+        @media (max-height: 500px) {
+            :root {
+                --slide-padding: clamp(0.5rem, 2vw, 1rem);
+                --title-size: clamp(1.25rem, 4vw, 2rem);
+                --h2-size: clamp(1rem, 3vw, 1.5rem);
+                --body-size: clamp(0.65rem, 1.2vw, 0.9rem);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid-4, .grid-5, .grid-6, .grid-7, .grid-8 {
+                grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+            }
+
+            .nav-dots {
+                right: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .grid-3, .grid-4, .grid-5 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Navigation Dots -->
+    <nav class="nav-dots" id="navDots"></nav>
+
+    <!-- Slide Number -->
+    <div class="slide-number" id="slideNumber">1 / 45</div>
+
+    <!-- Keyboard Hint -->
+    <div class="keyboard-hint">
+        <kbd>↑</kbd><kbd>↓</kbd> 或 <kbd>空格</kbd> 浏览
+    </div>
+
+    <!-- ===========================================
+         SLIDE 1: COVER
+         =========================================== -->
+    <section class="slide" id="slide-1">
+        <div class="bg-gradient-radial"></div>
+        <div class="bg-grid"></div>
+        <div class="slide-content flex flex-col flex-center text-center">
+            <div class="badge accent reveal">AI 智能体平台</div>
+            <h1 class="reveal" style="margin-top: var(--content-gap);">
+                <span class="text-gradient">OpenClaw</span>
+            </h1>
+            <p class="reveal" style="max-width: 600px; font-size: var(--h3-size); color: var(--text-muted);">
+                赋能智能自动化
+            </p>
+            <div class="gradient-line centered reveal"></div>
+            <p class="reveal" style="color: var(--text-dim);">
+                新一代 AI 驱动的工作流自动化
+            </p>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 2: TABLE OF CONTENTS
+         =========================================== -->
+    <section class="slide" id="slide-2">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">目录</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-3 gap-md" style="margin-top: var(--content-gap);">
+                <div class="card reveal flex flex-col flex-center text-center gap-sm">
+                    <div class="icon-circle">1</div>
+                    <h3>平台概述</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">架构与核心概念</p>
+                </div>
+                <div class="card reveal flex flex-col flex-center text-center gap-sm">
+                    <div class="icon-circle">2</div>
+                    <h3>技术深入</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">模型、记忆与工具</p>
+                </div>
+                <div class="card reveal flex flex-col flex-center text-center gap-sm">
+                    <div class="icon-circle">3</div>
+                    <h3>企业集成</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">部署与安全</p>
+                </div>
+                <div class="card reveal flex flex-col flex-center text-center gap-sm">
+                    <div class="icon-circle">4</div>
+                    <h3>应用场景</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">实际应用案例</p>
+                </div>
+                <div class="card reveal flex flex-col flex-center text-center gap-sm">
+                    <div class="icon-circle">5</div>
+                    <h3>优势与路线图</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">优势与未来愿景</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 3: PROBLEM
+         =========================================== -->
+    <section class="slide" id="slide-3">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">挑战</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-2 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal">
+                    <h3 class="text-muted">传统方式</h3>
+                    <ul class="feature-list" style="margin-top: var(--element-gap);">
+                        <li>手动工作流配置</li>
+                        <li>有限的 AI 能力</li>
+                        <li>分散的数据源</li>
+                        <li>高运营成本</li>
+                        <li>可扩展性差</li>
+                    </ul>
+                </div>
+                <div class="card glow-blue reveal">
+                    <h3 class="text-primary">OpenClaw 解决方案</h3>
+                    <ul class="feature-list" style="margin-top: var(--element-gap);">
+                        <li>AI 驱动的自动化</li>
+                        <li>多模型智能</li>
+                        <li>统一记忆系统</li>
+                        <li>成本效益高的扩展</li>
+                        <li>企业级可靠性</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 4: POSITIONING
+         =========================================== -->
+    <section class="slide" id="slide-4">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">市场定位</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-4 gap-md" style="margin-top: var(--content-gap);">
+                <div class="card glow-blue reveal text-center">
+                    <div class="icon-box" style="margin: 0 auto var(--element-gap);">🤖</div>
+                    <h3>AI 原生</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">从零开始为 AI 构建</p>
+                </div>
+                <div class="card glow-purple reveal text-center">
+                    <div class="icon-box" style="margin: 0 auto var(--element-gap); background: var(--gradient-purple-cyan);">🔗</div>
+                    <h3>渠道无关</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">微信、企业微信、钉钉等</p>
+                </div>
+                <div class="card glow-cyan reveal text-center">
+                    <div class="icon-box" style="margin: 0 auto var(--element-gap); background: var(--gradient-blue-cyan);">🧠</div>
+                    <h3>记忆优先</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">持久化的上下文理解</p>
+                </div>
+                <div class="card glow-gold reveal text-center">
+                    <div class="icon-box" style="margin: 0 auto var(--element-gap); background: linear-gradient(135deg, var(--gold), #f59e0b);">⚡</div>
+                    <h3>实时</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">即时响应与处理</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 5: ARCHITECTURE
+         =========================================== -->
+    <section class="slide" id="slide-5">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">系统架构</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="flex flex-col gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal" style="border-left: 4px solid var(--primary);">
+                    <div class="flex flex-between items-center">
+                        <div>
+                            <h3 class="text-primary">应用层</h3>
+                            <p class="text-muted" style="font-size: var(--small-size);">用户界面、API、Webhook</p>
+                        </div>
+                        <div class="tag-cloud">
+                            <span class="tag">Web</span>
+                            <span class="tag">Mobile</span>
+                            <span class="tag">API</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card reveal" style="border-left: 4px solid var(--secondary);">
+                    <div class="flex flex-between items-center">
+                        <div>
+                            <h3 class="text-secondary">智能体引擎</h3>
+                            <p class="text-muted" style="font-size: var(--small-size);">AI 编排、工具执行</p>
+                        </div>
+                        <div class="tag-cloud">
+                            <span class="tag secondary">SOUL</span>
+                            <span class="tag secondary">TOOLS</span>
+                            <span class="tag secondary">MEMORY</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card reveal" style="border-left: 4px solid var(--accent);">
+                    <div class="flex flex-between items-center">
+                        <div>
+                            <h3 class="text-accent">数据层</h3>
+                            <p class="text-muted" style="font-size: var(--small-size);">向量存储、会话状态</p>
+                        </div>
+                        <div class="tag-cloud">
+                            <span class="tag accent">Vector DB</span>
+                            <span class="tag accent">Redis</span>
+                            <span class="tag accent">File System</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 6: CHANNEL
+         =========================================== -->
+    <section class="slide" id="slide-6">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">多渠道支持</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-3 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal text-center">
+                    <div class="platform-icon" style="margin: 0 auto var(--element-gap);">💬</div>
+                    <h3>微信</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">13亿+ 用户</p>
+                    <div class="badge" style="margin-top: var(--element-gap);">企业版</div>
+                </div>
+                <div class="card reveal text-center">
+                    <div class="platform-icon" style="margin: 0 auto var(--element-gap);">📱</div>
+                    <h3>企业微信</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">5亿+ 用户</p>
+                    <div class="badge" style="margin-top: var(--element-gap);">商务版</div>
+                </div>
+                <div class="card reveal text-center">
+                    <div class="platform-icon" style="margin: 0 auto var(--element-gap);">🔔</div>
+                    <h3>钉钉</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">7亿+ 用户</p>
+                    <div class="badge" style="margin-top: var(--element-gap);">企业版</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 7: GATEWAY
+         =========================================== -->
+    <section class="slide" id="slide-7">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">消息网关</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="card glow-blue reveal" style="max-width: 600px; margin: var(--content-gap) auto; text-align: center;">
+                <div class="icon-circle" style="margin: 0 auto var(--element-gap); font-size: 2rem;">🌐</div>
+                <h3>统一网关</h3>
+                <p class="text-muted">所有消息通过单一智能网关处理路由、认证和转换。</p>
+            </div>
+            <div class="flex flex-center gap-lg reveal">
+                <div class="badge">输入规范化</div>
+                <span class="flow-arrow">→</span>
+                <div class="badge secondary">AI 处理</div>
+                <span class="flow-arrow">→</span>
+                <div class="badge accent">响应路由</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 8: NODE
+         =========================================== -->
+    <section class="slide" id="slide-8">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">核心能力</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-4 gap-md" style="margin-top: var(--content-gap);">
+                <div class="card reveal">
+                    <div style="font-size: 2rem; margin-bottom: var(--element-gap);">🔍</div>
+                    <h3>感知</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">多模态输入理解</p>
+                </div>
+                <div class="card reveal">
+                    <div style="font-size: 2rem; margin-bottom: var(--element-gap);">🧠</div>
+                    <h3>认知</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">高级推理与规划</p>
+                </div>
+                <div class="card reveal">
+                    <div style="font-size: 2rem; margin-bottom: var(--element-gap);">🎯</div>
+                    <h3>行动</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">工具执行与交付</p>
+                </div>
+                <div class="card reveal">
+                    <div style="font-size: 2rem; margin-bottom: var(--element-gap);">💾</div>
+                    <h3>记忆</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">持久化上下文存储</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 9: MESSAGE FLOW
+         =========================================== -->
+    <section class="slide" id="slide-9">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">消息处理流程</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="flow-horizontal" style="margin-top: var(--content-gap); flex-wrap: wrap;">
+                <div class="flow-step reveal">
+                    <div class="icon-circle">1</div>
+                    <p style="font-size: var(--small-size);">接收</p>
+                </div>
+                <span class="flow-arrow reveal">→</span>
+                <div class="flow-step reveal">
+                    <div class="icon-circle">2</div>
+                    <p style="font-size: var(--small-size);">解析</p>
+                </div>
+                <span class="flow-arrow reveal">→</span>
+                <div class="flow-step reveal">
+                    <div class="icon-circle">3</div>
+                    <p style="font-size: var(--small-size);">理解</p>
+                </div>
+                <span class="flow-arrow reveal">→</span>
+                <div class="flow-step reveal">
+                    <div class="icon-circle">4</div>
+                    <p style="font-size: var(--small-size);">推理</p>
+                </div>
+                <span class="flow-arrow reveal">→</span>
+                <div class="flow-step reveal">
+                    <div class="icon-circle">5</div>
+                    <p style="font-size: var(--small-size);">执行</p>
+                </div>
+                <span class="flow-arrow reveal">→</span>
+                <div class="flow-step reveal">
+                    <div class="icon-circle">6</div>
+                    <p style="font-size: var(--small-size);">响应</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 10: MEMORY PYRAMID
+         =========================================== -->
+    <section class="slide" id="slide-10">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">记忆架构</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="pyramid" style="margin-top: var(--content-gap);">
+                <div class="pyramid-layer reveal" style="width: 30%; background: rgba(251, 191, 36, 0.2); border: 1px solid rgba(251, 191, 36, 0.4); color: var(--gold);">
+                    <span class="text-gold">🦜 长期记忆</span>
+                </div>
+                <div class="pyramid-layer reveal" style="width: 45%; background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.4); color: var(--secondary);">
+                    <span class="text-secondary">🐇 短期记忆</span>
+                </div>
+                <div class="pyramid-layer reveal" style="width: 60%; background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.4); color: var(--primary);">
+                    <span class="text-primary">🐰 工作记忆</span>
+                </div>
+                <div class="pyramid-layer reveal" style="width: 80%; background: rgba(0, 229, 204, 0.2); border: 1px solid rgba(0, 229, 204, 0.4); color: var(--accent);">
+                    <span class="text-accent">🍯 即时上下文</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 11: SOUL
+         =========================================== -->
+    <section class="slide" id="slide-11">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">SOUL 系统</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="card glow-gold reveal" style="max-width: 700px; margin: var(--content-gap) auto; text-align: center;">
+                <div class="badge gold" style="margin-bottom: var(--element-gap);">核心 AI 引擎</div>
+                <h3 class="text-gold" style="font-size: var(--h2-size);">状态 · 操作 · 理解 · 学习</h3>
+                <p class="text-muted" style="margin-top: var(--element-gap);">
+                    SOUL 系统使 OpenClaw 智能体能够保持持续的状态感知，执行复杂的操作，理解细微的上下文，并从交互中持续学习。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 12: TOOLS
+         =========================================== -->
+    <section class="slide" id="slide-12">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">工具系统</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-2 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal">
+                    <h3 class="text-primary">🔧 内置工具</h3>
+                    <ul class="compact-list" style="margin-top: var(--element-gap);">
+                        <li>网络搜索与抓取</li>
+                        <li>代码解释器</li>
+                        <li>文件操作</li>
+                        <li>API 集成</li>
+                        <li>数据库查询</li>
+                        <li>图像处理</li>
+                    </ul>
+                </div>
+                <div class="card reveal">
+                    <h3 class="text-secondary">🧩 自定义工具</h3>
+                    <ul class="compact-list" style="margin-top: var(--element-gap);">
+                        <li>用于开发的工具 SDK</li>
+                        <li>热重载能力</li>
+                        <li>版本管理</li>
+                        <li>沙箱执行</li>
+                        <li>工具链支持</li>
+                        <li>社区市场</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 13: USER
+         =========================================== -->
+    <section class="slide" id="slide-13">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">用户管理</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-2 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal">
+                    <div class="icon-box" style="margin-bottom: var(--element-gap);">👤</div>
+                    <h3>终端用户</h3>
+                    <ul class="feature-list" style="margin-top: var(--element-gap);">
+                        <li>自然语言交互</li>
+                        <li>个性化响应</li>
+                        <li>会话连续性</li>
+                    </ul>
+                </div>
+                <div class="card reveal">
+                    <div class="icon-box" style="margin-bottom: var(--element-gap);">⚙️</div>
+                    <h3>管理员用户</h3>
+                    <ul class="feature-list" style="margin-top: var(--element-gap);">
+                        <li>智能体配置</li>
+                        <li>分析仪表盘</li>
+                        <li>权限管理</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 14: SESSION
+         =========================================== -->
+    <section class="slide" id="slide-14">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">会话管理</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="flow-vertical" style="margin-top: var(--content-gap);">
+                <div class="card reveal" style="width: 100%; max-width: 500px; border-left: 4px solid var(--accent);">
+                    <div class="flex flex-between">
+                        <h3>1. 会话初始化</h3>
+                        <span class="badge accent">活跃</span>
+                    </div>
+                    <p class="text-muted" style="font-size: var(--small-size); margin-top: var(--element-gap);">创建包含用户上下文和偏好的新会话</p>
+                </div>
+                <span class="flow-arrow">↓</span>
+                <div class="card reveal" style="width: 100%; max-width: 500px; border-left: 4px solid var(--primary);">
+                    <div class="flex flex-between">
+                        <h3>2. 上下文加载</h3>
+                        <span class="badge">记忆</span>
+                    </div>
+                    <p class="text-muted" style="font-size: var(--small-size); margin-top: var(--element-gap);">加载相关记忆和历史数据</p>
+                </div>
+                <span class="flow-arrow">↓</span>
+                <div class="card reveal" style="width: 100%; max-width: 500px; border-left: 4px solid var(--secondary);">
+                    <div class="flex flex-between">
+                        <h3>3. 会话结束</h3>
+                        <span class="badge secondary">归档</span>
+                    </div>
+                    <p class="text-muted" style="font-size: var(--small-size); margin-top: var(--element-gap);">保存会话状态并整合学习</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 15: WORKSPACE
+         =========================================== -->
+    <section class="slide" id="slide-15">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">工作区结构</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-7 gap-sm" style="margin-top: var(--content-gap);">
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.5rem;">📄</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">文档</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.5rem;">🖼️</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">图片</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.5rem;">📊</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">数据</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.5rem;">📝</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">临时</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.5rem;">💻</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">代码</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.5rem;">🎨</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">资源</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.5rem;">📦</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">输出</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 16: MEMORY FLOW
+         =========================================== -->
+    <section class="slide" id="slide-16">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">记忆流</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="flow-vertical" style="margin-top: var(--content-gap);">
+                <div class="flex flex-center gap-md reveal">
+                    <div class="card" style="padding: var(--element-gap) var(--card-padding);">
+                        <p style="font-size: var(--small-size);">用户输入</p>
+                    </div>
+                    <span class="flow-arrow">→</span>
+                    <div class="card glow-cyan" style="padding: var(--element-gap) var(--card-padding);">
+                        <p style="font-size: var(--small-size);">编码</p>
+                    </div>
+                </div>
+                <span class="flow-arrow">↓</span>
+                <div class="flex flex-center gap-md reveal">
+                    <div class="card glow-blue" style="padding: var(--element-gap) var(--card-padding);">
+                        <p style="font-size: var(--small-size);">向量搜索</p>
+                    </div>
+                    <span class="flow-arrow">↔</span>
+                    <div class="card glow-purple" style="padding: var(--element-gap) var(--card-padding);">
+                        <p style="font-size: var(--small-size);">检索</p>
+                    </div>
+                </div>
+                <span class="flow-arrow">↓</span>
+                <div class="flex flex-center gap-md reveal">
+                    <div class="card glow-gold" style="padding: var(--element-gap) var(--card-padding);">
+                        <p style="font-size: var(--small-size);">整合</p>
+                    </div>
+                    <span class="flow-arrow">→</span>
+                    <div class="card" style="padding: var(--element-gap) var(--card-padding);">
+                        <p style="font-size: var(--small-size);">存储</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 17: DEPLOYMENT
+         =========================================== -->
+    <section class="slide" id="slide-17">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">部署选项</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-3 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal text-center">
+                    <div class="badge" style="margin-bottom: var(--element-gap);">☁️ 云端</div>
+                    <h3>SaaS</h3>
+                    <p class="text-muted" style="font-size: var(--small-size); margin-top: var(--element-gap);">
+                        完全托管、自动扩展、按需付费
+                    </p>
+                </div>
+                <div class="card reveal text-center">
+                    <div class="badge secondary" style="margin-bottom: var(--element-gap);">🖥️ 混合</div>
+                    <h3>企业版</h3>
+                    <p class="text-muted" style="font-size: var(--small-size); margin-top: var(--element-gap);">
+                        您的云端 + 本地控制
+                    </p>
+                </div>
+                <div class="card reveal text-center">
+                    <div class="badge accent" style="margin-bottom: var(--element-gap);">🏢 本地部署</div>
+                    <h3>私有化</h3>
+                    <p class="text-muted" style="font-size: var(--small-size); margin-top: var(--element-gap);">
+                        完全数据隔离、完全控制
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 18: PLATFORM TABLE
+         =========================================== -->
+    <section class="slide" id="slide-18">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">平台比较</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="table-wrapper reveal" style="margin-top: var(--content-gap);">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>特性</th>
+                            <th>OpenClaw</th>
+                            <th>竞品 A</th>
+                            <th>竞品 B</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>多渠道</td>
+                            <td style="color: var(--success);">✓ 完整</td>
+                            <td style="color: var(--text-muted);">有限</td>
+                            <td style="color: var(--text-muted);">无</td>
+                        </tr>
+                        <tr>
+                            <td>记忆系统</td>
+                            <td style="color: var(--success);">✓ 高级</td>
+                            <td style="color: var(--success);">✓ 基础</td>
+                            <td style="color: var(--danger);">✗</td>
+                        </tr>
+                        <tr>
+                            <td>工具框架</td>
+                            <td style="color: var(--success);">✓ 开放</td>
+                            <td style="color: var(--success);">✓ 是</td>
+                            <td style="color: var(--success);">✓ 是</td>
+                        </tr>
+                        <tr>
+                            <td>开源</td>
+                            <td style="color: var(--success);">✓ 是</td>
+                            <td style="color: var(--danger);">✗</td>
+                            <td style="color: var(--danger);">✗</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 19: TENCENT
+         =========================================== -->
+    <section class="slide" id="slide-19">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">腾讯生态</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-2 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal">
+                    <div class="icon-box" style="margin-bottom: var(--element-gap);">💬</div>
+                    <h3>微信集成</h3>
+                    <ul class="feature-list" style="margin-top: var(--element-gap);">
+                        <li>公众号支持</li>
+                        <li>小程序访问</li>
+                        <li>支付集成</li>
+                    </ul>
+                </div>
+                <div class="card reveal">
+                    <div class="icon-box" style="margin-bottom: var(--element-gap);">☁️</div>
+                    <h3>腾讯云</h3>
+                    <ul class="feature-list" style="margin-top: var(--element-gap);">
+                        <li>COS 存储</li>
+                        <li>SCF 无服务器</li>
+                        <li>IAM 认证</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 20: SERVER
+         =========================================== -->
+    <section class="slide" id="slide-20">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">服务器配置</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-2 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="table-wrapper reveal">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>规格</th>
+                                <th>最低要求</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>CPU</td>
+                                <td>2 核</td>
+                            </tr>
+                            <tr>
+                                <td>内存</td>
+                                <td>4 GB</td>
+                            </tr>
+                            <tr>
+                                <td>存储</td>
+                                <td>20 GB</td>
+                            </tr>
+                            <tr>
+                                <td>网络</td>
+                                <td>5 Mbps</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="flex flex-col gap-md">
+                    <div class="warning-box reveal">
+                        <div class="icon">⚠️</div>
+                        <div>
+                            <h3 style="color: var(--danger); font-size: var(--body-size);">网络要求</h3>
+                            <p style="font-size: var(--small-size);">微信验证需要公网 IP</p>
+                        </div>
+                    </div>
+                    <div class="warning-box reveal">
+                        <div class="icon">⚠️</div>
+                        <div>
+                            <h3 style="color: var(--danger); font-size: var(--body-size);">域名要求</h3>
+                            <p style="font-size: var(--small-size);">Webhook 端点需要 HTTPS 域名</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 21: MODEL TABLE
+         =========================================== -->
+    <section class="slide" id="slide-21">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">AI 模型层级</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-4 gap-md" style="margin-top: var(--content-gap);">
+                <div class="card reveal" style="border-top: 3px solid var(--text-dim);">
+                    <h3 class="text-muted">第一层</h3>
+                    <p style="font-size: var(--small-size); color: var(--text-dim);">基础</p>
+                    <p class="text-muted" style="font-size: var(--tiny-size); margin-top: var(--element-gap);">
+                        GPT-3.5 级别<br>
+                        快速响应<br>
+                        成本效益
+                    </p>
+                </div>
+                <div class="card reveal" style="border-top: 3px solid var(--primary);">
+                    <h3 class="text-primary">第二层</h3>
+                    <p style="font-size: var(--small-size); color: var(--primary);">标准</p>
+                    <p class="text-muted" style="font-size: var(--tiny-size); margin-top: var(--element-gap);">
+                        GPT-4 级别<br>
+                        均衡<br>
+                        大多数场景
+                    </p>
+                </div>
+                <div class="card reveal" style="border-top: 3px solid var(--secondary);">
+                    <h3 class="text-secondary">第三层</h3>
+                    <p style="font-size: var(--small-size); color: var(--secondary);">高级</p>
+                    <p class="text-muted" style="font-size: var(--tiny-size); margin-top: var(--element-gap);">
+                        GPT-4 Turbo<br>
+                        强推理<br>
+                        复杂任务
+                    </p>
+                </div>
+                <div class="card reveal" style="border-top: 3px solid var(--gold);">
+                    <h3 class="text-gold">第四层</h3>
+                    <p style="font-size: var(--small-size); color: var(--gold);">Premium</p>
+                    <p class="text-muted" style="font-size: var(--tiny-size); margin-top: var(--element-gap);">
+                        Claude/GPT-4V<br>
+                        多模态<br>
+                        企业
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 22: 4-STEP FLOW
+         =========================================== -->
+    <section class="slide" id="slide-22">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">工作流过程</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="flow-horizontal" style="margin-top: var(--content-gap);">
+                <div class="flow-step reveal">
+                    <div class="icon-circle">1</div>
+                    <h3>输入</h3>
+                    <p style="font-size: var(--small-size); color: var(--text-muted);">接收请求</p>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step reveal">
+                    <div class="icon-circle">2</div>
+                    <h3>处理</h3>
+                    <p style="font-size: var(--small-size); color: var(--text-muted);">AI 分析</p>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step reveal">
+                    <div class="icon-circle">3</div>
+                    <h3>执行</h3>
+                    <p style="font-size: var(--small-size); color: var(--text-muted);">运行工具</p>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step reveal">
+                    <div class="icon-circle">4</div>
+                    <h3>输出</h3>
+                    <p style="font-size: var(--small-size); color: var(--text-muted);">交付结果</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 23: PITFALL
+         =========================================== -->
+    <section class="slide" id="slide-23">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">常见陷阱</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="warning-box reveal" style="max-width: 600px; margin: var(--content-gap) auto;">
+                <div class="icon" style="font-size: 2rem;">🚨</div>
+                <div>
+                    <h3 style="color: var(--danger); margin-bottom: var(--element-gap);">Token 限制管理</h3>
+                    <p style="color: var(--text-muted);">
+                        上下文窗口是有限的。如果没有适当的记忆管理，长对话会达到 token 限制并丢失重要上下文。
+                    </p>
+                    <p style="color: var(--accent); margin-top: var(--element-gap); font-size: var(--small-size);">
+                        解决方案：实施记忆整合和摘要
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 24: PITFALLS
+         =========================================== -->
+    <section class="slide" id="slide-24">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">其他陷阱</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-2 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="warning-box reveal">
+                    <div class="icon">⚠️</div>
+                    <div>
+                        <h3 style="color: var(--danger); font-size: var(--body-size);">幻觉</h3>
+                        <p style="font-size: var(--small-size); color: var(--text-muted); margin-top: var(--element-gap);">
+                            AI 可能会生成看似合理但不正确的信息。务必验证关键输出。
+                        </p>
+                    </div>
+                </div>
+                <div class="warning-box reveal">
+                    <div class="icon">⚠️</div>
+                    <div>
+                        <h3 style="color: var(--danger); font-size: var(--body-size);">延迟</h3>
+                        <p style="font-size: var(--small-size); color: var(--text-muted); margin-top: var(--element-gap);">
+                            复杂推理需要时间。为响应时间设定适当的用户期望。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 25: AI INSTALL
+         =========================================== -->
+    <section class="slide" id="slide-25">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">AI 工具安装</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-3 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal">
+                    <div class="icon-box" style="margin: 0 auto var(--element-gap);">🖥️</div>
+                    <h3>CLI 工具</h3>
+                    <p style="font-size: var(--small-size);" class="text-muted">为高级用户提供命令行安装程序</p>
+                    <code style="display: block; margin-top: var(--element-gap); padding: var(--element-gap); background: rgba(0,0,0,0.3); border-radius: var(--border-radius-sm); font-size: var(--tiny-size);">
+                        npm install -g openclaw
+                    </code>
+                </div>
+                <div class="card reveal">
+                    <div class="icon-box" style="margin: 0 auto var(--element-gap);">📦</div>
+                    <h3>SDK</h3>
+                    <p style="font-size: var(--small-size);" class="text-muted">集成的开发工具包</p>
+                    <code style="display: block; margin-top: var(--element-gap); padding: var(--element-gap); background: rgba(0,0,0,0.3); border-radius: var(--border-radius-sm); font-size: var(--tiny-size);">
+                        pip install openclaw-sdk
+                    </code>
+                </div>
+                <div class="card reveal">
+                    <div class="icon-box" style="margin: 0 auto var(--element-gap);">🐳</div>
+                    <h3>Docker</h3>
+                    <p style="font-size: var(--small-size);" class="text-muted">容器化部署</p>
+                    <code style="display: block; margin-top: var(--element-gap); padding: var(--element-gap); background: rgba(0,0,0,0.3); border-radius: var(--border-radius-sm); font-size: var(--tiny-size);">
+                        docker pull openclaw/agent
+                    </code>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 26: CHECKLIST
+         =========================================== -->
+    <section class="slide" id="slide-26">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">部署前检查清单</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="card reveal" style="max-width: 500px; margin: var(--content-gap) auto;">
+                <ul class="check-list">
+                    <li>配置环境变量</li>
+                    <li>设置 HTTPS 端点</li>
+                    <li>验证 API 凭证</li>
+                    <li>测试 webhook 连接</li>
+                    <li>配置记忆设置</li>
+                    <li>设置速率限制</li>
+                    <li>启用日志</li>
+                    <li>规划回滚策略</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 27: 8 SCENES
+         =========================================== -->
+    <section class="slide" id="slide-27">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">应用场景</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-4 gap-sm" style="margin-top: var(--content-gap);">
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.25rem;">💼</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">客服</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.25rem;">📊</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">数据分析</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.25rem;">📝</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">内容创作</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.25rem;">🔍</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">研究</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.25rem;">💻</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">代码审查</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.25rem;">📅</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">日程安排</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.25rem;">🎨</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">设计</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.25rem;">📚</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">教育</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 28: WECOM
+         =========================================== -->
+    <section class="slide" id="slide-28">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">企业微信集成</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-3 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal text-center">
+                    <div class="badge" style="margin-bottom: var(--element-gap);">1</div>
+                    <h3>连接</h3>
+                    <p style="font-size: var(--small-size);" class="text-muted">将企业微信工作区链接到 OpenClaw</p>
+                </div>
+                <div class="card reveal text-center">
+                    <div class="badge secondary" style="margin-bottom: var(--element-gap);">2</div>
+                    <h3>配置</h3>
+                    <p style="font-size: var(--small-size);" class="text-muted">设置机器人和权限</p>
+                </div>
+                <div class="card reveal text-center">
+                    <div class="badge accent" style="margin-bottom: var(--element-gap);">3</div>
+                    <h3>部署</h3>
+                    <p style="font-size: var(--small-size);" class="text-muted">在渠道中激活 AI 智能体</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 29: ZENTAO
+         =========================================== -->
+    <section class="slide" id="slide-29">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">禅道集成</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-3 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal">
+                    <h3>任务创建</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">
+                        通过自然语言创建和分配任务
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h3>进度跟踪</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">
+                        通过 AI 摘要监控项目状态
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h3>问题管理</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">
+                        自动创建 bug 并跟踪解决方案
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 30: XIAOHONGSHU
+         =========================================== -->
+    <section class="slide" id="slide-30">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">小红书工作流</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="flow-horizontal" style="margin-top: var(--content-gap);">
+                <div class="flow-step reveal">
+                    <div class="icon-circle">1</div>
+                    <h3>构思</h3>
+                    <p style="font-size: var(--small-size); color: var(--text-muted);">主题研究</p>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step reveal">
+                    <div class="icon-circle">2</div>
+                    <h3>内容</h3>
+                    <p style="font-size: var(--small-size); color: var(--text-muted);">AI 起草</p>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="flow-step reveal">
+                    <div class="icon-circle">3</div>
+                    <h3>发布</h3>
+                    <p style="font-size: var(--small-size); color: var(--text-muted);">自动发布</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 31: ARTICLE
+         =========================================== -->
+    <section class="slide" id="slide-31">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">文章生成</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-2 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal">
+                    <h3 class="text-primary">输入</h3>
+                    <ul class="compact-list" style="margin-top: var(--element-gap);">
+                        <li>主题或关键词</li>
+                        <li>目标受众</li>
+                        <li>字数要求</li>
+                        <li>语气偏好</li>
+                    </ul>
+                </div>
+                <div class="card reveal">
+                    <h3 class="text-accent">输出</h3>
+                    <ul class="compact-list" style="margin-top: var(--element-gap);">
+                        <li>SEO 优化文章</li>
+                        <li>格式化 Markdown</li>
+                        <li>配图建议</li>
+                        <li>Meta 描述</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 32: SCHEDULED
+         =========================================== -->
+    <section class="slide" id="slide-32">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">定时任务</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="bar-chart" style="max-width: 500px; margin: var(--content-gap) auto;">
+                <div class="bar-item reveal">
+                    <div class="flex flex-between">
+                        <span class="bar-label">每日报告</span>
+                        <span style="font-size: var(--small-size); color: var(--primary);">65%</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill blue" style="width: 65%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item reveal">
+                    <div class="flex flex-between">
+                        <span class="bar-label">每周摘要</span>
+                        <span style="font-size: var(--small-size); color: var(--secondary);">25%</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill purple" style="width: 25%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item reveal">
+                    <div class="flex flex-between">
+                        <span class="bar-label">每月回顾</span>
+                        <span style="font-size: var(--small-size); color: var(--accent);">10%</span>
+                    </div>
+                    <div class="bar-track">
+                        <div class="bar-fill cyan" style="width: 10%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 33: PPT GENERATION
+         =========================================== -->
+    <section class="slide" id="slide-33">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">PPT 生成</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="flow-horizontal" style="margin-top: var(--content-gap);">
+                <div class="card reveal" style="padding: var(--card-padding); text-align: center;">
+                    <div style="font-size: 2rem;">📝</div>
+                    <h3 style="margin-top: var(--element-gap);">输入</h3>
+                    <p style="font-size: var(--small-size);" class="text-muted">主题大纲</p>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="card glow-blue reveal" style="padding: var(--card-padding); text-align: center;">
+                    <div style="font-size: 2rem;">⚙️</div>
+                    <h3 style="margin-top: var(--element-gap);">处理</h3>
+                    <p style="font-size: var(--small-size);" class="text-muted">AI 创作</p>
+                </div>
+                <span class="flow-arrow">→</span>
+                <div class="card glow-cyan reveal" style="padding: var(--card-padding); text-align: center;">
+                    <div style="font-size: 2rem;">📊</div>
+                    <h3 style="margin-top: var(--element-gap);">输出</h3>
+                    <p style="font-size: var(--small-size);" class="text-muted">幻灯片</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 34: GROUP MESSAGES
+         =========================================== -->
+    <section class="slide" id="slide-34">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">群消息处理</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="flow-vertical" style="margin-top: var(--content-gap);">
+                <div class="flex flex-center gap-md reveal">
+                    <div class="card" style="padding: var(--element-gap) var(--card-padding);">
+                        <h3>1. 接收</h3>
+                        <p style="font-size: var(--small-size);" class="text-muted">多个来源</p>
+                    </div>
+                </div>
+                <span class="flow-arrow">↓</span>
+                <div class="flex flex-center gap-md reveal">
+                    <div class="card" style="padding: var(--element-gap) var(--card-padding);">
+                        <h3>2. 聚合</h3>
+                        <p style="font-size: var(--small-size);" class="text-muted">去重与关联</p>
+                    </div>
+                </div>
+                <span class="flow-arrow">↓</span>
+                <div class="flex flex-center gap-md reveal">
+                    <div class="card glow-blue" style="padding: var(--element-gap) var(--card-padding);">
+                        <h3>3. 响应</h3>
+                        <p style="font-size: var(--small-size);" class="text-muted">统一回复</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 35: CODE REVIEW
+         =========================================== -->
+    <section class="slide" id="slide-35">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">代码审查</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-3 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal">
+                    <h3 class="text-primary">静态分析</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">
+                        自动检查代码质量和风格
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h3 class="text-secondary">Bug 检测</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">
+                        AI 驱动的漏洞扫描
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <h3 class="text-accent">优化</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">
+                        性能和效率建议
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 36: BROWSER LAYERS
+         =========================================== -->
+    <section class="slide" id="slide-36">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">浏览器自动化层级</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="flex flex-col gap-sm" style="margin-top: var(--content-gap); max-width: 600px; margin-left: auto; margin-right: auto;">
+                <div class="bar-item reveal">
+                    <span class="bar-label">应用层</span>
+                    <div class="bar-track">
+                        <div class="bar-fill gold" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item reveal">
+                    <span class="bar-label">DOM 操作</span>
+                    <div class="bar-track">
+                        <div class="bar-fill purple" style="width: 80%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item reveal">
+                    <span class="bar-label">渲染引擎</span>
+                    <div class="bar-track">
+                        <div class="bar-fill blue" style="width: 60%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item reveal">
+                    <span class="bar-label">网络层</span>
+                    <div class="bar-track">
+                        <div class="bar-fill cyan" style="width: 40%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 37: ADVANTAGES
+         =========================================== -->
+    <section class="slide" id="slide-37">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">关键优势</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-5 gap-md" style="margin-top: var(--content-gap);">
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.5rem;">⚡</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">快速部署</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.5rem;">🔓</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">开源</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.5rem;">📈</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">可扩展</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.5rem;">🛡️</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">安全</p>
+                </div>
+                <div class="card reveal text-center" style="padding: var(--element-gap);">
+                    <div style="font-size: 1.5rem;">🔧</div>
+                    <p style="font-size: var(--tiny-size); margin-top: 0.25rem;">可定制</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 38: ADVANTAGE COMPARE
+         =========================================== -->
+    <section class="slide" id="slide-38">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">竞争优势</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-2 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card glow-blue reveal">
+                    <h3 class="text-primary">OpenClaw</h3>
+                    <ul class="feature-list" style="margin-top: var(--element-gap);">
+                        <li>完整记忆持久化</li>
+                        <li>开放工具框架</li>
+                        <li>多渠道原生</li>
+                        <li>企业级就绪</li>
+                    </ul>
+                </div>
+                <div class="card reveal">
+                    <h3 class="text-muted">其他</h3>
+                    <ul class="feature-list" style="margin-top: var(--element-gap); opacity: 0.6;">
+                        <li>仅会话记忆</li>
+                        <li>有限的工具支持</li>
+                        <li>单渠道</li>
+                        <li>仅基础层</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 39: OPEN SOURCE
+         =========================================== -->
+    <section class="slide" id="slide-39">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">开源优势</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-2 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal">
+                    <div class="icon-box" style="margin-bottom: var(--element-gap);">👥</div>
+                    <h3>社区</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">
+                        加入数千名开发者，共同构建未来
+                    </p>
+                </div>
+                <div class="card reveal">
+                    <div class="icon-box" style="margin-bottom: var(--element-gap);">🔍</div>
+                    <h3>透明</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">
+                        对代码和安全实践的完全可见性
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 40: 89.5%
+         =========================================== -->
+    <section class="slide" id="slide-40">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content flex flex-col flex-center text-center">
+            <div class="big-number reveal">89.5%</div>
+            <h2 class="reveal" style="color: var(--text-muted);">任务完成率</h2>
+            <p class="reveal" style="max-width: 500px; margin-top: var(--element-gap); color: var(--text-dim);">
+                基于 10,000+ 实际任务的内部基准测试
+            </p>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 41: 5 DRAWBACKS
+         =========================================== -->
+    <section class="slide" id="slide-41">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">当前局限性</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="card reveal" style="max-width: 600px; margin: var(--content-gap) auto;">
+                <ul class="compact-list" style="list-style: none;">
+                    <li style="padding-left: 0; display: flex; align-items: center; gap: var(--element-gap);">
+                        <span style="color: var(--danger);">⚠️</span>
+                        <span>高风险决策需要人工审核</span>
+                    </li>
+                    <li style="padding-left: 0; display: flex; align-items: center; gap: var(--element-gap);">
+                        <span style="color: var(--danger);">⚠️</span>
+                        <span>大型模型批次的 GPU 内存限制</span>
+                    </li>
+                    <li style="padding-left: 0; display: flex; align-items: center; gap: var(--element-gap);">
+                        <span style="color: var(--danger);">⚠️</span>
+                        <span>云模型的互联网依赖</span>
+                    </li>
+                    <li style="padding-left: 0; display: flex; align-items: center; gap: var(--element-gap);">
+                        <span style="color: var(--danger);">⚠️</span>
+                        <span>自定义工具开发的学习曲线</span>
+                    </li>
+                    <li style="padding-left: 0; display: flex; align-items: center; gap: var(--element-gap);">
+                        <span style="color: var(--danger);">⚠️</span>
+                        <span>复杂多智能体协调仍在测试中</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 42: TOKEN COST
+         =========================================== -->
+    <section class="slide" id="slide-42">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">Token 经济</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-2 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal text-center">
+                    <h3 class="text-primary">输入 Token</h3>
+                    <p style="font-size: var(--h2-size);" class="text-gradient">$0.50</p>
+                    <p class="text-muted" style="font-size: var(--small-size);">每 100 万 Token</p>
+                </div>
+                <div class="card reveal text-center">
+                    <h3 class="text-secondary">输出 Token</h3>
+                    <p style="font-size: var(--h2-size);" class="text-gradient">$1.50</p>
+                    <p class="text-muted" style="font-size: var(--small-size);">每 100 万 Token</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 43: SECURITY
+         =========================================== -->
+    <section class="slide" id="slide-43">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">安全特性</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-2 gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal">
+                    <h3 class="text-primary">数据保护</h3>
+                    <ul class="feature-list" style="margin-top: var(--element-gap);">
+                        <li>端到端加密</li>
+                        <li>数据存储选项</li>
+                        <li>自动删除策略</li>
+                    </ul>
+                </div>
+                <div class="card reveal">
+                    <h3 class="text-secondary">访问控制</h3>
+                    <ul class="feature-list" style="margin-top: var(--element-gap);">
+                        <li>基于角色的权限</li>
+                        <li>API 密钥管理</li>
+                        <li>审计日志</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 44: SKILLS + ROADMAP
+         =========================================== -->
+    <section class="slide" id="slide-44">
+        <div class="bg-gradient-radial"></div>
+        <div class="slide-content">
+            <h2 class="text-center reveal">技能与路线图</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="flex flex-col gap-lg" style="margin-top: var(--content-gap);">
+                <div class="card reveal">
+                    <h3 style="margin-bottom: var(--element-gap);">当前技能</h3>
+                    <div class="tag-cloud">
+                        <span class="tag">网络搜索</span>
+                        <span class="tag">代码生成</span>
+                        <span class="tag">图像识别</span>
+                        <span class="tag">数据分析</span>
+                        <span class="tag">API 集成</span>
+                        <span class="tag">文件操作</span>
+                    </div>
+                </div>
+                <div class="roadmap reveal">
+                    <div class="roadmap-item">
+                        <span class="roadmap-quarter">Q2</span>
+                        <span>多智能体协调</span>
+                    </div>
+                    <div class="roadmap-item q2">
+                        <span class="roadmap-quarter">Q3</span>
+                        <span>视频理解</span>
+                    </div>
+                    <div class="roadmap-item q3">
+                        <span class="roadmap-quarter">Q4</span>
+                        <span>自主智能体</span>
+                    </div>
+                    <div class="roadmap-item q4">
+                        <span class="roadmap-quarter">Q4</span>
+                        <span>企业集成</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         SLIDE 45: CLOSING
+         =========================================== -->
+    <section class="slide" id="slide-45">
+        <div class="bg-gradient-radial"></div>
+        <div class="bg-grid"></div>
+        <div class="slide-content flex flex-col flex-center text-center">
+            <h2 class="reveal">立即开始</h2>
+            <div class="gradient-line centered reveal"></div>
+            <div class="grid grid-3 gap-md reveal" style="margin-top: var(--content-gap); max-width: 900px;">
+                <div class="card glow-blue text-center">
+                    <div style="font-size: 2rem;">🚀</div>
+                    <h3 style="margin-top: var(--element-gap);">快速开始</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">
+                        npm install -g openclaw
+                    </p>
+                </div>
+                <div class="card glow-purple text-center">
+                    <div style="font-size: 2rem;">📖</div>
+                    <h3 style="margin-top: var(--element-gap);">文档</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">
+                        docs.openclaw.ai
+                    </p>
+                </div>
+                <div class="card glow-cyan text-center">
+                    <div style="font-size: 2rem;">💬</div>
+                    <h3 style="margin-top: var(--element-gap);">社区</h3>
+                    <p class="text-muted" style="font-size: var(--small-size);">
+                        discord.gg/openclaw
+                    </p>
+                </div>
+            </div>
+            <div class="flow-horizontal reveal" style="margin-top: var(--content-gap);">
+                <span class="badge">1. 安装</span>
+                <span class="flow-arrow">→</span>
+                <span class="badge secondary">2. 配置</span>
+                <span class="flow-arrow">→</span>
+                <span class="badge accent">3. 部署</span>
+                <span class="flow-arrow">→</span>
+                <span class="badge gold">4. 扩展</span>
+            </div>
+            <p class="reveal" style="margin-top: var(--content-gap); color: var(--text-dim);">
+                OpenClaw — 赋能智能自动化
+            </p>
+        </div>
+    </section>
+
+    <!-- ===========================================
+         JAVASCRIPT: SLIDE PRESENTATION CLASS
+         =========================================== -->
+    <script>
+        /* ===========================================
+           SLIDE PRESENTATION CONTROLLER
+           Handles navigation, animations, progress
+           =========================================== */
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.totalSlides = this.slides.length;
+                this.currentSlide = 0;
+                this.isAnimating = false;
+                this.scrollTimeout = null;
+
+                this.init();
+            }
+
+            init() {
+                this.createNavDots();
+                this.setupIntersectionObserver();
+                this.setupKeyboardNav();
+                this.setupWheelNav();
+                this.setupTouchNav();
+                this.updateProgress();
+                this.updateSlideNumber();
+
+                // Mark first slide as visible
+                this.slides[0].classList.add('visible');
+            }
+
+            /* Create navigation dots */
+            createNavDots() {
+                const navDots = document.getElementById('navDots');
+
+                // Limit dots to avoid clutter (show every 5th or so for large decks)
+                const dotInterval = Math.ceil(this.totalSlides / 20);
+
+                for (let i = 0; i < this.totalSlides; i++) {
+                    if (i % dotInterval === 0 || i === this.totalSlides - 1) {
+                        const dot = document.createElement('button');
+                        dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+                        dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+                        dot.addEventListener('click', () => this.goToSlide(i));
+                        navDots.appendChild(dot);
+                    }
+                }
+
+                this.navDots = document.querySelectorAll('.nav-dot');
+            }
+
+            /* Intersection Observer for scroll-triggered animations */
+            setupIntersectionObserver() {
+                const options = {
+                    root: null,
+                    rootMargin: '0px',
+                    threshold: 0.5
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            const slideIndex = this.getSlideIndex(entry.target);
+                            this.currentSlide = slideIndex;
+                            this.updateProgress();
+                            this.updateSlideNumber();
+                            this.updateNavDots();
+                        }
+                    });
+                }, options);
+
+                this.slides.forEach(slide => observer.observe(slide));
+            }
+
+            /* Get slide index */
+            getSlideIndex(slide) {
+                return Array.from(this.slides).indexOf(slide);
+            }
+
+            /* Keyboard navigation */
+            setupKeyboardNav() {
+                document.addEventListener('keydown', (e) => {
+                    if (this.isAnimating) return;
+
+                    switch (e.key) {
+                        case 'ArrowDown':
+                        case 'ArrowRight':
+                        case ' ':
+                        case 'PageDown':
+                            e.preventDefault();
+                            this.nextSlide();
+                            break;
+                        case 'ArrowUp':
+                        case 'ArrowLeft':
+                        case 'PageUp':
+                            e.preventDefault();
+                            this.prevSlide();
+                            break;
+                        case 'Home':
+                            e.preventDefault();
+                            this.goToSlide(0);
+                            break;
+                        case 'End':
+                            e.preventDefault();
+                            this.goToSlide(this.totalSlides - 1);
+                            break;
+                    }
+                });
+            }
+
+            /* Mouse wheel navigation */
+            setupWheelNav() {
+                let lastWheelTime = 0;
+                const wheelThrottle = 800;
+
+                window.addEventListener('wheel', (e) => {
+                    const now = Date.now();
+                    if (now - lastWheelTime < wheelThrottle) return;
+
+                    if (this.isAnimating) return;
+
+                    if (e.deltaY > 0) {
+                        this.nextSlide();
+                    } else if (e.deltaY < 0) {
+                        this.prevSlide();
+                    }
+
+                    lastWheelTime = now;
+                }, { passive: true });
+            }
+
+            /* Touch/swipe navigation */
+            setupTouchNav() {
+                let touchStartY = 0;
+                let touchEndY = 0;
+                const swipeThreshold = 50;
+
+                document.addEventListener('touchstart', (e) => {
+                    touchStartY = e.changedTouches[0].screenY;
+                }, { passive: true });
+
+                document.addEventListener('touchend', (e) => {
+                    touchEndY = e.changedTouches[0].screenY;
+                    const diff = touchStartY - touchEndY;
+
+                    if (Math.abs(diff) > swipeThreshold) {
+                        if (diff > 0) {
+                            this.nextSlide();
+                        } else {
+                            this.prevSlide();
+                        }
+                    }
+                }, { passive: true });
+            }
+
+            /* Navigate to next slide */
+            nextSlide() {
+                if (this.currentSlide < this.totalSlides - 1) {
+                    this.goToSlide(this.currentSlide + 1);
+                }
+            }
+
+            /* Navigate to previous slide */
+            prevSlide() {
+                if (this.currentSlide > 0) {
+                    this.goToSlide(this.currentSlide - 1);
+                }
+            }
+
+            /* Go to specific slide */
+            goToSlide(index) {
+                if (index < 0 || index >= this.totalSlides || this.isAnimating) return;
+
+                this.isAnimating = true;
+                this.currentSlide = index;
+
+                this.slides[index].scrollIntoView({ behavior: 'smooth' });
+
+                this.updateProgress();
+                this.updateSlideNumber();
+                this.updateNavDots();
+
+                setTimeout(() => {
+                    this.isAnimating = false;
+                }, 600);
+            }
+
+            /* Update progress bar */
+            updateProgress() {
+                const progress = ((this.currentSlide + 1) / this.totalSlides) * 100;
+                document.getElementById('progressBar').style.width = `${progress}%`;
+            }
+
+            /* Update slide number display */
+            updateSlideNumber() {
+                document.getElementById('slideNumber').textContent =
+                    `${this.currentSlide + 1} / ${this.totalSlides}`;
+            }
+
+            /* Update navigation dots */
+            updateNavDots() {
+                const dotIndex = this.getActiveDotIndex();
+                this.navDots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === dotIndex);
+                });
+            }
+
+            /* Get active dot index based on current slide */
+            getActiveDotIndex() {
+                const dotInterval = Math.ceil(this.totalSlides / 20);
+                return Math.floor(this.currentSlide / dotInterval);
+            }
+        }
+
+        /* Initialize presentation when DOM is ready */
+        document.addEventListener('DOMContentLoaded', () => {
+            new SlidePresentation();
+        });
+
+        /* Handle reduced motion preference */
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.style.scrollBehavior = 'auto';
+        }
+    </script>
+</body>
+</html>

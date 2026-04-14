@@ -1,0 +1,2703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw - 从部署到实践全指南</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #050a05;
+  --accent: #00ff41;
+  --accent-dim: rgba(0,255,65,0.15);
+  --accent-glow: rgba(0,255,65,0.4);
+  --text: #c8ffc8;
+  --text-muted: #4a7a4a;
+  --card-bg: #0d1f0d;
+  --card-border: #1a3a1a;
+  --warning: #ff4444;
+  --gold: #ffd700;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: 'Noto Sans SC', sans-serif;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Scanline Overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9998;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.1) 2px,
+    rgba(0,0,0,0.1) 4px
+  );
+}
+
+/* Grid Background */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  background-image:
+    linear-gradient(var(--accent-dim) 1px, transparent 1px),
+    linear-gradient(90deg, var(--accent-dim) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Progress Bar */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--accent);
+  z-index: 10000;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* Navigation Dots */
+#nav-dots {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-dot {
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-dot:hover, .nav-dot.active {
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* Slide Counter */
+#slide-counter {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-muted);
+  z-index: 10000;
+}
+
+/* Slides */
+.slide {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(20px, 5vw, 60px);
+  scroll-snap-align: start;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Terminal Window */
+.terminal-window {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  width: 100%;
+  max-width: 1200px;
+  position: relative;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: rgba(0,0,0,0.3);
+  border-bottom: 1px solid var(--card-border);
+}
+
+.terminal-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 0;
+}
+
+.terminal-dot.red { background: #ff5f56; }
+.terminal-dot.yellow { background: #ffbd2e; }
+.terminal-dot.green { background: #27c93f; }
+
+.terminal-title {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.terminal-body {
+  padding: clamp(20px, 4vw, 40px);
+}
+
+/* Prompt Style */
+.prompt {
+  font-family: var(--font-mono);
+  color: var(--accent);
+}
+
+.prompt::before {
+  content: '> ';
+  color: var(--accent);
+}
+
+/* Cards */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  padding: clamp(15px, 3vw, 25px);
+  position: relative;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-shadow: 0 0 20px var(--accent-dim), inset 0 0 20px var(--accent-dim);
+  pointer-events: none;
+}
+
+.card-gold {
+  border-color: var(--gold);
+}
+
+.card-gold::before {
+  box-shadow: 0 0 20px rgba(255,215,0,0.2), inset 0 0 20px rgba(255,215,0,0.2);
+}
+
+.card-warning {
+  border-color: var(--warning);
+}
+
+.card-warning::before {
+  box-shadow: 0 0 20px rgba(255,68,68,0.2), inset 0 0 20px rgba(255,68,68,0.2);
+}
+
+/* Grid Layouts */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(15px, 3vw, 30px);
+  width: 100%;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: clamp(15px, 3vw, 30px);
+  width: 100%;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: clamp(15px, 3vw, 25px);
+  width: 100%;
+}
+
+.grid-5 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: clamp(10px, 2vw, 20px);
+  width: 100%;
+}
+
+.grid-8 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: clamp(10px, 2vw, 15px);
+  width: 100%;
+}
+
+/* Typography */
+h1 {
+  font-family: var(--font-mono);
+  font-size: clamp(2rem, 6vw, 4rem);
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 30px var(--accent-glow);
+  margin-bottom: clamp(10px, 2vw, 20px);
+}
+
+h2 {
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: clamp(15px, 3vw, 30px);
+}
+
+h3 {
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: clamp(10px, 2vw, 15px);
+}
+
+p {
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  color: var(--text);
+  margin-bottom: clamp(8px, 1.5vw, 12px);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-large {
+  font-size: clamp(3rem, 10vw, 8rem);
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+
+.text-mono {
+  font-family: var(--font-mono);
+}
+
+.subtitle {
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  color: var(--text-muted);
+}
+
+/* Flex Utilities */
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.gap-sm { gap: clamp(8px, 1.5vw, 15px); }
+.gap-md { gap: clamp(15px, 3vw, 30px); }
+.gap-lg { gap: clamp(20px, 4vw, 40px); }
+
+/* Lists */
+ul, ol {
+  list-style: none;
+}
+
+li {
+  margin-bottom: clamp(5px, 1vw, 10px);
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+}
+
+th, td {
+  padding: clamp(8px, 1.5vw, 15px);
+  text-align: left;
+  border: 1px solid var(--card-border);
+}
+
+th {
+  background: var(--card-bg);
+  color: var(--accent);
+}
+
+tr:nth-child(even) {
+  background: rgba(0,255,65,0.05);
+}
+
+/* Tags */
+.tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  font-family: var(--font-mono);
+  font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+  margin: 4px;
+}
+
+.tag-gold {
+  border-color: var(--gold);
+  background: rgba(255,215,0,0.15);
+}
+
+/* Number Circles */
+.num-circle {
+  width: clamp(30px, 5vw, 50px);
+  height: clamp(30px, 5vw, 50px);
+  border: 2px solid var(--accent);
+  border-radius: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* Animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+.reveal-delay-6 { transition-delay: 0.6s; }
+
+/* Bar Styles */
+.bar {
+  height: clamp(30px, 5vw, 50px);
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  display: flex;
+  align-items: center;
+  padding: 0 clamp(10px, 2vw, 20px);
+  font-family: var(--font-mono);
+  font-size: clamp(0.8rem, 1.5vw, 1rem);
+}
+
+.bar-label {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Architecture Bars */
+.arch-bar {
+  padding: clamp(15px, 3vw, 25px);
+  background: var(--card-bg);
+  border: 2px solid var(--accent);
+  text-align: center;
+}
+
+.arch-bar-label {
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* Pyramid */
+.pyramid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 2vw, 20px);
+}
+
+.pyramid-level {
+  padding: clamp(15px, 3vw, 25px);
+  background: var(--card-bg);
+  border: 1px solid;
+  text-align: center;
+  font-family: var(--font-mono);
+}
+
+.pyramid-level.l1 {
+  width: 70%;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pyramid-level.l2 {
+  width: 55%;
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.pyramid-level.l3 {
+  width: 40%;
+  border-color: #4a9eff;
+  color: #4a9eff;
+}
+
+.pyramid-level.l4 {
+  width: 25%;
+  border-color: var(--text-muted);
+  color: var(--text-muted);
+}
+
+/* Ladder Steps */
+.ladder {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(15px, 3vw, 25px);
+}
+
+.ladder-step {
+  display: flex;
+  align-items: center;
+  gap: clamp(15px, 3vw, 25px);
+}
+
+.ladder-num {
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  color: var(--accent);
+  width: clamp(40px, 6vw, 60px);
+  text-align: center;
+}
+
+.ladder-content {
+  flex: 1;
+  padding: clamp(12px, 2vw, 20px);
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+}
+
+/* Message Flow */
+.flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 2vw, 20px);
+  flex-wrap: wrap;
+}
+
+.flow-item {
+  padding: clamp(10px, 2vw, 20px);
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  font-family: var(--font-mono);
+  text-align: center;
+  min-width: clamp(80px, 15vw, 120px);
+}
+
+.flow-arrow {
+  font-family: var(--font-mono);
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
+  color: var(--accent);
+}
+
+/* Checklist */
+.checklist {
+  list-style: none;
+}
+
+.checklist li {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 2vw, 15px);
+  padding: clamp(8px, 1.5vw, 12px) 0;
+  font-family: var(--font-mono);
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+}
+
+.checkbox {
+  width: clamp(18px, 2.5vw, 24px);
+  height: clamp(18px, 2.5vw, 24px);
+  border: 2px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Scene Grid Items */
+.scene-item {
+  padding: clamp(15px, 3vw, 25px);
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  text-align: center;
+}
+
+.scene-icon {
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  margin-bottom: clamp(8px, 1.5vw, 12px);
+}
+
+/* Roadmap */
+.roadmap {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(15px, 3vw, 25px);
+}
+
+.roadmap-item {
+  display: flex;
+  align-items: center;
+  gap: clamp(15px, 3vw, 25px);
+}
+
+.roadmap-marker {
+  width: clamp(12px, 2vw, 18px);
+  height: clamp(12px, 2vw, 18px);
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.roadmap-content {
+  flex: 1;
+  padding: clamp(10px, 2vw, 15px);
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  font-family: var(--font-mono);
+  font-size: clamp(0.85rem, 1.5vw, 1rem);
+}
+
+/* Cover Slide Specific */
+.cover-content {
+  text-align: center;
+}
+
+.cover-command {
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 5vw, 3.5rem);
+  color: var(--accent);
+  text-shadow: 0 0 40px var(--accent-glow);
+  margin-bottom: clamp(15px, 3vw, 30px);
+}
+
+.cover-subtitle {
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  color: var(--text-muted);
+}
+
+/* TOC */
+.toc-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2vw, 20px);
+}
+
+.toc-item {
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, 2.5vw, 1.5rem);
+  padding: clamp(10px, 2vw, 15px);
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  transition: all 0.3s ease;
+}
+
+.toc-item:hover {
+  background: var(--accent-dim);
+  transform: translateX(10px);
+}
+
+/* Section Header */
+.section-num {
+  font-family: var(--font-mono);
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 700;
+  color: var(--accent-dim);
+  position: absolute;
+  top: clamp(20px, 5vw, 40px);
+  left: clamp(20px, 5vw, 40px);
+}
+
+.section-title {
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  color: var(--accent);
+  text-align: center;
+  margin-bottom: clamp(20px, 4vw, 40px);
+}
+
+/* Comparison */
+.compare-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(15px, 3vw, 30px);
+  width: 100%;
+}
+
+.compare-left {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  padding: clamp(15px, 3vw, 25px);
+}
+
+.compare-right {
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  padding: clamp(15px, 3vw, 25px);
+}
+
+/* Error Card */
+.error-card {
+  background: rgba(255,68,68,0.1);
+  border: 2px solid var(--warning);
+  padding: clamp(15px, 3vw, 25px);
+  font-family: var(--font-mono);
+}
+
+.error-title {
+  color: var(--warning);
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  margin-bottom: clamp(8px, 1.5vw, 12px);
+}
+
+.error-msg {
+  color: #ff8888;
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+}
+
+/* Two Column */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(20px, 4vw, 40px);
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .two-col, .compare-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Action Steps */
+.action-steps {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(15px, 3vw, 25px);
+  width: 100%;
+  max-width: 600px;
+}
+
+.action-step {
+  display: flex;
+  align-items: center;
+  gap: clamp(15px, 3vw, 25px);
+  padding: clamp(12px, 2vw, 20px);
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+}
+
+.action-num {
+  width: clamp(35px, 5vw, 50px);
+  height: clamp(35px, 5vw, 50px);
+  background: var(--accent);
+  color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  flex-shrink: 0;
+}
+
+.action-text {
+  font-family: var(--font-mono);
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+}
+
+/* Browser Layers */
+.layer-bar {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 2vw, 20px);
+  padding: clamp(10px, 2vw, 15px);
+  background: var(--card-bg);
+  border: 1px solid var(--accent);
+  margin-bottom: clamp(8px, 1.5vw, 12px);
+}
+
+.layer-label {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent);
+  min-width: clamp(40px, 6vw, 60px);
+}
+
+.layer-progress {
+  flex: 1;
+  height: clamp(15px, 2.5vw, 25px);
+  background: var(--accent-dim);
+  position: relative;
+}
+
+.layer-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.6s ease;
+}
+
+.layer-fill.l0 { width: 100%; }
+.layer-fill.l1 { width: 75%; }
+.layer-fill.l2 { width: 50%; }
+.layer-fill.l3 { width: 25%; }
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Print */
+@media print {
+  .slide {
+    page-break-after: always;
+    min-height: auto;
+  }
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<div id="nav-dots"></div>
+
+<div id="slide-counter">1 / 45</div>
+
+<!-- SLIDE 1: Cover -->
+<section class="slide" id="slide-1">
+  <div class="terminal-window" style="max-width: 900px;">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">openclaw — knowledge_graph</span>
+    </div>
+    <div class="terminal-body flex flex-col flex-center gap-lg">
+      <div class="cover-content reveal">
+        <div class="cover-command">$ OpenClaw knowledge_graph</div>
+        <p class="cover-subtitle">// 从部署到实践全指南</p>
+      </div>
+      <div style="margin-top: 40px;">
+        <span class="tag">AI Agent</span>
+        <span class="tag">Terminal</span>
+        <span class="tag">Green</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 2: TOC -->
+<section class="slide" id="slide-2">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">index — table_of_contents</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">目录索引</h2>
+      <div class="toc-list">
+        <div class="toc-item reveal reveal-delay-1"><span class="prompt">01</span> 认识 OpenClaw</div>
+        <div class="toc-item reveal reveal-delay-2"><span class="prompt">02</span> 部署实战</div>
+        <div class="toc-item reveal reveal-delay-3"><span class="prompt">03</span> 场景实践</div>
+        <div class="toc-item reveal reveal-delay-4"><span class="prompt">04</span> 优势与挑战</div>
+        <div class="toc-item reveal reveal-delay-5"><span class="prompt">05</span> 安全与未来</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3: Problem -->
+<section class="slide" id="slide-3">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">problem — current_challenges</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">痛点问题</h2>
+      <div class="compare-row">
+        <div class="compare-left reveal reveal-delay-1">
+          <h3 class="text-muted">传统方案</h3>
+          <ul class="text-muted" style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>// 部署复杂，维护成本高</li>
+            <li>// 依赖国外服务，延迟高</li>
+            <li>// 数据安全难以保障</li>
+            <li>// 定制化能力有限</li>
+            <li>// 学习曲线陡峭</li>
+          </ul>
+        </div>
+        <div class="compare-right reveal reveal-delay-2">
+          <h3 class="text-accent">OpenClaw 方案</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>> 一键部署，开箱即用</li>
+            <li>> 本地化部署，低延迟</li>
+            <li>> 数据完全自主可控</li>
+            <li>> 高度可定制扩展</li>
+            <li>> 友好的中文界面</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4: Positioning -->
+<section class="slide" id="slide-4">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">positioning — core_values</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">产品定位</h2>
+      <div class="grid-4">
+        <div class="card reveal reveal-delay-1">
+          <h3 class="text-accent"><span class="prompt">AI</span> Native</h3>
+          <p class="text-muted" style="font-size: clamp(0.8rem, 1.3vw, 0.95rem);">专为AI Agent设计的架构，从底层支持大模型能力</p>
+        </div>
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent"><span class="prompt">Local</span> First</h3>
+          <p class="text-muted" style="font-size: clamp(0.8rem, 1.3vw, 0.95rem);">本地部署优先，数据隐私安全可控</p>
+        </div>
+        <div class="card reveal reveal-delay-3">
+          <h3 class="text-accent"><span class="prompt">Open</span> Source</h3>
+          <p class="text-muted" style="font-size: clamp(0.8rem, 1.3vw, 0.95rem);">开源透明，社区驱动，持续演进</p>
+        </div>
+        <div class="card reveal reveal-delay-4">
+          <h3 class="text-accent"><span class="prompt">Extend</span> able</h3>
+          <p class="text-muted" style="font-size: clamp(0.8rem, 1.3vw, 0.95rem);">插件化设计，灵活扩展应用场景</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5: Architecture -->
+<section class="slide" id="slide-5">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">architecture — system_design</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">系统架构</h2>
+      <div class="flex flex-col gap-md" style="max-width: 800px; margin: 0 auto;">
+        <div class="arch-bar reveal reveal-delay-1">
+          <span class="arch-bar-label">> CHANNEL — 渠道层</span>
+        </div>
+        <div class="arch-bar reveal reveal-delay-2" style="border-color: var(--gold);">
+          <span class="arch-bar-label" style="color: var(--gold);">> GATEWAY — 网关层</span>
+        </div>
+        <div class="arch-bar reveal reveal-delay-3" style="border-color: #4a9eff;">
+          <span class="arch-bar-label" style="color: #4a9eff;">> NODE — 节点层</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6: Channel -->
+<section class="slide" id="slide-6">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">channel — integration_layers</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">渠道层</h2>
+      <div class="grid-3">
+        <div class="card reveal reveal-delay-1">
+          <h3 class="text-accent">企微 WeCom</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.8rem, 1.3vw, 0.95rem);">
+            <li>> 企业微信集成</li>
+            <li>> 群聊管理</li>
+            <li>> 应用消息</li>
+          </ul>
+        </div>
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent">钉钉 DingTalk</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.8rem, 1.3vw, 0.95rem);">
+            <li>> 钉钉机器人</li>
+            <li>> 工作通知</li>
+            <li>> 群会话</li>
+          </ul>
+        </div>
+        <div class="card reveal reveal-delay-3">
+          <h3 class="text-accent">飞书 Feishu</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.8rem, 1.3vw, 0.95rem);">
+            <li>> 飞书机器人</li>
+            <li>> 多维表格</li>
+            <li>> 消息卡片</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7: Gateway -->
+<section class="slide" id="slide-7">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">gateway — connection_endpoint</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">网关层</h2>
+      <div class="text-center reveal reveal-delay-1" style="margin-bottom: 30px;">
+        <span class="text-mono text-large text-accent" style="font-size: clamp(1.5rem, 4vw, 2.5rem);">ws://127.0.0.1:18789</span>
+      </div>
+      <div class="grid-3">
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent">协议转换</h3>
+          <p class="text-muted">多协议适配，自动转换</p>
+        </div>
+        <div class="card reveal reveal-delay-3">
+          <h3 class="text-accent">负载均衡</h3>
+          <p class="text-muted">智能分发，高可用</p>
+        </div>
+        <div class="card reveal reveal-delay-4">
+          <h3 class="text-accent">安全认证</h3>
+          <p class="text-muted">Token验证，加密传输</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 8: Node -->
+<section class="slide" id="slide-8">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">node — core_capabilities</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">节点层</h2>
+      <div class="grid-4" style="max-width: 900px; margin: 0 auto;">
+        <div class="card reveal reveal-delay-1">
+          <h3 class="text-accent"><span class="prompt">LLM</span></h3>
+          <p class="text-muted">大语言模型能力</p>
+        </div>
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent"><span class="prompt">MEMORY</span></h3>
+          <p class="text-muted">多级记忆系统</p>
+        </div>
+        <div class="card reveal reveal-delay-3">
+          <h3 class="text-accent"><span class="prompt">TOOLS</span></h3>
+          <p class="text-muted">技能扩展接口</p>
+        </div>
+        <div class="card reveal reveal-delay-4">
+          <h3 class="text-accent"><span class="prompt">SOUL</span></h3>
+          <p class="text-muted">数字灵魂配置</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9: Message Flow -->
+<section class="slide" id="slide-9">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">flow — message_pipeline</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">消息流程</h2>
+      <div class="flow reveal reveal-delay-1">
+        <div class="flow-item">
+          <span class="num-circle">1</span>
+          <p style="margin-top: 10px;">用户消息</p>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">
+          <span class="num-circle">2</span>
+          <p style="margin-top: 10px;">渠道接入</p>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">
+          <span class="num-circle">3</span>
+          <p style="margin-top: 10px;">网关路由</p>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">
+          <span class="num-circle">4</span>
+          <p style="margin-top: 10px;">AI处理</p>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">
+          <span class="num-circle">5</span>
+          <p style="margin-top: 10px;">响应输出</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 10: Memory -->
+<section class="slide" id="slide-10">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">memory — hierarchy_structure</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">记忆系统</h2>
+      <div class="pyramid" style="max-width: 600px; margin: 0 auto;">
+        <div class="pyramid-level l1 reveal reveal-delay-1">
+          <strong>长期记忆</strong> — 向量数据库持久化
+        </div>
+        <div class="pyramid-level l2 reveal reveal-delay-2">
+          <strong>中期记忆</strong> — Session会话上下文
+        </div>
+        <div class="pyramid-level l3 reveal reveal-delay-3">
+          <strong>短期记忆</strong> — 窗口内上下文
+        </div>
+        <div class="pyramid-level l4 reveal reveal-delay-4">
+          <strong>工作记忆</strong> — 当前处理状态
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 11: SOUL -->
+<section class="slide" id="slide-11">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">soul — persona_config</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">数字灵魂</h2>
+      <div class="flex flex-center reveal reveal-delay-1">
+        <div class="card card-gold" style="max-width: 500px; text-align: center;">
+          <h3 class="text-accent" style="color: var(--gold); font-size: clamp(1.2rem, 3vw, 2rem);">SOUL.md</h3>
+          <p class="text-muted" style="margin-top: 15px;">人格配置 | 行为准则 | 响应风格</p>
+          <p class="text-muted" style="margin-top: 10px;">单一文件，完整定义</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 12: TOOLS -->
+<section class="slide" id="slide-12">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">tools — extension_system</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">扩展工具</h2>
+      <div class="grid-2" style="max-width: 800px; margin: 0 auto;">
+        <div class="card reveal reveal-delay-1">
+          <h3 class="text-accent">Skills</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>> 技能插件</li>
+            <li>> 预定义能力</li>
+            <li>> 即插即用</li>
+          </ul>
+        </div>
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent">Extensions</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>> 扩展接口</li>
+            <li>> 自定义开发</li>
+            <li>> 灵活集成</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 13: USER -->
+<section class="slide" id="slide-13">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">user — memory_integration</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">用户记忆</h2>
+      <div class="grid-2" style="max-width: 800px; margin: 0 auto;">
+        <div class="card reveal reveal-delay-1">
+          <h3 class="text-accent">MEMORY.md</h3>
+          <p class="text-muted">用户画像配置</p>
+          <p class="text-muted">偏好设置</p>
+          <p class="text-muted">历史交互</p>
+        </div>
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent">向量数据库</h3>
+          <p class="text-muted">语义检索</p>
+          <p class="text-muted">相似度匹配</p>
+          <p class="text-muted">长期记忆存储</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 14: Session -->
+<section class="slide" id="slide-14">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">session — context_management</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">会话管理</h2>
+      <div class="ladder" style="max-width: 700px; margin: 0 auto;">
+        <div class="ladder-step reveal reveal-delay-1">
+          <span class="ladder-num">01</span>
+          <div class="ladder-content">
+            <h3 class="text-accent">创建会话</h3>
+            <p class="text-muted">初始化上下文，加载用户记忆</p>
+          </div>
+        </div>
+        <div class="ladder-step reveal reveal-delay-2">
+          <span class="ladder-num">02</span>
+          <div class="ladder-content">
+            <h3 class="text-accent">交互处理</h3>
+            <p class="text-muted">消息路由，AI处理，工具调用</p>
+          </div>
+        </div>
+        <div class="ladder-step reveal reveal-delay-3">
+          <span class="ladder-num">03</span>
+          <div class="ladder-content">
+            <h3 class="text-accent">会话归档</h3>
+            <p class="text-muted">记忆沉淀，知识更新</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 15: Workspace -->
+<section class="slide" id="slide-15">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">workspace — file_structure</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">工作空间</h2>
+      <div class="grid-4" style="max-width: 900px; margin: 0 auto;">
+        <div class="card reveal reveal-delay-1"><span class="prompt">config.yaml</span></div>
+        <div class="card reveal reveal-delay-2"><span class="prompt">SOUL.md</span></div>
+        <div class="card reveal reveal-delay-3"><span class="prompt">MEMORY.md</span></div>
+        <div class="card reveal reveal-delay-4"><span class="prompt">skills/</span></div>
+        <div class="card reveal reveal-delay-1"><span class="prompt">extensions/</span></div>
+        <div class="card reveal reveal-delay-2"><span class="prompt">memory/</span></div>
+        <div class="card reveal reveal-delay-3"><span class="prompt">logs/</span></div>
+        <div class="card reveal reveal-delay-4"><span class="prompt">data/</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 16: Memory Flow -->
+<section class="slide" id="slide-16">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">memory — data_flow</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">记忆流转</h2>
+      <div class="flex flex-col gap-sm" style="max-width: 500px; margin: 0 auto;">
+        <div class="bar reveal reveal-delay-1">
+          <span class="prompt">1.</span> 用户输入 → 工作记忆
+        </div>
+        <div class="bar reveal reveal-delay-2">
+          <span class="prompt">2.</span> 上下文整合 → 短期记忆
+        </div>
+        <div class="bar reveal reveal-delay-3">
+          <span class="prompt">3.</span> 会话保持 → 中期记忆
+        </div>
+        <div class="bar reveal reveal-delay-4">
+          <span class="prompt">4.</span> 重要信息 → 长期记忆
+        </div>
+        <div class="bar reveal reveal-delay-5">
+          <span class="prompt">5.</span> 向量存储 → 检索系统
+        </div>
+        <div class="bar reveal reveal-delay-6">
+          <span class="prompt">6.</span> 定期整理 → 知识图谱
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 17: Deployment -->
+<section class="slide" id="slide-17">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">deployment — platform_options</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">部署方式</h2>
+      <div class="grid-3" style="max-width: 900px; margin: 0 auto;">
+        <div class="card reveal reveal-delay-1">
+          <h3 class="text-accent">[PLATFORM]</h3>
+          <p class="text-muted">云端托管</p>
+          <p class="text-muted">即开即用</p>
+          <p class="text-muted">免维护</p>
+        </div>
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent">[CLOUD]</h3>
+          <p class="text-muted">私有云部署</p>
+          <p class="text-muted">数据自主</p>
+          <p class="text-muted">弹性扩展</p>
+        </div>
+        <div class="card reveal reveal-delay-3">
+          <h3 class="text-accent">[LOCAL]</h3>
+          <p class="text-muted">本地运行</p>
+          <p class="text-muted">最高安全</p>
+          <p class="text-muted">完全控制</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 18: Platform Table -->
+<section class="slide" id="slide-18">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">platforms — comparison_table</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">平台对比</h2>
+      <table class="reveal reveal-delay-1" style="max-width: 900px; margin: 0 auto;">
+        <thead>
+          <tr>
+            <th>平台</th>
+            <th>部署难度</th>
+            <th>数据安全</th>
+            <th>成本</th>
+            <th>适用场景</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>SaaS云服务</td>
+            <td>极简</td>
+            <td>中等</td>
+            <td>订阅制</td>
+            <td>快速启动</td>
+          </tr>
+          <tr>
+            <td>私有云</td>
+            <td>中等</td>
+            <td>高</td>
+            <td>按需</td>
+            <td>企业内网</td>
+          </tr>
+          <tr>
+            <td>本地部署</td>
+            <td>较高</td>
+            <td>最高</td>
+            <td>一次性</td>
+            <td>高安全需求</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 19: Tencent -->
+<section class="slide" id="slide-19">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">tencent — cloud_recommendation</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">腾讯云推荐配置</h2>
+      <div class="two-col" style="max-width: 900px; margin: 0 auto;">
+        <div class="reveal reveal-delay-1">
+          <h3 class="text-accent">推荐规格</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>> CVM 4核8G起步</li>
+            <li>> 50GB SSD存储</li>
+            <li>> 私有网络VPC</li>
+            <li>> 内网互通</li>
+          </ul>
+        </div>
+        <div class="reveal reveal-delay-2">
+          <h3 class="text-accent">网络配置</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>> 弹性公网IP</li>
+            <li>> 安全组规则</li>
+            <li>> 端口18789</li>
+            <li>> WSS加密</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 20: Server Config -->
+<section class="slide" id="slide-20">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">server — configuration_guide</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">服务器配置</h2>
+      <table class="reveal reveal-delay-1" style="max-width: 800px; margin: 0 auto; margin-bottom: 30px;">
+        <thead>
+          <tr>
+            <th>配置项</th>
+            <th>最低要求</th>
+            <th>推荐配置</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CPU</td>
+            <td>2核</td>
+            <td>4核+</td>
+          </tr>
+          <tr>
+            <td>内存</td>
+            <td>4GB</td>
+            <td>8GB+</td>
+          </tr>
+          <tr>
+            <td>存储</td>
+            <td>20GB</td>
+            <td>50GB+ SSD</td>
+          </tr>
+          <tr>
+            <td>带宽</td>
+            <td>5Mbps</td>
+            <td>10Mbps+</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="flex gap-md flex-center reveal reveal-delay-2">
+        <div class="card card-warning" style="max-width: 350px;">
+          <h3 class="error-title">WARNING</h3>
+          <p class="error-msg">防火墙需开放WebSocket端口</p>
+        </div>
+        <div class="card card-warning" style="max-width: 350px;">
+          <h3 class="error-title">WARNING</h3>
+          <p class="error-msg">生产环境建议使用HTTPS</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 21: Model Table -->
+<section class="slide" id="slide-21">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">models — tier_comparison</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">模型层级</h2>
+      <table class="reveal reveal-delay-1" style="max-width: 900px; margin: 0 auto;">
+        <thead>
+          <tr>
+            <th>层级</th>
+            <th>模型</th>
+            <th>特点</th>
+            <th>适用场景</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Tier 1</td>
+            <td>GPT-4 / Claude-3</td>
+            <td>最强能力</td>
+            <td>复杂推理</td>
+          </tr>
+          <tr>
+            <td>Tier 2</td>
+            <td>GPT-3.5 / Gemini</td>
+            <td>平衡性能</td>
+            <td>日常对话</td>
+          </tr>
+          <tr>
+            <td>Tier 3</td>
+            <td>国内主流模型</td>
+            <td>本地支持好</td>
+            <td>中文场景</td>
+          </tr>
+          <tr>
+            <td>Tier 4</td>
+            <td>开源模型</td>
+            <td>完全自主</td>
+            <td>私有部署</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 22: Deploy 4 Steps -->
+<section class="slide" id="slide-22">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">deploy — 4step_process</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">部署四步</h2>
+      <div class="ladder" style="max-width: 700px; margin: 0 auto;">
+        <div class="ladder-step reveal reveal-delay-1">
+          <span class="ladder-num">1</span>
+          <div class="ladder-content">
+            <h3 class="text-accent">环境准备</h3>
+            <p class="text-muted">安装Docker / Node.js / Python</p>
+          </div>
+        </div>
+        <div class="ladder-step reveal reveal-delay-2">
+          <span class="ladder-num">2</span>
+          <div class="ladder-content">
+            <h3 class="text-accent">配置修改</h3>
+            <p class="text-muted">编辑config.yaml，设置API Key</p>
+          </div>
+        </div>
+        <div class="ladder-step reveal reveal-delay-3">
+          <span class="ladder-num">3</span>
+          <div class="ladder-content">
+            <h3 class="text-accent">启动服务</h3>
+            <p class="text-muted">docker-compose up 或 npm start</p>
+          </div>
+        </div>
+        <div class="ladder-step reveal reveal-delay-4">
+          <span class="ladder-num">4</span>
+          <div class="ladder-content">
+            <h3 class="text-accent">验证访问</h3>
+            <p class="text-muted">打开浏览器访问localhost:18789</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 23: Pitfall -->
+<section class="slide" id="slide-23">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">pitfall — common_error</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">常见错误</h2>
+      <div class="error-card reveal reveal-delay-1" style="max-width: 600px; margin: 0 auto;">
+        <div class="error-title">ERROR: dependency conflict</div>
+        <div class="error-msg">
+          <p>npm ERR! code ERESOLVE</p>
+          <p>override ...</p>
+          <p>Consider using:</p>
+          <p>npm install --force</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 24: Pitfalls -->
+<section class="slide" id="slide-24">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">pitfalls — avoid_these</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">避坑指南</h2>
+      <div class="flex gap-md flex-center flex-col">
+        <div class="card card-warning reveal reveal-delay-1" style="max-width: 500px;">
+          <h3 class="error-title">WARNING #1</h3>
+          <p class="error-msg">Node版本不兼容导致启动失败</p>
+          <p class="text-muted" style="margin-top: 10px;">解决: 使用v18+ LTS版本</p>
+        </div>
+        <div class="card card-warning reveal reveal-delay-2" style="max-width: 500px;">
+          <h3 class="error-title">WARNING #2</h3>
+          <p class="error-msg">内存不足导致OOM</p>
+          <p class="text-muted" style="margin-top: 10px;">解决: 至少4GB可用内存</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 25: AI Install -->
+<section class="slide" id="slide-25">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">ai — model_costs</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">AI工具成本</h2>
+      <div class="grid-3" style="max-width: 900px; margin: 0 auto;">
+        <div class="card reveal reveal-delay-1">
+          <h3 class="text-accent">OpenAI</h3>
+          <p class="text-mono text-large" style="font-size: clamp(1.5rem, 3vw, 2rem);">$0.03</p>
+          <p class="text-muted">/1K tokens</p>
+          <p class="text-muted">GPT-4: $0.06</p>
+        </div>
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent">Claude</h3>
+          <p class="text-mono text-large" style="font-size: clamp(1.5rem, 3vw, 2rem);">$0.025</p>
+          <p class="text-muted">/1K tokens</p>
+          <p class="text-muted">Pro: $0.12</p>
+        </div>
+        <div class="card reveal reveal-delay-3">
+          <h3 class="text-accent">Gemini</h3>
+          <p class="text-mono text-large" style="font-size: clamp(1.5rem, 3vw, 2rem);">Free</p>
+          <p class="text-muted">限流1.5RPM</p>
+          <p class="text-muted">Pro: $0.025</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 26: Checklist -->
+<section class="slide" id="slide-26">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">checklist — pre_deploy</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">部署检查清单</h2>
+      <ul class="checklist" style="max-width: 600px; margin: 0 auto;">
+        <li class="reveal reveal-delay-1"><span class="checkbox"></span> 服务器环境确认 (Node 18+ / Docker)</li>
+        <li class="reveal reveal-delay-2"><span class="checkbox"></span> API Key 配置完成</li>
+        <li class="reveal reveal-delay-3"><span class="checkbox"></span> 防火墙端口开放 (18789)</li>
+        <li class="reveal reveal-delay-4"><span class="checkbox"></span> SSL/HTTPS 证书准备</li>
+        <li class="reveal reveal-delay-5"><span class="checkbox"></span> 数据库连接测试</li>
+        <li class="reveal reveal-delay-6"><span class="checkbox"></span> 日志目录创建</li>
+        <li class="reveal reveal-delay-1"><span class="checkbox"></span> 内存充足 (4GB+)</li>
+        <li class="reveal reveal-delay-2"><span class="checkbox"></span> 启动脚本权限</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 27: 8 Scenes -->
+<section class="slide" id="slide-27">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">scenes — use_cases</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">八大应用场景</h2>
+      <div class="grid-8" style="max-width: 900px; margin: 0 auto;">
+        <div class="scene-item reveal reveal-delay-1">
+          <div class="scene-icon">💬</div>
+          <p>企业微信</p>
+        </div>
+        <div class="scene-item reveal reveal-delay-2">
+          <div class="scene-icon">📋</div>
+          <p>禅道集成</p>
+        </div>
+        <div class="scene-item reveal reveal-delay-3">
+          <div class="scene-icon">📝</div>
+          <p>小红书</p>
+        </div>
+        <div class="scene-item reveal reveal-delay-4">
+          <div class="scene-icon">📄</div>
+          <p>文章生成</p>
+        </div>
+        <div class="scene-item reveal reveal-delay-5">
+          <div class="scene-icon">📅</div>
+          <p>定时任务</p>
+        </div>
+        <div class="scene-item reveal reveal-delay-6">
+          <div class="scene-icon">📊</div>
+          <p>PPT生成</p>
+        </div>
+        <div class="scene-item reveal reveal-delay-1">
+          <div class="scene-icon">👥</div>
+          <p>群消息</p>
+        </div>
+        <div class="scene-item reveal reveal-delay-2">
+          <div class="scene-icon">🔍</div>
+          <p>代码审查</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 28: Wecom -->
+<section class="slide" id="slide-28">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">wecom — integration</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">企业微信集成</h2>
+      <div class="flex flex-col gap-sm" style="max-width: 500px; margin: 0 auto;">
+        <div class="bar reveal reveal-delay-1">
+          <span class="prompt">1.</span> 创建企业微信应用
+        </div>
+        <div class="bar reveal reveal-delay-2">
+          <span class="prompt">2.</span> 配置企业可信IP
+        </div>
+        <div class="bar reveal reveal-delay-3">
+          <span class="prompt">3.</span> 填写Webhook地址
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 29: Zentao -->
+<section class="slide" id="slide-29">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">zentao — project_integration</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">禅道集成</h2>
+      <div class="grid-3" style="max-width: 900px; margin: 0 auto;">
+        <div class="card reveal reveal-delay-1">
+          <h3 class="text-accent">任务创建</h3>
+          <p class="text-muted">语音指令创建禅道任务</p>
+        </div>
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent">状态同步</h3>
+          <p class="text-muted">自动同步任务状态变更</p>
+        </div>
+        <div class="card reveal reveal-delay-3">
+          <h3 class="text-accent">进度汇报</h3>
+          <p class="text-muted">定时生成项目进度报告</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 30: Xiaohongshu -->
+<section class="slide" id="slide-30">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">xiaohongshu — content_flow</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">小红书创作流</h2>
+      <div class="flow reveal reveal-delay-1">
+        <div class="flow-item">
+          <span class="num-circle">1</span>
+          <p style="margin-top: 10px;">选题输入</p>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">
+          <span class="num-circle">2</span>
+          <p style="margin-top: 10px;">AI生成</p>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">
+          <span class="num-circle">3</span>
+          <p style="margin-top: 10px;">发布草稿</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 31: Article -->
+<section class="slide" id="slide-31">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">article — generation_flow</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">文章生成</h2>
+      <div class="two-col" style="max-width: 900px; margin: 0 auto;">
+        <div class="card reveal reveal-delay-1">
+          <h3 class="text-accent">输入端</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>> 关键词/主题</li>
+            <li>> 文章类型</li>
+            <li>> 风格偏好</li>
+            <li>> 字数要求</li>
+          </ul>
+        </div>
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent">输出端</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>> Markdown格式</li>
+            <li>> SEO优化</li>
+            <li>> 配图建议</li>
+            <li>> 发布适配</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 32: Scheduled -->
+<section class="slide" id="slide-32">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">scheduled — cron_tasks</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">定时任务</h2>
+      <div class="flex flex-col gap-sm" style="max-width: 600px; margin: 0 auto;">
+        <div class="bar reveal reveal-delay-1">
+          <span class="bar-label">09:00</span>
+          <span style="margin-left: 20px;">// 早报推送</span>
+        </div>
+        <div class="bar reveal reveal-delay-2">
+          <span class="bar-label">12:00</span>
+          <span style="margin-left: 20px;">// 午休提醒</span>
+        </div>
+        <div class="bar reveal reveal-delay-3">
+          <span class="bar-label">18:00</span>
+          <span style="margin-left: 20px;">// 日报汇总</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 33: PPT Generation -->
+<section class="slide" id="slide-33">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">ppt — generation_flow</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">PPT生成流</h2>
+      <div class="flow reveal reveal-delay-1">
+        <div class="flow-item">
+          <p>主题输入</p>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">
+          <p>AI处理</p>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">
+          <p>大纲生成</p>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">
+          <p>内容填充</p>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">
+          <p>PPT导出</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 34: Group Messages -->
+<section class="slide" id="slide-34">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">group — broadcast_flow</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">群消息处理</h2>
+      <div class="flow reveal reveal-delay-1">
+        <div class="flow-item">
+          <span class="num-circle">1</span>
+          <p style="margin-top: 10px;">消息接收</p>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">
+          <span class="num-circle">2</span>
+          <p style="margin-top: 10px;">意图识别</p>
+        </div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-item">
+          <span class="num-circle">3</span>
+          <p style="margin-top: 10px;">回复生成</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 35: Code Review -->
+<section class="slide" id="slide-35">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">code — review_flow</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">代码审查</h2>
+      <div class="grid-3" style="max-width: 900px; margin: 0 auto;">
+        <div class="card reveal reveal-delay-1">
+          <h3 class="text-accent">代码提交</h3>
+          <p class="text-muted">自动触发审查流程</p>
+        </div>
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent">AI分析</h3>
+          <p class="text-muted">潜在问题检测</p>
+        </div>
+        <div class="card reveal reveal-delay-3">
+          <h3 class="text-accent">建议输出</h3>
+          <p class="text-muted">优化方案建议</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 36: Browser Layers -->
+<section class="slide" id="slide-36">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">browser — control_layers</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">浏览器控制层级</h2>
+      <div style="max-width: 800px; margin: 0 auto;">
+        <div class="layer-bar reveal reveal-delay-1">
+          <span class="layer-label">L0</span>
+          <div class="layer-progress">
+            <div class="layer-fill l0"></div>
+          </div>
+          <span style="margin-left: 15px;">全控制</span>
+        </div>
+        <div class="layer-bar reveal reveal-delay-2">
+          <span class="layer-label">L1</span>
+          <div class="layer-progress">
+            <div class="layer-fill l1"></div>
+          </div>
+          <span style="margin-left: 15px;">页面操作</span>
+        </div>
+        <div class="layer-bar reveal reveal-delay-3">
+          <span class="layer-label">L2</span>
+          <div class="layer-progress">
+            <div class="layer-fill l2"></div>
+          </div>
+          <span style="margin-left: 15px;">元素交互</span>
+        </div>
+        <div class="layer-bar reveal reveal-delay-4">
+          <span class="layer-label">L3</span>
+          <div class="layer-progress">
+            <div class="layer-fill l3"></div>
+          </div>
+          <span style="margin-left: 15px;">只读监听</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 37: Advantages -->
+<section class="slide" id="slide-37">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">advantages — core_benefits</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">核心优势</h2>
+      <div class="grid-5" style="max-width: 1000px; margin: 0 auto;">
+        <div class="card reveal reveal-delay-1">
+          <h3 class="text-accent" style="font-size: clamp(0.9rem, 1.5vw, 1.1rem);">本地部署</h3>
+          <p class="text-muted" style="font-size: clamp(0.75rem, 1.2vw, 0.9rem);">数据不出内网</p>
+        </div>
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent" style="font-size: clamp(0.9rem, 1.5vw, 1.1rem);">开源透明</h3>
+          <p class="text-muted" style="font-size: clamp(0.75rem, 1.2vw, 0.9rem);">代码可审计</p>
+        </div>
+        <div class="card reveal reveal-delay-3">
+          <h3 class="text-accent" style="font-size: clamp(0.9rem, 1.5vw, 1.1rem);">高度可扩展</h3>
+          <p class="text-muted" style="font-size: clamp(0.75rem, 1.2vw, 0.9rem);">插件化架构</p>
+        </div>
+        <div class="card reveal reveal-delay-4">
+          <h3 class="text-accent" style="font-size: clamp(0.9rem, 1.5vw, 1.1rem);">中文优化</h3>
+          <p class="text-muted" style="font-size: clamp(0.75rem, 1.2vw, 0.9rem);">本土化适配</p>
+        </div>
+        <div class="card reveal reveal-delay-5">
+          <h3 class="text-accent" style="font-size: clamp(0.9rem, 1.5vw, 1.1rem);">成本可控</h3>
+          <p class="text-muted" style="font-size: clamp(0.75rem, 1.2vw, 0.9rem);">按需使用</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 38: Advantage Compare -->
+<section class="slide" id="slide-38">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">comparison — vs_traditional</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">对比传统方案</h2>
+      <div class="compare-row" style="max-width: 900px; margin: 0 auto;">
+        <div class="compare-left reveal reveal-delay-1">
+          <h3 class="text-muted">传统AI服务</h3>
+          <ul class="text-muted" style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>// 数据上传第三方</li>
+            <li>// 延迟高，稳定性差</li>
+            <li>// 费用高昂</li>
+            <li>// 定制困难</li>
+          </ul>
+        </div>
+        <div class="compare-right reveal reveal-delay-2">
+          <h3 class="text-accent">OpenClaw</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>> 数据完全自主</li>
+            <li>> 本地低延迟</li>
+            <li>> 成本可控</li>
+            <li>> 灵活定制</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 39: Open Source -->
+<section class="slide" id="slide-39">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">opensource — community</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">开源生态</h2>
+      <div class="two-col" style="max-width: 900px; margin: 0 auto;">
+        <div class="reveal reveal-delay-1">
+          <h3 class="text-accent">开源贡献</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>> GitHub Star: 12.5k</li>
+            <li>> Fork: 2.3k</li>
+            <li>> Contributor: 180+</li>
+            <li>> Issue响应: &lt;24h</li>
+          </ul>
+        </div>
+        <div class="reveal reveal-delay-2">
+          <h3 class="text-accent">社区活跃</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>> Discord在线: 5k+</li>
+            <li>> 微信群: 50+</li>
+            <li>> 月度更新</li>
+            <li>> 季度roadmap</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 40: 89.5% -->
+<section class="slide" id="slide-40">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">stat — satisfaction_rate</span>
+    </div>
+    <div class="terminal-body flex flex-center">
+      <div class="reveal">
+        <div class="text-large text-accent" style="text-shadow: 0 0 60px var(--accent-glow);">89.5%</div>
+        <p class="subtitle" style="margin-top: 20px;">用户满意度</p>
+        <p class="text-muted" style="margin-top: 10px;">基于2024年Q4调研数据</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 41: 5 Drawbacks -->
+<section class="slide" id="slide-41">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">challenges — current_limitations</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">当前挑战</h2>
+      <ul class="checklist" style="max-width: 600px; margin: 0 auto;">
+        <li class="reveal reveal-delay-1">
+          <span class="card card-warning" style="padding: 8px 15px; margin-right: 10px;">
+            <span class="text-muted" style="font-size: 0.8rem;">01</span>
+          </span>
+          <span>学习成本 — 需要一定技术基础</span>
+        </li>
+        <li class="reveal reveal-delay-2">
+          <span class="card card-warning" style="padding: 8px 15px; margin-right: 10px;">
+            <span class="text-muted" style="font-size: 0.8rem;">02</span>
+          </span>
+          <span>运维复杂度 — 需要专人维护</span>
+        </li>
+        <li class="reveal reveal-delay-3">
+          <span class="card card-warning" style="padding: 8px 15px; margin-right: 10px;">
+            <span class="text-muted" style="font-size: 0.8rem;">03</span>
+          </span>
+          <span>性能瓶颈 — 大规模并发受限</span>
+        </li>
+        <li class="reveal reveal-delay-4">
+          <span class="card card-warning" style="padding: 8px 15px; margin-right: 10px;">
+            <span class="text-muted" style="font-size: 0.8rem;">04</span>
+          </span>
+          <span>模型依赖 — 仍需调用外部API</span>
+        </li>
+        <li class="reveal reveal-delay-5">
+          <span class="card card-warning" style="padding: 8px 15px; margin-right: 10px;">
+            <span class="text-muted" style="font-size: 0.8rem;">05</span>
+          </span>
+          <span>生态建设 — 插件数量待丰富</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 42: Token Cost -->
+<section class="slide" id="slide-42">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">cost — token_estimation</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">Token成本估算</h2>
+      <div class="grid-2" style="max-width: 800px; margin: 0 auto;">
+        <div class="card card-warning reveal reveal-delay-1">
+          <h3 class="text-accent" style="color: var(--warning);">日均消耗</h3>
+          <p class="text-mono text-large" style="font-size: clamp(1.5rem, 3vw, 2rem); margin: 15px 0;">~500K</p>
+          <p class="text-muted">tokens/天</p>
+          <p class="text-muted" style="margin-top: 10px;">约 $15/天</p>
+        </div>
+        <div class="card card-warning reveal reveal-delay-2">
+          <h3 class="text-accent" style="color: var(--warning);">月度预算</h3>
+          <p class="text-mono text-large" style="font-size: clamp(1.5rem, 3vw, 2rem); margin: 15px 0;">~15M</p>
+          <p class="text-muted">tokens/月</p>
+          <p class="text-muted" style="margin-top: 10px;">约 $450/月</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 43: Security -->
+<section class="slide" id="slide-43">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">security — guidelines</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">安全规范</h2>
+      <div class="two-col" style="max-width: 900px; margin: 0 auto;">
+        <div class="card reveal reveal-delay-1">
+          <h3 class="text-accent">RULES</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>> API Key脱敏存储</li>
+            <li>> 敏感数据加密</li>
+            <li>> 定期安全审计</li>
+            <li>> 访问日志记录</li>
+          </ul>
+        </div>
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent">PRINCIPLES</h3>
+          <ul style="font-family: var(--font-mono); font-size: clamp(0.85rem, 1.5vw, 1rem);">
+            <li>> 最小权限原则</li>
+            <li>> 数据本地优先</li>
+            <li>> 网络隔离</li>
+            <li>> 应急响应机制</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 44: Skills + Roadmap -->
+<section class="slide" id="slide-44">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">skills — roadmap</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">技能与路线</h2>
+      <div style="margin-bottom: 30px;">
+        <h3 class="reveal reveal-delay-1" style="margin-bottom: 15px;">现有技能</h3>
+        <div class="reveal reveal-delay-1">
+          <span class="tag">代码审查</span>
+          <span class="tag">文章生成</span>
+          <span class="tag">PPT制作</span>
+          <span class="tag">数据可视化</span>
+          <span class="tag">定时任务</span>
+          <span class="tag">群消息</span>
+          <span class="tag">API集成</span>
+        </div>
+      </div>
+      <div>
+        <h3 class="reveal reveal-delay-2" style="margin-bottom: 15px;">2025 Roadmap</h3>
+        <div class="roadmap" style="max-width: 700px; margin: 0 auto;">
+          <div class="roadmap-item reveal reveal-delay-3">
+            <span class="roadmap-marker"></span>
+            <span class="roadmap-content">Q1: 多模态支持 (图像理解)</span>
+          </div>
+          <div class="roadmap-item reveal reveal-delay-4">
+            <span class="roadmap-marker"></span>
+            <span class="roadmap-content">Q2: 插件市场上线</span>
+          </div>
+          <div class="roadmap-item reveal reveal-delay-5">
+            <span class="roadmap-marker"></span>
+            <span class="roadmap-content">Q3: 企业级SSO集成</span>
+          </div>
+          <div class="roadmap-item reveal reveal-delay-6">
+            <span class="roadmap-marker"></span>
+            <span class="roadmap-content">Q4: 分布式集群支持</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 45: Closing -->
+<section class="slide" id="slide-45">
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="terminal-dots">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+      </div>
+      <span class="terminal-title">summary — action_plan</span>
+    </div>
+    <div class="terminal-body">
+      <h2 class="reveal">总结与行动</h2>
+      <div class="grid-3" style="max-width: 800px; margin: 0 auto; margin-bottom: 40px;">
+        <div class="card reveal reveal-delay-1">
+          <h3 class="text-accent">开源</h3>
+          <p class="text-muted">代码开源</p>
+          <p class="text-muted">社区共建</p>
+        </div>
+        <div class="card reveal reveal-delay-2">
+          <h3 class="text-accent">本地</h3>
+          <p class="text-muted">数据自主</p>
+          <p class="text-muted">安全可控</p>
+        </div>
+        <div class="card reveal reveal-delay-3">
+          <h3 class="text-accent">智能</h3>
+          <p class="text-muted">AI驱动</p>
+          <p class="text-muted">持续进化</p>
+        </div>
+      </div>
+      <h3 class="reveal reveal-delay-4" style="text-align: center; margin-bottom: 20px;">立即行动</h3>
+      <div class="action-steps" style="margin: 0 auto;">
+        <div class="action-step reveal reveal-delay-5">
+          <span class="action-num">1</span>
+          <span class="action-text">访问 github.com/openclaw</span>
+        </div>
+        <div class="action-step reveal reveal-delay-6">
+          <span class="action-num">2</span>
+          <span class="action-text">Star + Fork 项目</span>
+        </div>
+        <div class="action-step reveal">
+          <span class="action-num">3</span>
+          <span class="action-text">阅读快速开始文档</span>
+        </div>
+        <div class="action-step reveal">
+          <span class="action-num">4</span>
+          <span class="action-text">部署你的第一个Agent</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+class SlidePresentation {
+  constructor() {
+    this.slides = document.querySelectorAll('.slide');
+    this.totalSlides = this.slides.length;
+    this.currentSlide = 0;
+    this.progressBar = document.getElementById('progress-bar');
+    this.navDots = document.getElementById('nav-dots');
+    this.slideCounter = document.getElementById('slide-counter');
+    this.isScrolling = false;
+    this.scrollTimeout = null;
+
+    this.init();
+  }
+
+  init() {
+    this.createNavDots();
+    this.setupIntersectionObserver();
+    this.setupKeyboardNav();
+    this.setupWheelNav();
+    this.setupTouchNav();
+    this.updateProgress();
+    this.updateCounter();
+
+    // Initial visibility
+    setTimeout(() => {
+      this.revealVisibleSlides();
+    }, 100);
+  }
+
+  createNavDots() {
+    for (let i = 0; i < this.totalSlides; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'nav-dot';
+      dot.setAttribute('data-slide', i);
+      dot.addEventListener('click', () => this.goToSlide(i));
+      this.navDots.appendChild(dot);
+    }
+  }
+
+  setupIntersectionObserver() {
+    const options = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.5
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          this.currentSlide = Array.from(this.slides).indexOf(entry.target);
+          this.updateProgress();
+          this.updateCounter();
+          this.updateNavDots();
+          this.revealSlide(entry.target);
+        }
+      });
+    }, options);
+
+    this.slides.forEach(slide => observer.observe(slide));
+  }
+
+  revealSlide(slide) {
+    const reveals = slide.querySelectorAll('.reveal');
+    reveals.forEach(el => el.classList.add('visible'));
+  }
+
+  revealVisibleSlides() {
+    this.slides.forEach(slide => {
+      const rect = slide.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        this.revealSlide(slide);
+      }
+    });
+  }
+
+  setupKeyboardNav() {
+    document.addEventListener('keydown', (e) => {
+      switch(e.key) {
+        case 'ArrowDown':
+        case 'ArrowRight':
+        case ' ':
+        case 'PageDown':
+          e.preventDefault();
+          this.nextSlide();
+          break;
+        case 'ArrowUp':
+        case 'ArrowLeft':
+        case 'PageUp':
+          e.preventDefault();
+          this.prevSlide();
+          break;
+        case 'Home':
+          e.preventDefault();
+          this.goToSlide(0);
+          break;
+        case 'End':
+          e.preventDefault();
+          this.goToSlide(this.totalSlides - 1);
+          break;
+      }
+    });
+  }
+
+  setupWheelNav() {
+    let lastWheelTime = 0;
+    const wheelThrottle = 800;
+
+    window.addEventListener('wheel', (e) => {
+      const now = Date.now();
+      if (now - lastWheelTime < wheelThrottle) return;
+
+      const delta = e.deltaY;
+      if (Math.abs(delta) > 50) {
+        lastWheelTime = now;
+        if (delta > 0) {
+          this.nextSlide();
+        } else {
+          this.prevSlide();
+        }
+      }
+    }, { passive: true });
+  }
+
+  setupTouchNav() {
+    let touchStartY = 0;
+    let touchEndY = 0;
+    const minSwipeDistance = 50;
+
+    document.addEventListener('touchstart', (e) => {
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      touchEndY = e.changedTouches[0].screenY;
+      const distance = touchStartY - touchEndY;
+
+      if (Math.abs(distance) > minSwipeDistance) {
+        if (distance > 0) {
+          this.nextSlide();
+        } else {
+          this.prevSlide();
+        }
+      }
+    }, { passive: true });
+  }
+
+  nextSlide() {
+    if (this.currentSlide < this.totalSlides - 1) {
+      this.goToSlide(this.currentSlide + 1);
+    }
+  }
+
+  prevSlide() {
+    if (this.currentSlide > 0) {
+      this.goToSlide(this.currentSlide - 1);
+    }
+  }
+
+  goToSlide(index) {
+    if (index >= 0 && index < this.totalSlides) {
+      this.slides[index].scrollIntoView({ behavior: 'smooth' });
+      this.currentSlide = index;
+      this.updateProgress();
+      this.updateCounter();
+      this.updateNavDots();
+    }
+  }
+
+  updateProgress() {
+    const progress = ((this.currentSlide + 1) / this.totalSlides) * 100;
+    this.progressBar.style.width = `${progress}%`;
+  }
+
+  updateCounter() {
+    this.slideCounter.textContent = `${this.currentSlide + 1} / ${this.totalSlides}`;
+  }
+
+  updateNavDots() {
+    const dots = this.navDots.querySelectorAll('.nav-dot');
+    dots.forEach((dot, index) => {
+      if (index === this.currentSlide) {
+        dot.classList.add('active');
+      } else {
+        dot.classList.remove('active');
+      }
+    });
+  }
+}
+
+// Initialize presentation
+document.addEventListener('DOMContentLoaded', () => {
+  new SlidePresentation();
+});
+
+// Check for reduced motion preference
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+if (prefersReducedMotion.matches) {
+  document.documentElement.style.setProperty('--reveal-duration', '0.01ms');
+}
+
+// Handle resize
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    // Re-check slide positions on resize
+    const slides = document.querySelectorAll('.slide');
+    slides.forEach((slide, index) => {
+      const rect = slide.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        slide.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+      }
+    });
+  }, 250);
+});
+</script>
+
+</body>
+</html>

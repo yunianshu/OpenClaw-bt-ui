@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Style G: Pastel Geometry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #f8f6f3;
+  --lavender: #c9b8e8;
+  --peach: #f0c9a8;
+  --mint: #b8e0d2;
+  --rose: #e8b8c9;
+  --text: #3a3a3a;
+  --white: #ffffff;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.slide {
+  width: min(96vw, 1100px);
+  height: min(92vh, 680px);
+  background: var(--white);
+  border-radius: clamp(16px, 2.5vw, 28px);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(32px, 5vw, 60px);
+  gap: clamp(16px, 2.5vw, 28px);
+  animation: slideReveal 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes slideReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Decorative floating circles */
+.deco {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.deco-1 {
+  width: clamp(80px, 12vw, 160px);
+  height: clamp(80px, 12vw, 160px);
+  background: var(--lavender);
+  opacity: 0.35;
+  top: clamp(-30px, -5vw, -60px);
+  right: clamp(-20px, -3vw, -50px);
+  animation: float1 7s ease-in-out infinite;
+}
+
+.deco-2 {
+  width: clamp(50px, 7vw, 100px);
+  height: clamp(50px, 7vw, 100px);
+  background: var(--peach);
+  opacity: 0.4;
+  bottom: clamp(-20px, -3vw, -40px);
+  left: clamp(-15px, -2.5vw, -35px);
+  animation: float2 9s ease-in-out infinite;
+}
+
+.deco-3 {
+  width: clamp(35px, 5vw, 70px);
+  height: clamp(35px, 5vw, 70px);
+  background: var(--mint);
+  opacity: 0.45;
+  top: 50%;
+  right: clamp(10px, 2vw, 30px);
+  transform: translateY(-50%);
+  animation: float3 6s ease-in-out infinite;
+}
+
+.deco-4 {
+  width: clamp(25px, 3.5vw, 50px);
+  height: clamp(25px, 3.5vw, 50px);
+  background: var(--rose);
+  opacity: 0.4;
+  top: clamp(20px, 4vw, 50px);
+  left: clamp(20px, 4vw, 60px);
+  animation: float4 8s ease-in-out infinite;
+}
+
+.deco-5 {
+  width: clamp(60px, 9vw, 120px);
+  height: clamp(60px, 9vw, 120px);
+  background: var(--lavender);
+  opacity: 0.2;
+  bottom: clamp(60px, 10vw, 140px);
+  right: clamp(30px, 5vw, 80px);
+  animation: float2 11s ease-in-out infinite reverse;
+}
+
+.deco-6 {
+  width: clamp(18px, 2.5vw, 36px);
+  height: clamp(18px, 2.5vw, 36px);
+  background: var(--peach);
+  opacity: 0.5;
+  top: clamp(80px, 13vw, 160px);
+  right: clamp(40px, 7vw, 100px);
+  animation: float1 5s ease-in-out infinite 1s;
+}
+
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-8px, 12px) scale(1.04); }
+  66% { transform: translate(6px, -8px) scale(0.97); }
+}
+
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(10px, -14px) scale(1.06); }
+  70% { transform: translate(-6px, 8px) scale(0.96); }
+}
+
+@keyframes float3 {
+  0%, 100% { transform: translateY(-50%) scale(1); }
+  50% { transform: translateY(calc(-50% + 14px)) scale(1.08); }
+}
+
+@keyframes float4 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  45% { transform: translate(-10px, 8px) scale(1.05); }
+  75% { transform: translate(8px, -6px) scale(0.95); }
+}
+
+.header {
+  text-align: center;
+  z-index: 2;
+  animation: fadeUp 0.7s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.title {
+  font-size: clamp(28px, 5.5vw, 68px);
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: clamp(6px, 1vw, 12px);
+}
+
+.subtitle {
+  font-size: clamp(14px, 2.2vw, 26px);
+  font-weight: 600;
+  color: #7a7a7a;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+.features {
+  display: flex;
+  gap: clamp(10px, 1.8vw, 22px);
+  flex-wrap: wrap;
+  justify-content: center;
+  z-index: 2;
+  animation: fadeUp 0.7s 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.feature-pill {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1vw, 10px);
+  padding: clamp(8px, 1.2vw, 14px) clamp(16px, 2.2vw, 28px);
+  border-radius: 100px;
+  font-size: clamp(12px, 1.8vw, 20px);
+  font-weight: 700;
+  background: var(--white);
+  border: clamp(1.5px, 0.2vw, 2px) solid rgba(0,0,0,0.06);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.04);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.feature-pill:nth-child(1) {
+  color: #8b6fc0;
+  border-color: var(--lavender);
+  background: linear-gradient(135deg, rgba(201,184,232,0.15), rgba(201,184,232,0.05));
+}
+
+.feature-pill:nth-child(2) {
+  color: #c07a5e;
+  border-color: var(--peach);
+  background: linear-gradient(135deg, rgba(240,201,168,0.2), rgba(240,201,168,0.05));
+}
+
+.feature-pill:nth-child(3) {
+  color: #5a9e8a;
+  border-color: var(--mint);
+  background: linear-gradient(135deg, rgba(184,224,210,0.2), rgba(184,224,210,0.05));
+}
+
+.feature-pill:hover {
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.tagline-area {
+  z-index: 2;
+  animation: fadeUp 0.7s 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.tagline-pill {
+  display: inline-block;
+  padding: clamp(6px, 1vw, 12px) clamp(18px, 3vw, 36px);
+  border-radius: 100px;
+  font-size: clamp(11px, 1.6vw, 18px);
+  font-weight: 600;
+  color: #8a8a8a;
+  background: rgba(0,0,0,0.03);
+  border: clamp(1px, 0.15vw, 1.5px) solid rgba(0,0,0,0.06);
+  letter-spacing: 0.04em;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.footer-label {
+  position: absolute;
+  bottom: clamp(12px, 2vw, 20px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(9px, 1.1vw, 12px);
+  font-weight: 600;
+  color: #b0b0b0;
+  letter-spacing: 0.06em;
+  z-index: 3;
+  white-space: nowrap;
+  animation: fadeUp 0.7s 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="deco deco-1"></div>
+  <div class="deco deco-2"></div>
+  <div class="deco deco-3"></div>
+  <div class="deco deco-4"></div>
+  <div class="deco deco-5"></div>
+  <div class="deco deco-6"></div>
+
+  <div class="header">
+    <h1 class="title">OpenClaw 知识图谱</h1>
+    <p class="subtitle">从部署到实践全指南</p>
+  </div>
+
+  <div class="features">
+    <div class="feature-pill">⚡ 能动手的 AI</div>
+    <div class="feature-pill">🔓 开源透明</div>
+    <div class="feature-pill">🤖 多平台接入</div>
+  </div>
+
+  <div class="tagline-area">
+    <span class="tagline-pill">45页完整解析</span>
+  </div>
+
+  <div class="footer-label">Style G: Pastel Geometry · Friendly approachable</div>
+</div>
+</body>
+</html>

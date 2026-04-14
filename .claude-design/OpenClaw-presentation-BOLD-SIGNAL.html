@@ -1,0 +1,2964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw 知识图谱 — Bold Signal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+    /* ===========================================
+       THEME: Bold Signal — Dark tech with red/yellow/green accents
+       =========================================== */
+    :root {
+        --bg-primary: #08080c;
+        --bg-secondary: #0d0d12;
+        --bg-card: #111118;
+        --bg-card-hover: #1a1a24;
+        --text-primary: #f0f0f5;
+        --text-secondary: #8888a0;
+        --text-muted: #555566;
+        --accent-red: #ff3b3b;
+        --accent-yellow: #ffb800;
+        --accent-green: #3bff7a;
+        --accent-red-dim: rgba(255, 59, 59, 0.15);
+        --accent-yellow-dim: rgba(255, 184, 0, 0.15);
+        --accent-green-dim: rgba(59, 255, 122, 0.15);
+        --font-display: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+        --font-body: 'Noto Sans SC', -apple-system, sans-serif;
+        --font-mono: 'JetBrains Mono', monospace;
+        --title-size: clamp(1.6rem, 4.5vw, 3.5rem);
+        --h2-size: clamp(1.2rem, 3vw, 2.2rem);
+        --h3-size: clamp(1rem, 2.2vw, 1.5rem);
+        --body-size: clamp(0.75rem, 1.4vw, 1.05rem);
+        --small-size: clamp(0.65rem, 1vw, 0.85rem);
+        --slide-padding: clamp(1.2rem, 4vw, 4rem);
+        --content-gap: clamp(0.6rem, 1.8vw, 1.8rem);
+        --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+        --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        --duration: 0.7s;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+        scroll-behavior: smooth;
+        scroll-snap-type: y mandatory;
+        height: 100%;
+        overflow-x: hidden;
+    }
+
+    body {
+        font-family: var(--font-body);
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        height: 100%;
+        overflow-x: hidden;
+        line-height: 1.6;
+    }
+
+    /* ---- SLIDE SYSTEM ---- */
+    .slide {
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        scroll-snap-align: start;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .slide-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        max-height: 100%;
+        overflow: hidden;
+        padding: var(--slide-padding);
+    }
+
+    .slide-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    /* ---- BACKGROUND EFFECTS ---- */
+    .bg-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(255, 59, 59, 0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 59, 59, 0.02) 1px, transparent 1px);
+        background-size: 60px 60px;
+        pointer-events: none;
+    }
+
+    .bg-glow {
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.08;
+        pointer-events: none;
+    }
+
+    .bg-glow-red {
+        background: var(--accent-red);
+        top: -200px;
+        right: -100px;
+    }
+
+    .bg-glow-yellow {
+        background: var(--accent-yellow);
+        bottom: -200px;
+        left: -100px;
+        opacity: 0.05;
+    }
+
+    /* ---- TYPOGRAPHY ---- */
+    .slide-title {
+        font-family: var(--font-display);
+        font-size: var(--title-size);
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        margin-bottom: var(--content-gap);
+    }
+
+    .slide-title .accent {
+        color: var(--accent-red);
+    }
+
+    .slide-subtitle {
+        font-size: var(--h3-size);
+        color: var(--text-secondary);
+        font-weight: 400;
+        margin-bottom: clamp(0.5rem, 1vw, 1rem);
+    }
+
+    .section-label {
+        font-family: var(--font-mono);
+        font-size: var(--small-size);
+        color: var(--accent-yellow);
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        margin-bottom: clamp(0.3rem, 0.8vw, 0.8rem);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-label::before {
+        content: '';
+        display: inline-block;
+        width: 20px;
+        height: 2px;
+        background: var(--accent-yellow);
+    }
+
+    h3 {
+        font-size: var(--h3-size);
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    p {
+        font-size: var(--body-size);
+        color: var(--text-secondary);
+        line-height: 1.7;
+    }
+
+    /* ---- BOLD SIGNAL CARDS ---- */
+    .card {
+        background: var(--bg-card);
+        border: none;
+        border-left: 3px solid var(--accent-red);
+        padding: clamp(0.8rem, 2vw, 1.5rem);
+        transition: all 0.3s var(--ease-out-expo);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        background: var(--bg-card-hover);
+        transform: translateX(4px);
+    }
+
+    .card-accent-red { border-left-color: var(--accent-red); }
+    .card-accent-yellow { border-left-color: var(--accent-yellow); }
+    .card-accent-green { border-left-color: var(--accent-green); }
+
+    .card-icon {
+        font-size: clamp(1.5rem, 3vw, 2.5rem);
+        margin-bottom: clamp(0.4rem, 1vw, 0.8rem);
+    }
+
+    .card-title {
+        font-size: clamp(0.85rem, 1.5vw, 1.1rem);
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.4rem;
+    }
+
+    .card-text {
+        font-size: var(--small-size);
+        color: var(--text-secondary);
+        line-height: 1.5;
+    }
+
+    /* ---- GRIDS ---- */
+    .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(0.6rem, 1.5vw, 1.2rem);
+    }
+
+    .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(0.5rem, 1.2vw, 1rem);
+    }
+
+    .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(0.5rem, 1vw, 0.9rem);
+    }
+
+    .grid-2x4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(0.4rem, 1vw, 0.8rem);
+    }
+
+    @media (max-width: 900px) {
+        .grid-2, .grid-3, .grid-4, .grid-2x4 { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 600px) {
+        .grid-2, .grid-3, .grid-4, .grid-2x4 { grid-template-columns: 1fr; }
+    }
+
+    /* ---- BULLETS ---- */
+    .bullet-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: clamp(0.4rem, 1vh, 0.8rem);
+    }
+
+    .bullet-list li {
+        font-size: var(--body-size);
+        color: var(--text-secondary);
+        padding-left: 1.5em;
+        position: relative;
+        line-height: 1.5;
+    }
+
+    .bullet-list li::before {
+        content: '▸';
+        position: absolute;
+        left: 0;
+        color: var(--accent-red);
+        font-size: 0.9em;
+    }
+
+    /* ---- BADGE / TAG ---- */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.25em 0.75em;
+        font-size: var(--small-size);
+        font-weight: 500;
+        font-family: var(--font-mono);
+    }
+
+    .badge-red {
+        background: var(--accent-red-dim);
+        color: var(--accent-red);
+        border: 1px solid rgba(255, 59, 59, 0.3);
+    }
+
+    .badge-yellow {
+        background: var(--accent-yellow-dim);
+        color: var(--accent-yellow);
+        border: 1px solid rgba(255, 184, 0, 0.3);
+    }
+
+    .badge-green {
+        background: var(--accent-green-dim);
+        color: var(--accent-green);
+        border: 1px solid rgba(59, 255, 122, 0.3);
+    }
+
+    /* ---- BIG NUMBER ---- */
+    .big-number {
+        font-family: var(--font-display);
+        font-size: clamp(4rem, 12vw, 10rem);
+        font-weight: 900;
+        color: var(--accent-red);
+        line-height: 1;
+        text-align: center;
+    }
+
+    /* ---- DIVIDER ---- */
+    .divider {
+        height: 1px;
+        background: rgba(255, 59, 59, 0.2);
+        margin: clamp(0.5rem, 1.5vw, 1.5rem) 0;
+    }
+
+    /* ---- SECTION HEADER ---- */
+    .section-header {
+        margin-bottom: clamp(1rem, 2vw, 2rem);
+    }
+
+    /* ---- ANIMATIONS ---- */
+    .reveal {
+        opacity: 0;
+        transform: translateY(25px);
+        transition: opacity var(--duration) var(--ease-out-expo),
+                    transform var(--duration) var(--ease-out-expo);
+    }
+
+    .slide.visible .reveal {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .reveal:nth-child(1) { transition-delay: 0.05s; }
+    .reveal:nth-child(2) { transition-delay: 0.10s; }
+    .reveal:nth-child(3) { transition-delay: 0.15s; }
+    .reveal:nth-child(4) { transition-delay: 0.20s; }
+    .reveal:nth-child(5) { transition-delay: 0.25s; }
+    .reveal:nth-child(6) { transition-delay: 0.30s; }
+    .reveal:nth-child(7) { transition-delay: 0.35s; }
+    .reveal:nth-child(8) { transition-delay: 0.40s; }
+
+    .reveal-left {
+        opacity: 0;
+        transform: translateX(-40px);
+        transition: opacity var(--duration) var(--ease-out-expo),
+                    transform var(--duration) var(--ease-out-expo);
+    }
+
+    .slide.visible .reveal-left {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .reveal-scale {
+        opacity: 0;
+        transform: scale(0.92);
+        transition: opacity var(--duration) var(--ease-out-expo),
+                    transform var(--duration) var(--ease-out-expo);
+    }
+
+    .slide.visible .reveal-scale {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    /* ---- PROGRESS BAR ---- */
+    .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        background: var(--accent-red);
+        width: 0%;
+        z-index: 1000;
+        transition: width 0.3s ease;
+    }
+
+    /* ---- NAV DOTS ---- */
+    .nav-dots {
+        position: fixed;
+        right: clamp(0.8rem, 2vw, 1.5rem);
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        z-index: 100;
+    }
+
+    .nav-dot {
+        width: 8px;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.2);
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+    }
+
+    .nav-dot.active {
+        background: var(--accent-red);
+        transform: scale(1.3);
+    }
+
+    .nav-dot:hover {
+        background: rgba(255, 59, 59, 0.6);
+    }
+
+    /* ---- SLIDE NUMBER ---- */
+    .slide-number {
+        position: absolute;
+        bottom: clamp(0.8rem, 2vw, 1.5rem);
+        right: clamp(1rem, 2.5vw, 2rem);
+        font-family: var(--font-mono);
+        font-size: var(--small-size);
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+    }
+
+    /* ---- COVER SLIDE ---- */
+    .cover-slide {
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .cover-slide .slide-title {
+        font-size: clamp(2rem, 6vw, 5rem);
+        margin-bottom: clamp(0.5rem, 1.5vw, 1.5rem);
+    }
+
+    .cover-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: clamp(1rem, 2vw, 2rem);
+    }
+
+    .cover-tag {
+        font-family: var(--font-mono);
+        font-size: var(--small-size);
+        color: var(--accent-yellow);
+        border: 1px solid rgba(255, 184, 0, 0.3);
+        background: rgba(255, 184, 0, 0.08);
+        padding: 0.3em 1em;
+        letter-spacing: 0.05em;
+    }
+
+    /* ---- TOC SLIDE ---- */
+    .toc-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: clamp(0.5rem, 1.2vw, 1rem);
+    }
+
+    @media (max-width: 900px) { .toc-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 600px) { .toc-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .toc-item {
+        background: var(--bg-card);
+        border-left: 3px solid var(--accent-red);
+        padding: clamp(0.6rem, 1.5vw, 1.2rem);
+        text-align: center;
+        cursor: default;
+        transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .toc-item:nth-child(2) { border-left-color: var(--accent-yellow); }
+    .toc-item:nth-child(3) { border-left-color: var(--accent-green); }
+    .toc-item:nth-child(4) { border-left-color: var(--accent-red); }
+    .toc-item:nth-child(5) { border-left-color: var(--accent-yellow); }
+
+    .toc-item:hover {
+        background: var(--bg-card-hover);
+        transform: translateX(4px);
+    }
+
+    .toc-num {
+        font-family: var(--font-display);
+        font-size: clamp(1.2rem, 2.5vw, 2rem);
+        font-weight: 700;
+        color: var(--accent-red);
+        margin-bottom: 0.3rem;
+    }
+
+    .toc-item:nth-child(2) .toc-num { color: var(--accent-yellow); }
+    .toc-item:nth-child(3) .toc-num { color: var(--accent-green); }
+    .toc-item:nth-child(4) .toc-num { color: var(--accent-red); }
+    .toc-item:nth-child(5) .toc-num { color: var(--accent-yellow); }
+
+    .toc-label {
+        font-size: var(--small-size);
+        color: var(--text-secondary);
+        line-height: 1.3;
+    }
+
+    /* ---- COMPARISON SLIDE ---- */
+    .compare-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(1rem, 2.5vw, 2rem);
+        align-items: start;
+    }
+
+    @media (max-width: 700px) { .compare-row { grid-template-columns: 1fr; } }
+
+    .compare-col {
+        background: var(--bg-card);
+        border-left: 3px solid var(--text-muted);
+        padding: clamp(1rem, 2.5vw, 2rem);
+    }
+
+    .compare-col.highlight {
+        border-left-color: var(--accent-red);
+    }
+
+    .compare-col-title {
+        font-family: var(--font-display);
+        font-size: clamp(0.9rem, 1.8vw, 1.3rem);
+        font-weight: 700;
+        margin-bottom: clamp(0.6rem, 1.5vw, 1.2rem);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .compare-col:not(.highlight) .compare-col-title { color: var(--text-muted); }
+    .compare-col.highlight .compare-col-title { color: var(--accent-red); }
+
+    /* ---- ARCHITECTURE SLIDE ---- */
+    .arch-layers {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(0.5rem, 1.2vw, 1rem);
+    }
+
+    .arch-layer {
+        display: flex;
+        align-items: center;
+        gap: clamp(0.8rem, 2vw, 1.5rem);
+        background: var(--bg-card);
+        padding: clamp(0.6rem, 1.5vw, 1.2rem) clamp(0.8rem, 2vw, 1.5rem);
+        border-left: 3px solid;
+        transition: all 0.3s;
+    }
+
+    .arch-layer:hover {
+        transform: translateX(4px);
+    }
+
+    .arch-layer-channel { border-left-color: var(--accent-red); }
+    .arch-layer-gateway { border-left-color: var(--accent-yellow); }
+    .arch-layer-node { border-left-color: var(--accent-green); }
+
+    .arch-layer-badge {
+        font-family: var(--font-mono);
+        font-size: var(--small-size);
+        font-weight: 700;
+        padding: 0.3em 0.8em;
+        min-width: 90px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .arch-layer-channel .arch-layer-badge { background: var(--accent-red-dim); color: var(--accent-red); }
+    .arch-layer-gateway .arch-layer-badge { background: var(--accent-yellow-dim); color: var(--accent-yellow); }
+    .arch-layer-node .arch-layer-badge { background: var(--accent-green-dim); color: var(--accent-green); }
+
+    .arch-layer-content { flex: 1; }
+    .arch-layer-title { font-size: var(--body-size); font-weight: 600; color: var(--text-primary); margin-bottom: 0.2rem; }
+    .arch-layer-desc { font-size: var(--small-size); color: var(--text-secondary); }
+
+    /* ---- FLOW SLIDE ---- */
+    .flow-steps {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        flex-wrap: wrap;
+    }
+
+    .flow-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: clamp(0.5rem, 1.2vw, 1rem);
+        max-width: 120px;
+    }
+
+    .flow-circle {
+        width: clamp(2.5rem, 5vw, 4rem);
+        height: clamp(2.5rem, 5vw, 4rem);
+        background: var(--bg-card);
+        border: 2px solid var(--accent-red);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-display);
+        font-size: clamp(0.8rem, 1.5vw, 1.1rem);
+        font-weight: 700;
+        color: var(--accent-red);
+    }
+
+    .flow-label {
+        font-size: var(--small-size);
+        color: var(--text-secondary);
+        text-align: center;
+        line-height: 1.3;
+    }
+
+    .flow-arrow {
+        color: var(--accent-red);
+        font-size: clamp(1rem, 2vw, 1.5rem);
+        opacity: 0.5;
+        flex-shrink: 0;
+    }
+
+    /* ---- MEMORY PYRAMID ---- */
+    .pyramid {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: clamp(0.3rem, 0.8vw, 0.6rem);
+    }
+
+    .pyramid-layer {
+        display: flex;
+        align-items: center;
+        gap: clamp(0.6rem, 1.5vw, 1.2rem);
+        padding: clamp(0.4rem, 1vw, 0.8rem) clamp(0.8rem, 2vw, 1.5rem);
+        border: 1px solid;
+        width: 100%;
+        max-width: 700px;
+        transition: all 0.3s;
+        border-left: 3px solid;
+    }
+
+    .pyramid-layer:hover { transform: scale(1.02); }
+
+    .pyramid-layer-soul { background: rgba(255, 184, 0, 0.08); border-color: rgba(255, 184, 0, 0.4); border-left-color: var(--accent-yellow); }
+    .pyramid-layer-tools { background: rgba(255, 59, 59, 0.08); border-color: rgba(255, 59, 59, 0.3); border-left-color: var(--accent-red); }
+    .pyramid-layer-user { background: rgba(59, 255, 122, 0.08); border-color: rgba(59, 255, 122, 0.3); border-left-color: var(--accent-green); }
+    .pyramid-layer-session { background: rgba(136, 136, 160, 0.08); border-color: rgba(136, 136, 160, 0.3); border-left-color: var(--text-muted); }
+
+    .pyramid-badge {
+        font-family: var(--font-mono);
+        font-size: var(--small-size);
+        font-weight: 700;
+        min-width: 80px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .pyramid-layer-soul .pyramid-badge { color: var(--accent-yellow); }
+    .pyramid-layer-tools .pyramid-badge { color: var(--accent-red); }
+    .pyramid-layer-user .pyramid-badge { color: var(--accent-green); }
+    .pyramid-layer-session .pyramid-badge { color: var(--text-secondary); }
+
+    .pyramid-text { font-size: var(--small-size); color: var(--text-secondary); flex: 1; }
+    .pyramid-tag {
+        font-family: var(--font-mono);
+        font-size: 0.6rem;
+        padding: 0.2em 0.6em;
+        flex-shrink: 0;
+    }
+
+    .tag-immutable { background: rgba(255, 184, 0, 0.15); color: var(--accent-yellow); }
+    .tag-dynamic { background: rgba(255, 59, 59, 0.15); color: var(--accent-red); }
+
+    /* ---- TABLE ---- */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: var(--small-size);
+    }
+
+    .data-table th {
+        font-family: var(--font-mono);
+        font-size: var(--small-size);
+        color: var(--accent-yellow);
+        text-align: left;
+        padding: clamp(0.4rem, 1vw, 0.8rem) clamp(0.5rem, 1.2vw, 1rem);
+        border-bottom: 1px solid rgba(255, 184, 0, 0.2);
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+    }
+
+    .data-table td {
+        padding: clamp(0.4rem, 1vw, 0.8rem) clamp(0.5rem, 1.2vw, 1rem);
+        color: var(--text-secondary);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        vertical-align: top;
+        line-height: 1.5;
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(255, 59, 59, 0.04); }
+
+    .data-table .highlight-row td { color: var(--text-primary); }
+    .data-table .highlight-row { background: rgba(255, 59, 59, 0.06); }
+
+    /* ---- WARNING CARD ---- */
+    .warn-card {
+        background: rgba(255, 59, 59, 0.08);
+        border-left: 3px solid var(--accent-red);
+        padding: clamp(0.8rem, 2vw, 1.5rem);
+        display: flex;
+        gap: clamp(0.6rem, 1.5vw, 1rem);
+        align-items: flex-start;
+    }
+
+    .warn-icon { font-size: clamp(1.2rem, 2.5vw, 1.8rem); flex-shrink: 0; }
+    .warn-title { font-size: var(--body-size); font-weight: 600; color: var(--accent-red); margin-bottom: 0.3rem; }
+    .warn-text { font-size: var(--small-size); color: var(--text-secondary); line-height: 1.5; }
+
+    /* ---- CHECKLIST ---- */
+    .checklist {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: clamp(0.4rem, 1vh, 0.75rem);
+    }
+
+    .checklist li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        font-size: var(--body-size);
+        color: var(--text-secondary);
+        cursor: default;
+    }
+
+    .check-box {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 59, 59, 0.4);
+        flex-shrink: 0;
+        margin-top: 2px;
+        transition: all 0.2s;
+    }
+
+    .checklist li:hover .check-box {
+        border-color: var(--accent-red);
+    }
+
+    /* ---- SCENE CARD ---- */
+    .scene-card {
+        background: var(--bg-card);
+        border-left: 3px solid var(--accent-red);
+        padding: clamp(0.6rem, 1.5vw, 1.2rem);
+        text-align: center;
+        transition: all 0.3s var(--ease-out-expo);
+    }
+
+    .scene-card:nth-child(2) { border-left-color: var(--accent-yellow); }
+    .scene-card:nth-child(3) { border-left-color: var(--accent-green); }
+    .scene-card:nth-child(4) { border-left-color: var(--accent-red); }
+    .scene-card:nth-child(5) { border-left-color: var(--accent-yellow); }
+    .scene-card:nth-child(6) { border-left-color: var(--accent-green); }
+    .scene-card:nth-child(7) { border-left-color: var(--accent-red); }
+    .scene-card:nth-child(8) { border-left-color: var(--accent-yellow); }
+
+    .scene-card:hover {
+        background: var(--bg-card-hover);
+        transform: translateX(4px);
+    }
+
+    .scene-icon { font-size: clamp(1.5rem, 3vw, 2.2rem); margin-bottom: 0.4rem; }
+    .scene-label { font-size: var(--small-size); color: var(--text-secondary); }
+
+    /* ---- LADDER / STEPS ---- */
+    .ladder {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .ladder-item {
+        display: flex;
+        align-items: center;
+        gap: clamp(0.8rem, 2vw, 1.5rem);
+        padding: clamp(0.5rem, 1.2vw, 1rem) 0;
+        position: relative;
+    }
+
+    .ladder-num {
+        font-family: var(--font-display);
+        font-size: clamp(1rem, 2vw, 1.5rem);
+        font-weight: 700;
+        color: var(--bg-primary);
+        background: var(--accent-red);
+        width: clamp(2rem, 4vw, 3rem);
+        height: clamp(2rem, 4vw, 3rem);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .ladder-num::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2px;
+        height: 100%;
+        background: linear-gradient(to bottom, var(--accent-red), transparent);
+        z-index: 0;
+    }
+
+    .ladder-item:last-child .ladder-num::after { display: none; }
+
+    .ladder-text {
+        font-size: var(--body-size);
+        color: var(--text-secondary);
+        flex: 1;
+    }
+
+    /* ---- LARGE STAT ---- */
+    .stat-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .stat-suffix {
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 5vw, 4rem);
+        font-weight: 700;
+        color: var(--accent-red);
+    }
+
+    .stat-label {
+        font-size: var(--h3-size);
+        color: var(--text-secondary);
+        text-align: center;
+        margin-top: clamp(0.5rem, 1vw, 1rem);
+    }
+
+    /* ---- WARNING LIST ---- */
+    .warn-list {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(0.5rem, 1.2vw, 1rem);
+    }
+
+    .warn-item {
+        background: rgba(255, 59, 59, 0.07);
+        border-left: 3px solid var(--accent-red);
+        padding: clamp(0.6rem, 1.5vw, 1rem) clamp(0.8rem, 2vw, 1.5rem);
+    }
+
+    .warn-item-title {
+        font-size: var(--body-size);
+        font-weight: 600;
+        color: var(--accent-red);
+        margin-bottom: 0.2rem;
+    }
+
+    .warn-item-desc {
+        font-size: var(--small-size);
+        color: var(--text-secondary);
+    }
+
+    /* ---- SKILL TAGS ---- */
+    .skill-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .skill-tag {
+        background: rgba(255, 59, 59, 0.1);
+        border: 1px solid rgba(255, 59, 59, 0.25);
+        padding: 0.3em 0.9em;
+        font-size: var(--small-size);
+        color: var(--accent-red);
+        font-family: var(--font-mono);
+        transition: all 0.2s;
+    }
+
+    .skill-tag:hover {
+        background: rgba(255, 59, 59, 0.2);
+        transform: translateY(-1px);
+    }
+
+    /* ---- ROADMAP ---- */
+    .roadmap {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(0.5rem, 1.2vw, 1rem);
+        position: relative;
+    }
+
+    .roadmap::before {
+        content: '';
+        position: absolute;
+        top: 24px;
+        left: 5%;
+        right: 5%;
+        height: 2px;
+        background: linear-gradient(90deg, var(--accent-red), rgba(255, 59, 59, 0.2), rgba(255, 59, 59, 0.1));
+    }
+
+    @media (max-width: 800px) { .roadmap { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .roadmap { grid-template-columns: 1fr; } }
+
+    .roadmap-item {
+        background: var(--bg-card);
+        border-left: 3px solid var(--accent-red);
+        padding: clamp(0.6rem, 1.5vw, 1.2rem);
+        text-align: center;
+        position: relative;
+        transition: all 0.3s;
+    }
+
+    .roadmap-item:nth-child(2) { border-left-color: var(--accent-yellow); }
+    .roadmap-item:nth-child(3) { border-left-color: var(--accent-green); }
+    .roadmap-item:nth-child(4) { border-left-color: var(--accent-yellow); }
+
+    .roadmap-item:hover {
+        background: var(--bg-card-hover);
+        transform: translateX(4px);
+    }
+
+    .roadmap-dot {
+        width: 12px;
+        height: 12px;
+        background: var(--accent-red);
+        margin: 0 auto clamp(0.4rem, 1vw, 0.8rem);
+    }
+
+    .roadmap-item:nth-child(2) .roadmap-dot { background: var(--accent-yellow); }
+    .roadmap-item:nth-child(3) .roadmap-dot { background: var(--accent-green); }
+    .roadmap-item:nth-child(4) .roadmap-dot { background: var(--accent-yellow); }
+
+    .roadmap-title { font-size: var(--small-size); font-weight: 600; color: var(--text-primary); margin-bottom: 0.3rem; }
+    .roadmap-desc { font-size: calc(var(--small-size) * 0.9); color: var(--text-secondary); }
+
+    /* ---- CLOSING SLIDE ---- */
+    .action-flow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        flex-wrap: wrap;
+    }
+
+    .action-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        padding: clamp(0.5rem, 1.2vw, 1rem);
+        max-width: 160px;
+        text-align: center;
+    }
+
+    .action-num {
+        width: clamp(2rem, 4vw, 3rem);
+        height: clamp(2rem, 4vw, 3rem);
+        background: var(--accent-red);
+        color: var(--bg-primary);
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .action-text { font-size: var(--small-size); color: var(--text-secondary); line-height: 1.4; }
+
+    .action-arrow {
+        color: var(--accent-red);
+        opacity: 0.5;
+        font-size: clamp(1.2rem, 2.5vw, 2rem);
+        flex-shrink: 0;
+    }
+
+    /* ---- THREE COL ---- */
+    .col-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: clamp(0.6rem, 1.5vw, 1.2rem);
+    }
+
+    @media (max-width: 800px) { .col-3 { grid-template-columns: 1fr; } }
+
+    /* ---- SECURITY GRID ---- */
+    .sec-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(0.8rem, 2vw, 1.5rem);
+    }
+
+    @media (max-width: 700px) { .sec-grid { grid-template-columns: 1fr; } }
+
+    .sec-col {
+        background: var(--bg-card);
+        padding: clamp(0.8rem, 2vw, 1.5rem);
+        border-left: 3px solid;
+    }
+
+    .sec-col-rules { border-left-color: var(--accent-red); }
+    .sec-col-principles { border-left-color: var(--accent-green); }
+
+    .sec-col-title {
+        font-size: var(--body-size);
+        font-weight: 700;
+        margin-bottom: clamp(0.5rem, 1.2vw, 1rem);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .sec-col-rules .sec-col-title { color: var(--accent-red); }
+    .sec-col-principles .sec-col-title { color: var(--accent-green); }
+
+    /* ---- LAYERED ARCH ---- */
+    .layered-arch {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(0.4rem, 1vw, 0.8rem);
+    }
+
+    .layer-row {
+        display: flex;
+        align-items: center;
+        gap: clamp(0.6rem, 1.5vw, 1.2rem);
+    }
+
+    .layer-label {
+        font-family: var(--font-mono);
+        font-size: var(--small-size);
+        font-weight: 700;
+        min-width: 40px;
+        text-align: center;
+        color: var(--accent-red);
+        flex-shrink: 0;
+    }
+
+    .layer-bar {
+        flex: 1;
+        padding: clamp(0.3rem, 0.8vw, 0.6rem) clamp(0.6rem, 1.5vw, 1rem);
+        font-size: var(--small-size);
+        color: var(--text-secondary);
+        border: 1px solid;
+        border-left: 3px solid;
+        transition: all 0.3s;
+    }
+
+    .layer-bar:hover { transform: translateX(4px); }
+
+    .layer-bar-l0 { background: rgba(255, 59, 59, 0.05); border-color: rgba(255, 59, 59, 0.2); border-left-color: var(--accent-red); }
+    .layer-bar-l1 { background: rgba(255, 184, 0, 0.05); border-color: rgba(255, 184, 0, 0.2); border-left-color: var(--accent-yellow); width: 85%; }
+    .layer-bar-l2 { background: rgba(59, 255, 122, 0.05); border-color: rgba(59, 255, 122, 0.2); border-left-color: var(--accent-green); width: 70%; }
+    .layer-bar-l3 { background: rgba(136, 136, 160, 0.05); border-color: rgba(136, 136, 160, 0.2); border-left-color: var(--text-muted); width: 55%; }
+
+    .layer-width-indicator {
+        font-family: var(--font-mono);
+        font-size: calc(var(--small-size) * 0.8);
+        color: var(--text-muted);
+        margin-left: 0.5rem;
+    }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-height: 700px) {
+        :root {
+            --slide-padding: clamp(0.8rem, 3vw, 2rem);
+            --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+        }
+    }
+
+    @media (max-height: 600px) {
+        :root {
+            --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+            --content-gap: clamp(0.3rem, 1vw, 0.6rem);
+            --title-size: clamp(1.2rem, 4vw, 2rem);
+        }
+        .nav-dots { display: none; }
+    }
+
+    @media (max-height: 500px) {
+        :root {
+            --slide-padding: clamp(0.4rem, 2vw, 1rem);
+            --title-size: clamp(1rem, 3.5vw, 1.5rem);
+        }
+        .slide-number { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            transition-duration: 0.15s !important;
+        }
+        html { scroll-behavior: auto; }
+    }
+    </style>
+</head>
+<body>
+
+<!-- PROGRESS BAR -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- NAV DOTS -->
+<nav class="nav-dots" id="navDots"></nav>
+
+<!-- ============================================================
+     SLIDE 1: COVER
+     ============================================================ -->
+<section class="slide cover-slide" id="slide-1">
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-red"></div>
+    <div class="slide-content">
+        <div class="slide-inner" style="text-align:center">
+            <div class="section-label reveal" style="justify-content:center">OpenClaw Knowledge Graph</div>
+            <h1 class="slide-title reveal" style="font-size: clamp(2rem, 6vw, 5rem)">
+                OpenClaw <span class="accent">知识图谱</span>
+            </h1>
+            <p class="slide-subtitle reveal">从部署到实践全指南</p>
+            <div class="cover-tags reveal">
+                <span class="cover-tag">Gateway</span>
+                <span class="cover-tag">Channel</span>
+                <span class="cover-tag">Node</span>
+                <span class="cover-tag">Agent</span>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">01 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 2: TABLE OF CONTENTS
+     ============================================================ -->
+<section class="slide" id="slide-2">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">CONTENTS</div>
+            <h2 class="slide-title reveal">今天讲什么</h2>
+            <div class="divider reveal"></div>
+            <div class="toc-grid">
+                <div class="toc-item reveal">
+                    <div class="toc-num">01</div>
+                    <div class="toc-label">认识 OpenClaw<br>架构与运行机制</div>
+                </div>
+                <div class="toc-item reveal">
+                    <div class="toc-num">02</div>
+                    <div class="toc-label">部署实战<br>从选型到落地</div>
+                </div>
+                <div class="toc-item reveal">
+                    <div class="toc-num">03</div>
+                    <div class="toc-label">应用场景<br>8 大真实案例</div>
+                </div>
+                <div class="toc-item reveal">
+                    <div class="toc-num">04</div>
+                    <div class="toc-label">优缺点分析<br>客观评估</div>
+                </div>
+                <div class="toc-item reveal">
+                    <div class="toc-num">05</div>
+                    <div class="toc-label">安全规则<br>未来方向</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">02 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 3: PROBLEM - AI CHATBOT CEILING
+     ============================================================ -->
+<section class="slide" id="slide-3">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">PART 01 — 认识 OpenClaw</div>
+            <h2 class="slide-title reveal">AI 聊天机器人已到能力天花板</h2>
+            <div class="compare-row" style="margin-top: var(--content-gap)">
+                <div class="compare-col reveal">
+                    <div class="compare-col-title">你遇到的问题</div>
+                    <ul class="bullet-list">
+                        <li>只能聊天回复，无法执行操作</li>
+                        <li>无法接入企业内部工具</li>
+                        <li>无法跨平台统一管理</li>
+                        <li>每次都要手动复制粘贴</li>
+                    </ul>
+                </div>
+                <div class="compare-col highlight reveal">
+                    <div class="compare-col-title">你真正需要的</div>
+                    <ul class="bullet-list">
+                        <li>能自主执行复杂任务的 AI</li>
+                        <li>能连接飞书、微信、钉钉</li>
+                        <li>能跨平台协同工作</li>
+                        <li>一次配置，持续自动运行</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">03 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 4: OPENCLAW POSITIONING
+     ============================================================ -->
+<section class="slide" id="slide-4">
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-yellow"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">POSITIONING</div>
+            <h2 class="slide-title reveal">
+                OpenClaw = <span class="accent">本地优先</span> · 多渠道 · 可执行任务 · 开源免费
+            </h2>
+            <div class="divider reveal"></div>
+            <div class="grid-4" style="margin-top: var(--content-gap)">
+                <div class="card card-accent-red reveal">
+                    <div class="card-icon">🏠</div>
+                    <div class="card-title">本地优先</div>
+                    <div class="card-text">数据完全私有，不上传第三方服务器</div>
+                </div>
+                <div class="card card-accent-yellow reveal">
+                    <div class="card-icon">🔗</div>
+                    <div class="card-title">多渠道接入</div>
+                    <div class="card-text">20+ IM 平台统一管理，一个入口</div>
+                </div>
+                <div class="card card-accent-green reveal">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">可执行任务</div>
+                    <div class="card-text">从"动嘴聊天"升级为"动手干活"</div>
+                </div>
+                <div class="card card-accent-red reveal">
+                    <div class="card-icon">🔓</div>
+                    <div class="card-title">开源免费</div>
+                    <div class="card-text">代码完全公开，社区共建</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">04 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 5: THREE-LAYER ARCHITECTURE
+     ============================================================ -->
+<section class="slide" id="slide-5">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">ARCHITECTURE</div>
+            <h2 class="slide-title reveal">三层架构决定了 OpenClaw 的扩展性</h2>
+            <div class="arch-layers" style="margin-top: var(--content-gap)">
+                <div class="arch-layer arch-layer-channel reveal">
+                    <div class="arch-layer-badge">CHANNEL</div>
+                    <div class="arch-layer-content">
+                        <div class="arch-layer-title">接入层 — 用户入口</div>
+                        <div class="arch-layer-desc">20+ IM 平台：WhatsApp / Telegram / 飞书 / 钉钉 / 企业微信 / QQ</div>
+                    </div>
+                </div>
+                <div class="arch-layer arch-layer-gateway reveal">
+                    <div class="arch-layer-badge">GATEWAY</div>
+                    <div class="arch-layer-content">
+                        <div class="arch-layer-title">控制层 — 大脑中枢</div>
+                        <div class="arch-layer-desc">ws://127.0.0.1:18789 — Session 管理 + Agent 调度 + 路由决策</div>
+                    </div>
+                </div>
+                <div class="arch-layer arch-layer-node reveal">
+                    <div class="arch-layer-badge">NODE</div>
+                    <div class="arch-layer-content">
+                        <div class="arch-layer-title">执行层 — 工具操作</div>
+                        <div class="arch-layer-desc">摄像头 / 录屏 / 系统命令 / IoT 设备 / 浏览器自动化</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">05 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 6: CHANNEL DEEP DIVE
+     ============================================================ -->
+<section class="slide" id="slide-6">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">CHANNEL</div>
+            <h2 class="slide-title reveal">Channel 层已覆盖 <span class="accent">20+</span> 主流 IM 平台</h2>
+            <div class="divider reveal"></div>
+            <div class="col-3" style="margin-top: var(--content-gap)">
+                <div class="card card-accent-red reveal">
+                    <div class="card-title" style="color:var(--accent-red); margin-bottom:0.6rem">🌐 海外平台</div>
+                    <ul class="bullet-list">
+                        <li>WhatsApp</li>
+                        <li>Telegram</li>
+                        <li>Discord</li>
+                        <li>Slack</li>
+                        <li>Line</li>
+                    </ul>
+                </div>
+                <div class="card card-accent-yellow reveal">
+                    <div class="card-title" style="color:var(--accent-yellow); margin-bottom:0.6rem">🏢 国内平台</div>
+                    <ul class="bullet-list">
+                        <li>飞书</li>
+                        <li>钉钉</li>
+                        <li>企业微信</li>
+                        <li>微信</li>
+                    </ul>
+                </div>
+                <div class="card card-accent-green reveal">
+                    <div class="card-title" style="color:var(--accent-green); margin-bottom:0.6rem">🐧 腾讯系</div>
+                    <ul class="bullet-list">
+                        <li>QQ</li>
+                        <li>QQClaw</li>
+                        <li>QClaw</li>
+                        <li>WorkBuddy</li>
+                        <li>QBot</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">06 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 7: GATEWAY DEEP DIVE
+     ============================================================ -->
+<section class="slide" id="slide-7">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">GATEWAY</div>
+            <h2 class="slide-title reveal">Gateway 是整个平台的<span class="accent">"大脑"</span></h2>
+            <div class="divider reveal"></div>
+            <div class="grid-2" style="margin-top: var(--content-gap)">
+                <div class="card card-accent-yellow reveal" style="text-align:center; padding: clamp(1.5rem, 3vw, 2.5rem)">
+                    <div class="card-icon" style="font-size: clamp(2rem, 4vw, 3rem)">🌐</div>
+                    <div class="card-title" style="font-family: var(--font-mono); color: var(--accent-yellow); margin-bottom: 0.5rem">ws://127.0.0.1:18789</div>
+                    <div class="card-text">本地 WebSocket 服务 — 部署后第一个接触的组件</div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap: clamp(0.5rem, 1.2vw, 1rem);">
+                    <div class="card card-accent-red reveal">
+                        <div class="card-title">🔄 Session 管理</div>
+                        <div class="card-text">维护多轮对话状态，支持复杂任务上下文</div>
+                    </div>
+                    <div class="card card-accent-yellow reveal">
+                        <div class="card-title">🧠 Agent 调度</div>
+                        <div class="card-text">根据任务类型智能分配到对应 Agent 处理</div>
+                    </div>
+                    <div class="card card-accent-green reveal">
+                        <div class="card-title">📍 路由决策</div>
+                        <div class="card-text">判断消息该发给哪个 Agent，跨平台协同</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">07 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 8: NODE DEEP DIVE
+     ============================================================ -->
+<section class="slide" id="slide-8">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">NODE</div>
+            <h2 class="slide-title reveal">Node 让 AI 从<span class="accent">"动嘴"</span>变成<span class="accent">"动手"</span></h2>
+            <div class="divider reveal"></div>
+            <div class="grid-4" style="margin-top: var(--content-gap)">
+                <div class="card card-accent-red reveal">
+                    <div class="card-icon">💻</div>
+                    <div class="card-title">系统命令</div>
+                    <div class="card-text">执行终端操作，管理文件与进程</div>
+                </div>
+                <div class="card card-accent-yellow reveal">
+                    <div class="card-icon">📷</div>
+                    <div class="card-title">摄像头</div>
+                    <div class="card-text">视觉感知，图像采集与分析</div>
+                </div>
+                <div class="card card-accent-green reveal">
+                    <div class="card-icon">🖥️</div>
+                    <div class="card-title">录屏</div>
+                    <div class="card-text">屏幕录制，操作记录与回放</div>
+                </div>
+                <div class="card card-accent-red reveal">
+                    <div class="card-icon">🌍</div>
+                    <div class="card-title">浏览器</div>
+                    <div class="card-text">网页自动化，数据抓取与操作</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">08 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 9: MESSAGE LIFECYCLE
+     ============================================================ -->
+<section class="slide" id="slide-9">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">WORKFLOW</div>
+            <h2 class="slide-title reveal">一条消息从发出到执行完成只需 <span class="accent">6 步</span></h2>
+            <div class="flow-steps" style="margin-top: clamp(1.5rem, 3vw, 3rem)">
+                <div class="flow-step reveal">
+                    <div class="flow-circle">①</div>
+                    <div class="flow-label">用户发消息</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step reveal">
+                    <div class="flow-circle">②</div>
+                    <div class="flow-label">Channel 接收</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step reveal">
+                    <div class="flow-circle">③</div>
+                    <div class="flow-label">Gateway 路由</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step reveal">
+                    <div class="flow-circle">④</div>
+                    <div class="flow-label">Agent 处理</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step reveal">
+                    <div class="flow-circle">⑤</div>
+                    <div class="flow-label">Node 执行</div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step reveal">
+                    <div class="flow-circle">⑥</div>
+                    <div class="flow-label">回复用户</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">09 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 10: MEMORY SYSTEM OVERVIEW
+     ============================================================ -->
+<section class="slide" id="slide-10">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">MEMORY SYSTEM</div>
+            <h2 class="slide-title reveal">四层记忆系统是 OpenClaw 的<span class="accent">核心设计</span></h2>
+            <div class="pyramid" style="margin-top: clamp(1rem, 2.5vw, 2.5rem)">
+                <div class="pyramid-layer pyramid-layer-soul reveal">
+                    <div class="pyramid-badge">SOUL</div>
+                    <div class="pyramid-text">人格 · 价值观 · 核心身份 — 创建后不可修改</div>
+                    <div class="pyramid-tag tag-immutable">不可变</div>
+                </div>
+                <div class="pyramid-layer pyramid-layer-tools reveal">
+                    <div class="pyramid-badge">TOOLS</div>
+                    <div class="pyramid-text">Skills / Extensions — 按需加载，动态变化</div>
+                    <div class="pyramid-tag tag-dynamic">动态</div>
+                </div>
+                <div class="pyramid-layer pyramid-layer-user reveal">
+                    <div class="pyramid-badge">USER</div>
+                    <div class="pyramid-text">MEMORY.md / 向量数据库 / SQLite-vec</div>
+                    <div class="pyramid-tag tag-dynamic">动态</div>
+                </div>
+                <div class="pyramid-layer pyramid-layer-session reveal">
+                    <div class="pyramid-badge">Session</div>
+                    <div class="pyramid-text">内存 + sessions.json / Pre-Compaction 自动压缩</div>
+                    <div class="pyramid-tag tag-dynamic">动态</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">10 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 11: SOUL LAYER
+     ============================================================ -->
+<section class="slide" id="slide-11">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">SOUL LAYER</div>
+            <h2 class="slide-title reveal">SOUL.md 是 Agent <span class="accent">永久不可变</span>的身份锚点</h2>
+            <div class="divider reveal"></div>
+            <div style="display:grid; grid-template-columns: 1fr 2fr; gap: clamp(1rem, 2.5vw, 2rem); margin-top: var(--content-gap); align-items:center;">
+                <div class="card card-accent-yellow reveal" style="text-align:center; border-left-color: var(--accent-yellow); background: rgba(255,184,0,0.05);">
+                    <div style="font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 0.5rem;">📜</div>
+                    <div class="card-title" style="color: var(--accent-yellow); font-family: var(--font-mono);">SOUL.md</div>
+                    <div class="card-text">不可变文件 · 人格锚点</div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap: clamp(0.5rem, 1.2vw, 1rem);">
+                    <div class="card card-accent-red reveal">
+                        <div class="card-title">⚙️ 定义人格</div>
+                        <div class="card-text">Agent 的价值观、行为方式、核心身份</div>
+                    </div>
+                    <div class="card card-accent-yellow reveal">
+                        <div class="card-title">🔒 永久不可变</div>
+                        <div class="card-text">创建后不能被修改，所有行为的底层约束</div>
+                    </div>
+                    <div class="card card-accent-green reveal">
+                        <div class="card-title">📋 相当于"宪法"</div>
+                        <div class="card-text">Agent 的一切行为必须基于 SOUL，不可超越</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">11 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 12: TOOLS LAYER
+     ============================================================ -->
+<section class="slide" id="slide-12">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">TOOLS LAYER</div>
+            <h2 class="slide-title reveal">TOOLS 层决定了 Agent <span class="accent">当前能做什么</span></h2>
+            <div class="compare-row" style="margin-top: var(--content-gap)">
+                <div class="compare-col highlight reveal">
+                    <div class="compare-col-title" style="color:var(--accent-red)">🛠️ Skills 技能模块</div>
+                    <ul class="bullet-list">
+                        <li>自动化能力封装单元</li>
+                        <li>按需加载，不占用额外资源</li>
+                        <li>按任务类型智能匹配</li>
+                        <li>安装即注册到 Agent 能力池</li>
+                    </ul>
+                </div>
+                <div class="compare-col highlight reveal">
+                    <div class="compare-col-title" style="color:var(--accent-green)">🔌 Extensions 扩展插件</div>
+                    <ul class="bullet-list">
+                        <li>功能增强与外部系统集成</li>
+                        <li>动态挂载，灵活扩展</li>
+                        <li>不限制数量和类型</li>
+                        <li>工具列表随安装动态变化</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">12 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 13: USER MEMORY LAYER
+     ============================================================ -->
+<section class="slide" id="slide-13">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">USER LAYER</div>
+            <h2 class="slide-title reveal">语义长期记忆让 Agent <span class="accent">越用越懂你</span></h2>
+            <div class="divider reveal"></div>
+            <div class="grid-2" style="margin-top: var(--content-gap)">
+                <div class="card card-accent-green reveal" style="border-left-color: var(--accent-green);">
+                    <div class="card-icon">📝</div>
+                    <div class="card-title" style="color: var(--accent-green)">MEMORY.md</div>
+                    <div class="card-text" style="margin-bottom: 0.8rem">用户偏好 / 决策 / 历史事实</div>
+                    <ul class="bullet-list">
+                        <li>持久化存储，重启不丢失</li>
+                        <li>支持语义搜索</li>
+                        <li>Agent 经验累积的核心载体</li>
+                    </ul>
+                </div>
+                <div class="card card-accent-green reveal" style="border-left-color: var(--accent-green);">
+                    <div class="card-icon">🔍</div>
+                    <div class="card-title" style="color: var(--accent-green)">向量数据库</div>
+                    <div class="card-text" style="margin-bottom: 0.8rem">SQLite-vec 语义检索加速</div>
+                    <ul class="bullet-list">
+                        <li>语义而非关键词匹配</li>
+                        <li>从海量历史快速找到相关记忆</li>
+                        <li>查询效率远高于全文搜索</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">13 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 14: SESSION LAYER & PRE-COMPACTION
+     ============================================================ -->
+<section class="slide" id="slide-14">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">SESSION LAYER</div>
+            <h2 class="slide-title reveal">Pre-Compaction 保证关键信息<span class="accent">永不丢失</span></h2>
+            <div class="ladder" style="margin-top: clamp(1.5rem, 3vw, 3rem)">
+                <div class="ladder-item reveal">
+                    <div class="ladder-num">①</div>
+                    <div class="ladder-text"><strong style="color:var(--text-primary)">检测阈值</strong> — Token 用量接近上下文窗口上限时自动触发</div>
+                </div>
+                <div class="ladder-item reveal">
+                    <div class="ladder-num">②</div>
+                    <div class="ladder-text"><strong style="color:var(--text-primary)">静默保存</strong> — Agent 在后台将关键信息写入 MEMORY.md 和 Daily Log</div>
+                </div>
+                <div class="ladder-item reveal">
+                    <div class="ladder-num">③</div>
+                    <div class="ladder-text"><strong style="color:var(--text-primary)">压缩上下文</strong> — 旧消息压缩截断，释放 token 空间，保留核心信息</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">14 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 15: WORKSPACE FILES
+     ============================================================ -->
+<section class="slide" id="slide-15">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">WORKSPACE</div>
+            <h2 class="slide-title reveal"><span class="accent">7</span> 个核心文件构成 Agent 完整工作区</h2>
+            <div class="divider reveal"></div>
+            <div class="grid-3" style="margin-top: var(--content-gap)">
+                <div class="card card-accent-yellow reveal" style="background: rgba(255,184,0,0.04);">
+                    <div class="card-icon">📜</div>
+                    <div class="card-title" style="color:var(--accent-yellow)">SOUL.md</div>
+                    <div class="card-text">人格定义（不可变）</div>
+                </div>
+                <div class="card card-accent-red reveal">
+                    <div class="card-icon">⚖️</div>
+                    <div class="card-title">AGENTS.md</div>
+                    <div class="card-text">行为规则</div>
+                </div>
+                <div class="card card-accent-green reveal">
+                    <div class="card-icon">👤</div>
+                    <div class="card-title">USER.md</div>
+                    <div class="card-text">用户画像</div>
+                </div>
+                <div class="card card-accent-red reveal">
+                    <div class="card-icon">🧠</div>
+                    <div class="card-title">MEMORY.md</div>
+                    <div class="card-text">长期记忆</div>
+                </div>
+                <div class="card card-accent-yellow reveal">
+                    <div class="card-icon">💓</div>
+                    <div class="card-title">HEARTBEAT.md</div>
+                    <div class="card-text">心跳任务</div>
+                </div>
+                <div class="card card-accent-green reveal">
+                    <div class="card-icon">📁</div>
+                    <div class="card-title">memory/</div>
+                    <div class="card-text">每日日志目录</div>
+                </div>
+                <div class="card card-accent-red reveal">
+                    <div class="card-icon">💬</div>
+                    <div class="card-title">sessions.json</div>
+                    <div class="card-text">会话状态</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">15 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 16: MEMORY COLLABORATION
+     ============================================================ -->
+<section class="slide" id="slide-16">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">COLLABORATION</div>
+            <h2 class="slide-title reveal">四层记忆如何协作完成一次任务</h2>
+            <div class="flow-steps" style="margin-top: clamp(1.5rem, 3vw, 3rem); flex-direction:column; gap: clamp(0.4rem, 1vw, 0.8rem); align-items:stretch; max-width:700px; margin-left:auto; margin-right:auto;">
+                <div class="flow-step reveal" style="flex-direction:row; max-width:100%; gap:1rem; align-items:center;">
+                    <div class="flow-circle" style="flex-shrink:0">①</div>
+                    <div class="flow-label" style="text-align:left">用户消息到达 → <strong style="color:var(--accent-red)">Session</strong> 加载上下文</div>
+                </div>
+                <div class="flow-step reveal" style="flex-direction:row; max-width:100%; gap:1rem; align-items:center;">
+                    <div class="flow-circle" style="flex-shrink:0">②</div>
+                    <div class="flow-label" style="text-align:left">Agent 读取 <strong style="color:var(--accent-yellow)">SOUL</strong> 确认行为边界</div>
+                </div>
+                <div class="flow-step reveal" style="flex-direction:row; max-width:100%; gap:1rem; align-items:center;">
+                    <div class="flow-circle" style="flex-shrink:0">③</div>
+                    <div class="flow-label" style="text-align:left">加载 <strong style="color:var(--accent-red)">TOOLS</strong> 获取可用技能</div>
+                </div>
+                <div class="flow-step reveal" style="flex-direction:row; max-width:100%; gap:1rem; align-items:center;">
+                    <div class="flow-circle" style="flex-shrink:0">④</div>
+                    <div class="flow-label" style="text-align:left">查询 <strong style="color:var(--accent-green)">USER</strong> 记忆了解用户偏好</div>
+                </div>
+                <div class="flow-step reveal" style="flex-direction:row; max-width:100%; gap:1rem; align-items:center;">
+                    <div class="flow-circle" style="flex-shrink:0">⑤</div>
+                    <div class="flow-label" style="text-align:left">执行任务 → 结果写入 <strong style="color:var(--accent-green)">MEMORY.md</strong></div>
+                </div>
+                <div class="flow-step reveal" style="flex-direction:row; max-width:100%; gap:1rem; align-items:center;">
+                    <div class="flow-circle" style="flex-shrink:0">⑥</div>
+                    <div class="flow-label" style="text-align:left">触发 <strong style="color:var(--text-secondary)">Pre-Compaction</strong>（如需要）</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">16 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 17: DEPLOYMENT DECISION
+     ============================================================ -->
+<section class="slide" id="slide-17">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">PART 02 — 部署实战</div>
+            <h2 class="slide-title reveal">三种部署路径，选错场景<span class="accent">白花钱</span></h2>
+            <div class="grid-3" style="margin-top: var(--content-gap)">
+                <div class="card card-accent-red reveal">
+                    <div class="card-icon">☁️</div>
+                    <div class="card-title" style="color:var(--accent-red)">现成平台</div>
+                    <div class="card-text" style="margin-bottom:0.8rem">开箱即用 / 按量付费</div>
+                    <ul class="bullet-list">
+                        <li>适合快速体验</li>
+                        <li>MimoClaw 免费 1 小时</li>
+                        <li>无需技术背景</li>
+                    </ul>
+                </div>
+                <div class="card card-accent-green reveal">
+                    <div class="card-icon">🖥️</div>
+                    <div class="card-title" style="color:var(--accent-green)">云服务器</div>
+                    <div class="card-text" style="margin-bottom:0.8rem">灵活可控 / 月付固定</div>
+                    <ul class="bullet-list">
+                        <li>适合持续使用</li>
+                        <li>推荐 2vCPU / 8GB+</li>
+                        <li>选海外节点</li>
+                    </ul>
+                </div>
+                <div class="card card-accent-yellow reveal">
+                    <div class="card-icon">🏠</div>
+                    <div class="card-title" style="color:var(--accent-yellow)">本地部署</div>
+                    <div class="card-text" style="margin-bottom:0.8rem">完全私有 / 硬件要求高</div>
+                    <ul class="bullet-list">
+                        <li>适合数据敏感场景</li>
+                        <li>需要高配电脑</li>
+                        <li>完全离线可用</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">17 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 18: PLATFORM COMPARISON
+     ============================================================ -->
+<section class="slide" id="slide-18">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">PLATFORMS</div>
+            <h2 class="slide-title reveal">四个现成平台定价和定位差异明显</h2>
+            <div class="divider reveal"></div>
+            <table class="data-table" style="margin-top: var(--content-gap)">
+                <thead>
+                    <tr>
+                        <th>平台</th>
+                        <th>计费</th>
+                        <th>价格</th>
+                        <th>适合场景</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong style="color:var(--text-primary)">MimoClaw</strong></td>
+                        <td>免费体验</td>
+                        <td><span class="badge badge-red">免费 1 小时</span></td>
+                        <td>先试后买，快速验证</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color:var(--text-primary)">MaxClaw</strong></td>
+                        <td>积分制</td>
+                        <td><span class="badge badge-green">39 元起</span></td>
+                        <td>轻度体验，日常任务</td>
+                    </tr>
+                    <tr>
+                        <td><strong style="color:var(--text-primary)">KimiClaw</strong></td>
+                        <td>订阅</td>
+                        <td><span class="badge badge-red">199 元/月</span></td>
+                        <td>Kimi 模型生态用户</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong style="color:var(--text-primary)">ArkClaw</strong></td>
+                        <td>订阅</td>
+                        <td><span class="badge badge-red">200 元/月</span></td>
+                        <td>稳定生产环境使用</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="slide-number">18 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 19: TENCENT SERIES & EASYCLAW
+     ============================================================ -->
+<section class="slide" id="slide-19">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">ENTERPRISE</div>
+            <h2 class="slide-title reveal">腾讯龙虾系列和 EasyClaw 覆盖<span class="accent">企业场景</span></h2>
+            <div class="compare-row" style="margin-top: var(--content-gap)">
+                <div class="compare-col reveal" style="border-left-color:var(--accent-green);">
+                    <div class="compare-col-title" style="color:var(--accent-green)">🐉 腾讯龙虾系列</div>
+                    <ul class="bullet-list">
+                        <li>QClaw — 深度腾讯生态</li>
+                        <li>QQClaw — QQ 平台接入</li>
+                        <li>WorkBuddy — 企业微信增强</li>
+                        <li>QBot — QQ 机器人平台</li>
+                    </ul>
+                </div>
+                <div class="compare-col reveal" style="border-left-color:var(--accent-red);">
+                    <div class="compare-col-title" style="color:var(--accent-red)">🔧 其他平台</div>
+                    <ul class="bullet-list">
+                        <li>EasyClaw — 飞书/企业微信/钉钉</li>
+                        <li>AutoClaw — 多渠道统一管理</li>
+                        <li>专注跨平台协同</li>
+                        <li>适合非腾讯系企业</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">19 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 20: CLOUD SERVER CONFIG
+     ============================================================ -->
+<section class="slide" id="slide-20">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">SERVER</div>
+            <h2 class="slide-title reveal">内存低于 <span class="accent">4GB</span> 会频繁崩溃</h2>
+            <div class="divider reveal"></div>
+            <div class="grid-2" style="margin-top: var(--content-gap); gap: clamp(1rem, 2.5vw, 2rem)">
+                <div class="card card-accent-red reveal">
+                    <div class="card-title" style="color:var(--accent-red); margin-bottom:0.8rem">📋 服务器配置推荐</div>
+                    <table class="data-table" style="font-size: var(--small-size)">
+                        <tr><td style="color:var(--text-primary); font-weight:600">最低配置</td><td>2 vCPU / 4GB RAM / 40GB SSD</td></tr>
+                        <tr><td style="color:var(--text-primary); font-weight:600">推荐配置</td><td>2 vCPU+ / 8GB+ RAM / 40GB+ SSD</td></tr>
+                        <tr><td style="color:var(--text-primary); font-weight:600">浏览器需求</td><td>额外 4GB+ 独立内存</td></tr>
+                        <tr><td style="color:var(--text-primary); font-weight:600">节点选择</td><td>服务器务必选海外节点</td></tr>
+                    </table>
+                </div>
+                <div style="display:flex; flex-direction:column; gap: clamp(0.5rem, 1.2vw, 1rem);">
+                    <div class="warn-card reveal">
+                        <div class="warn-icon">⚠️</div>
+                        <div>
+                            <div class="warn-title">内存警告</div>
+                            <div class="warn-text">4GB 是底线，8GB 是舒适区，跑浏览器需额外 4GB+。不要在内存上省钱。</div>
+                        </div>
+                    </div>
+                    <div class="warn-card reveal">
+                        <div class="warn-icon">🌐</div>
+                        <div>
+                            <div class="warn-title">网络警告</div>
+                            <div class="warn-text">国内服务器访问模型 API 慢，建议选海外节点或配置代理中转。</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">20 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 21: MODEL SELECTION
+     ============================================================ -->
+<section class="slide" id="slide-21">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">MODEL</div>
+            <h2 class="slide-title reveal">模型选型直接决定体验和成本的<span class="accent">上限</span></h2>
+            <div class="divider reveal"></div>
+            <table class="data-table" style="margin-top: var(--content-gap)">
+                <thead>
+                    <tr>
+                        <th>档位</th>
+                        <th>推荐模型</th>
+                        <th>月成本预估</th>
+                        <th>适用场景</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="highlight-row">
+                        <td><span class="badge badge-yellow">最强</span></td>
+                        <td style="color:var(--accent-yellow); font-weight:600">Claude Opus 4.6</td>
+                        <td>高</td>
+                        <td>复杂任务、高准确率要求</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-green">次选</span></td>
+                        <td style="color:var(--text-primary); font-weight:600">GPT 5.4</td>
+                        <td>中高</td>
+                        <td>综合能力强，生态成熟</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-red">经济</span></td>
+                        <td style="color:var(--text-primary); font-weight:600">GLM / Kimi / Qwen / Minimax</td>
+                        <td>低</td>
+                        <td>日常任务、预算有限</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-red">本地</span></td>
+                        <td style="color:var(--text-primary); font-weight:600">自建模型</td>
+                        <td>硬件成本</td>
+                        <td>数据敏感、有硬件条件</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="slide-number">21 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 22: DEPLOYMENT 4 STEPS
+     ============================================================ -->
+<section class="slide" id="slide-22">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">DEPLOYMENT</div>
+            <h2 class="slide-title reveal">部署 OpenClaw 只需<span class="accent">四步</span></h2>
+            <div class="flow-steps" style="margin-top: clamp(1.5rem, 3vw, 3rem)">
+                <div class="flow-step reveal">
+                    <div class="flow-circle">①</div>
+                    <div class="flow-label" style="max-width:120px">选择平台<br><small style="color:var(--text-muted)">服务器/本地/云</small></div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step reveal">
+                    <div class="flow-circle">②</div>
+                    <div class="flow-label" style="max-width:120px">选择模型<br><small style="color:var(--text-muted)">Claude/GPT/GLM</small></div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step reveal">
+                    <div class="flow-circle">③</div>
+                    <div class="flow-label" style="max-width:120px">安装配置<br><small style="color:var(--text-muted)">Docker/脚本/源码</small></div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step reveal">
+                    <div class="flow-circle">④</div>
+                    <div class="flow-label" style="max-width:120px">连接渠道<br><small style="color:var(--text-muted)">微信/飞书/钉钉</small></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">22 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 23: PITFALL - ENVIRONMENT
+     ============================================================ -->
+<section class="slide" id="slide-23">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">PITFALLS</div>
+            <h2 class="slide-title reveal">环境依赖冲突是部署失败的<span class="accent">第一大原因</span></h2>
+            <div class="warn-card reveal" style="margin-top: var(--content-gap)">
+                <div class="warn-icon">🐛</div>
+                <div style="flex:1">
+                    <div class="warn-title">问题</div>
+                    <div class="warn-text">Node.js / Python 版本不兼容，依赖链长，手动安装容易出现冲突</div>
+                </div>
+            </div>
+            <div class="divider reveal"></div>
+            <div class="card card-accent-green reveal">
+                <div class="card-title" style="color:var(--accent-green); margin-bottom:0.8rem">✅ 正确做法</div>
+                <ul class="bullet-list">
+                    <li>使用 AI 工具辅助安装（Claude Code / OpenCode）</li>
+                    <li>OpenCode 提供免费模型，零成本起步 — <span class="badge badge-red">opencode.ai</span></li>
+                    <li>用 Docker 隔离环境，避免污染宿主机</li>
+                    <li>让 AI 帮你装 AI，省下的时间远大于学习成本</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">23 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 24: PITFALLS - MEMORY & NETWORK
+     ============================================================ -->
+<section class="slide" id="slide-24">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">PITFALLS</div>
+            <h2 class="slide-title reveal">内存不足和国内网络是<span class="accent">第二和第三</span>大坑</h2>
+            <div class="grid-2" style="margin-top: var(--content-gap)">
+                <div class="warn-card reveal">
+                    <div class="warn-icon">💾</div>
+                    <div>
+                        <div class="warn-title">配置坑：内存不足</div>
+                        <div class="warn-text">内存低于 4GB 必崩溃，跑浏览器需额外 4GB+。不要在 2G 机器上省那点钱。</div>
+                    </div>
+                </div>
+                <div class="warn-card reveal">
+                    <div class="warn-icon">🌐</div>
+                    <div>
+                        <div class="warn-title">网络坑：国内访问慢</div>
+                        <div class="warn-text">国内服务器访问模型 API 极慢。服务器务必选海外节点，或配置代理中转。</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">24 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 25: AI-ASSISTED INSTALL
+     ============================================================ -->
+<section class="slide" id="slide-25">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">INSTALLATION</div>
+            <h2 class="slide-title reveal">用 AI 装 AI 是目前<span class="accent">最靠谱</span>的安装方式</h2>
+            <div class="divider reveal"></div>
+            <div class="grid-3" style="margin-top: var(--content-gap)">
+                <div class="card card-accent-red reveal" style="text-align:center; border-left-color: var(--accent-red);">
+                    <div class="card-icon">🤖</div>
+                    <div class="card-title" style="color:var(--accent-red)">OpenCode</div>
+                    <div class="card-text" style="margin-bottom:0.6rem">免费模型 / 客户端+CLI</div>
+                    <div class="badge badge-red" style="margin: 0 auto">推荐首选</div>
+                    <div style="margin-top:0.6rem; font-size:var(--small-size); color:var(--text-muted)">opencode.ai</div>
+                </div>
+                <div class="card card-accent-yellow reveal" style="text-align:center">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title">Claude Code</div>
+                    <div class="card-text">需要账号登录<br>专业级 AI 编程助手</div>
+                </div>
+                <div class="card card-accent-green reveal" style="text-align:center">
+                    <div class="card-icon">🔧</div>
+                    <div class="card-title">其他 AI 工具</div>
+                    <div class="card-text">自动处理依赖<br>避免环境问题</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">25 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 26: DEPLOYMENT CHECKLIST
+     ============================================================ -->
+<section class="slide" id="slide-26">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">CHECKLIST</div>
+            <h2 class="slide-title reveal">部署前对照这份清单，<span class="accent">逐项确认</span></h2>
+            <div class="divider reveal"></div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 2.5vw, 2rem); margin-top: var(--content-gap)">
+                <ul class="checklist reveal">
+                    <li><div class="check-box"></div>平台已选（平台 / 云 / 本地）</li>
+                    <li><div class="check-box"></div>模型已选并获取 API Key</li>
+                    <li><div class="check-box"></div>服务器内存 ≥ 4GB</li>
+                    <li><div class="check-box"></div>网络可达（海外节点或代理）</li>
+                </ul>
+                <ul class="checklist reveal">
+                    <li><div class="check-box"></div>安装方式已选（Docker / 脚本 / 源码）</li>
+                    <li><div class="check-box"></div>至少一个 Channel 已配置</li>
+                    <li><div class="check-box"></div>Agent 工作区文件已初始化</li>
+                    <li><div class="check-box"></div>确认所有依赖版本兼容</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">26 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 27: SCENES OVERVIEW
+     ============================================================ -->
+<section class="slide" id="slide-27">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">PART 03 — 应用场景</div>
+            <h2 class="slide-title reveal"><span class="accent">8</span> 大业务场景，覆盖企业日常到专业分析</h2>
+            <div class="grid-2x4" style="margin-top: var(--content-gap)">
+                <div class="scene-card reveal">
+                    <div class="scene-icon">📅</div>
+                    <div class="scene-label">企业微信日程</div>
+                </div>
+                <div class="scene-card reveal">
+                    <div class="scene-icon">✅</div>
+                    <div class="scene-label">禅道任务管理</div>
+                </div>
+                <div class="scene-card reveal">
+                    <div class="scene-icon">📱</div>
+                    <div class="scene-label">小红书差评收集</div>
+                </div>
+                <div class="scene-card reveal">
+                    <div class="scene-icon">📄</div>
+                    <div class="scene-label">文章总结分析</div>
+                </div>
+                <div class="scene-card reveal">
+                    <div class="scene-icon">⏰</div>
+                    <div class="scene-label">定时任务日报</div>
+                </div>
+                <div class="scene-card reveal">
+                    <div class="scene-icon">🎨</div>
+                    <div class="scene-label">生成 PPT/网页</div>
+                </div>
+                <div class="scene-card reveal">
+                    <div class="scene-icon">💬</div>
+                    <div class="scene-label">群消息汇总</div>
+                </div>
+                <div class="scene-card reveal">
+                    <div class="scene-icon">🔍</div>
+                    <div class="scene-label">代码审查</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">27 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 28: WECOM SCHEDULE
+     ============================================================ -->
+<section class="slide" id="slide-28">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">SCENE 01</div>
+            <h2 class="slide-title reveal">企业微信日程管理可以<span class="accent">完全交给 AI</span></h2>
+            <div style="margin-top: clamp(1.5rem, 3vw, 2.5rem); display:flex; flex-direction:column; gap: clamp(0.5rem, 1.2vw, 1rem); max-width:700px; margin-left:auto; margin-right:auto;">
+                <div class="card card-accent-red reveal" style="display:flex; align-items:center; gap: clamp(0.8rem, 2vw, 1.5rem);">
+                    <div style="font-size: clamp(1.5rem, 3vw, 2.2rem); flex-shrink:0">📅</div>
+                    <div>
+                        <div class="card-title">日程创建</div>
+                        <div class="card-text">自动安排会议 / 设置提醒 / 时间冲突检测</div>
+                    </div>
+                </div>
+                <div class="card card-accent-yellow reveal" style="display:flex; align-items:center; gap: clamp(0.8rem, 2vw, 1.5rem);">
+                    <div style="font-size: clamp(1.5rem, 3vw, 2.2rem); flex-shrink:0">📋</div>
+                    <div>
+                        <div class="card-title">会议管理</div>
+                        <div class="card-text">邀请发送 / 议程生成 / 会议纪要自动撰写</div>
+                    </div>
+                </div>
+                <div class="card card-accent-green reveal" style="display:flex; align-items:center; gap: clamp(0.8rem, 2vw, 1.5rem);">
+                    <div style="font-size: clamp(1.5rem, 3vw, 2.2rem); flex-shrink:0">🔔</div>
+                    <div>
+                        <div class="card-title">消息推送</div>
+                        <div class="card-text">日程提醒实时推送到企业微信群</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">28 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 29: ZENTAO MANAGEMENT
+     ============================================================ -->
+<section class="slide" id="slide-29">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">SCENE 02</div>
+            <h2 class="slide-title reveal">禅道任务、工时、版本管理<span class="accent">全部自动化</span></h2>
+            <div class="col-3" style="margin-top: var(--content-gap)">
+                <div class="card card-accent-red reveal">
+                    <div class="card-icon">✅</div>
+                    <div class="card-title">任务管理</div>
+                    <div class="card-text">创建/查询/修改<br>自动分配<br>状态自动流转</div>
+                </div>
+                <div class="card card-accent-yellow reveal">
+                    <div class="card-icon">⏱️</div>
+                    <div class="card-title">工时统计</div>
+                    <div class="card-text">工时自动记录<br>效率分析<br>报表自动生成</div>
+                </div>
+                <div class="card card-accent-green reveal">
+                    <div class="card-icon">🚀</div>
+                    <div class="card-title">版本管理</div>
+                    <div class="card-text">版本发布<br>更新日志<br>变更记录追踪</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">29 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 30: XIAOHONGSHU NEGATIVE REVIEWS
+     ============================================================ -->
+<section class="slide" id="slide-30">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">SCENE 03</div>
+            <h2 class="slide-title reveal">小红书差评从发现到推送<span class="accent">全程自动化</span></h2>
+            <div class="flow-steps" style="margin-top: clamp(1.5rem, 3vw, 3rem)">
+                <div class="flow-step reveal">
+                    <div class="flow-circle">①</div>
+                    <div class="flow-label" style="max-width:130px">数据采集<br><small style="color:var(--text-muted)">监控评论</small></div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step reveal">
+                    <div class="flow-circle">②</div>
+                    <div class="flow-label" style="max-width:130px">智能分析<br><small style="color:var(--text-muted)">情感分类</small></div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step reveal">
+                    <div class="flow-circle">③</div>
+                    <div class="flow-label" style="max-width:130px">推送汇总<br><small style="color:var(--text-muted)">企微群通知</small></div>
+                </div>
+            </div>
+            <div class="card card-accent-red reveal" style="margin-top: clamp(1rem, 2.5vw, 2rem); max-width:700px; margin-left:auto; margin-right:auto; text-align:center">
+                <div class="card-text">运营团队最需要的场景 — <strong style="color:var(--accent-red)">不用再手动刷评论了</strong></div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">30 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 31: ARTICLE ANALYSIS
+     ============================================================ -->
+<section class="slide" id="slide-31">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">SCENE 04</div>
+            <h2 class="slide-title reveal">文章总结从 <span class="accent">2 小时</span> 缩短到 <span class="accent">2 分钟</span></h2>
+            <div class="compare-row" style="margin-top: var(--content-gap)">
+                <div class="compare-col reveal">
+                    <div class="compare-col-title">📝 文章总结</div>
+                    <ul class="bullet-list">
+                        <li>自动读取全文内容</li>
+                        <li>提取核心观点和关键数据</li>
+                        <li>结构化摘要输出</li>
+                        <li>支持批量处理多篇</li>
+                    </ul>
+                </div>
+                <div class="compare-col highlight reveal">
+                    <div class="compare-col-title" style="color:var(--accent-red)">📊 行业分析</div>
+                    <ul class="bullet-list">
+                        <li>技术深度分析解读</li>
+                        <li>趋势研判与预测</li>
+                        <li>竞品对比研究</li>
+                        <li>报告自动生成</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">31 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 32: SCHEDULED TASKS
+     ============================================================ -->
+<section class="slide" id="slide-32">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">SCENE 05</div>
+            <h2 class="slide-title reveal">定时任务让日报周报<span class="accent">自动生成、自动推送</span></h2>
+            <div class="arch-layers" style="margin-top: var(--content-gap)">
+                <div class="arch-layer arch-layer-channel reveal">
+                    <div class="arch-layer-badge" style="background:var(--accent-red-dim); color:var(--accent-red)">⏰</div>
+                    <div class="arch-layer-content">
+                        <div class="arch-layer-title">定时搜索</div>
+                        <div class="arch-layer-desc">定时搜索行业信息，自动抓取最新内容，汇总整理</div>
+                    </div>
+                </div>
+                <div class="arch-layer arch-layer-gateway reveal">
+                    <div class="arch-layer-badge" style="background:var(--accent-yellow-dim); color:var(--accent-yellow)">📅</div>
+                    <div class="arch-layer-content">
+                        <div class="arch-layer-title">日报生成</div>
+                        <div class="arch-layer-desc">每日工作汇总，自动生成结构化日报，推送提醒</div>
+                    </div>
+                </div>
+                <div class="arch-layer arch-layer-node reveal">
+                    <div class="arch-layer-badge" style="background:var(--accent-green-dim); color:var(--accent-green)">📆</div>
+                    <div class="arch-layer-content">
+                        <div class="arch-layer-title">周报汇总</div>
+                        <div class="arch-layer-desc">周度数据汇总，趋势分析，完整周报输出</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">32 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 33: PPT & WEB GENERATION
+     ============================================================ -->
+<section class="slide" id="slide-33">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">SCENE 06</div>
+            <h2 class="slide-title reveal">从一句话到完整 PPT/网页，只需<span class="accent">一次对话</span></h2>
+            <div class="flow-steps" style="margin-top: clamp(1.5rem, 3vw, 3rem)">
+                <div class="card card-accent-red reveal" style="text-align:center; padding: clamp(0.8rem, 2vw, 1.5rem); max-width:200px">
+                    <div style="font-size: clamp(1.5rem, 3vw, 2.2rem); margin-bottom: 0.4rem">💬</div>
+                    <div style="font-size:var(--body-size); color:var(--text-secondary)">输入一句话需求</div>
+                </div>
+                <div class="flow-arrow" style="font-size: clamp(1.5rem, 3vw, 2.5rem)">→</div>
+                <div class="card card-accent-yellow reveal" style="text-align:center; padding: clamp(0.8rem, 2vw, 1.5rem); max-width:200px; border-left-color:var(--accent-yellow)">
+                    <div style="font-size: clamp(1.5rem, 3vw, 2.2rem); margin-bottom: 0.4rem">⚡</div>
+                    <div style="font-size:var(--body-size); color:var(--accent-yellow)">AI 处理生成</div>
+                </div>
+                <div class="flow-arrow" style="font-size: clamp(1.5rem, 3vw, 2.5rem)">→</div>
+                <div class="card card-accent-green reveal" style="text-align:center; padding: clamp(0.8rem, 2vw, 1.5rem); max-width:200px; border-left-color:var(--accent-green)">
+                    <div style="font-size: clamp(1.5rem, 3vw, 2.2rem); margin-bottom: 0.4rem">🎨</div>
+                    <div style="font-size:var(--body-size); color:var(--accent-green)">完整PPT/网页</div>
+                </div>
+            </div>
+            <div style="display:flex; gap: clamp(0.5rem, 1.2vw, 1rem); justify-content:center; margin-top: clamp(1rem, 2vw, 2rem); flex-wrap:wrap;">
+                <span class="badge badge-red">多风格选择</span>
+                <span class="badge badge-yellow">自动排版</span>
+                <span class="badge badge-red">内容配图</span>
+                <span class="badge badge-green">一键导出</span>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">33 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 34: GROUP MESSAGE SUMMARY
+     ============================================================ -->
+<section class="slide" id="slide-34">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">SCENE 07</div>
+            <h2 class="slide-title reveal">群聊消息从混乱到结构化文档只需<span class="accent">三步</span></h2>
+            <div class="flow-steps" style="margin-top: clamp(1.5rem, 3vw, 3rem)">
+                <div class="flow-step reveal">
+                    <div class="flow-circle">①</div>
+                    <div class="flow-label" style="max-width:130px">消息抓取<br><small style="color:var(--text-muted)">监听群聊</small></div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step reveal">
+                    <div class="flow-circle">②</div>
+                    <div class="flow-label" style="max-width:130px">分类整理<br><small style="color:var(--text-muted)">过滤去重</small></div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step reveal">
+                    <div class="flow-circle">③</div>
+                    <div class="flow-label" style="max-width:130px">文档生成<br><small style="color:var(--text-muted)">结构化输出</small></div>
+                </div>
+            </div>
+            <div class="card card-accent-red reveal" style="margin-top: clamp(1rem, 2.5vw, 2rem); max-width:700px; margin-left:auto; margin-right:auto; text-align:center">
+                <div class="card-text">团队负责人最需要的功能 — <strong style="color:var(--accent-red)">不再需要手动整理群消息</strong></div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">34 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 35: CODE REVIEW
+     ============================================================ -->
+<section class="slide" id="slide-35">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">SCENE 08</div>
+            <h2 class="slide-title reveal">AI 代码审查覆盖<span class="accent">质量 / 安全 / 最佳实践</span>三个维度</h2>
+            <div class="col-3" style="margin-top: var(--content-gap)">
+                <div class="card card-accent-red reveal">
+                    <div class="card-icon">🔍</div>
+                    <div class="card-title">自动审查</div>
+                    <div class="card-text">代码质量检查<br>风格规范验证<br>潜在 Bug 检测</div>
+                </div>
+                <div class="card card-accent-yellow reveal">
+                    <div class="card-icon">⚠️</div>
+                    <div class="card-title">问题分析</div>
+                    <div class="card-text">根因分析<br>修复建议<br>最佳实践推荐</div>
+                </div>
+                <div class="card card-accent-green reveal">
+                    <div class="card-icon">📋</div>
+                    <div class="card-title">报告输出</div>
+                    <div class="card-text">审查报告生成<br>问题清单<br>改进建议汇总</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">35 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 36: AI BROWSER SEARCH
+     ============================================================ -->
+<section class="slide" id="slide-36">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">BROWSER SEARCH</div>
+            <h2 class="slide-title reveal">AI 浏览器搜索的<span class="accent">四层架构</span>，从快到强逐级升级</h2>
+            <div class="divider reveal"></div>
+            <div class="layered-arch" style="margin-top: var(--content-gap)">
+                <div class="layer-row reveal">
+                    <div class="layer-label">L0</div>
+                    <div class="layer-bar layer-bar-l0" style="display:flex; justify-content:space-between; align-items:center">
+                        <span>搜索+抓取 <small style="color:var(--text-muted)">— 速度快成本低，适合静态页面</small></span>
+                        <span class="layer-width-indicator">最快</span>
+                    </div>
+                </div>
+                <div class="layer-row reveal">
+                    <div class="layer-label">L1</div>
+                    <div class="layer-bar layer-bar-l1" style="display:flex; justify-content:space-between; align-items:center">
+                        <span>无头浏览器 <small style="color:var(--text-muted)">— JS 动态渲染，支持 React/Vue</small></span>
+                    </div>
+                </div>
+                <div class="layer-row reveal">
+                    <div class="layer-label">L2</div>
+                    <div class="layer-bar layer-bar-l2" style="display:flex; justify-content:space-between; align-items:center">
+                        <span>有头浏览器+DOM <small style="color:var(--text-muted)">— 真实交互，可点击输入登录</small></span>
+                    </div>
+                </div>
+                <div class="layer-row reveal">
+                    <div class="layer-label">L3</div>
+                    <div class="layer-bar layer-bar-l3" style="display:flex; justify-content:space-between; align-items:center">
+                        <span>截图+视觉识别 <small style="color:var(--text-muted)">— 视觉理解，兜底最强方案</small></span>
+                        <span class="layer-width-indicator">最强</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">36 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 37: ADVANTAGES OVERVIEW
+     ============================================================ -->
+<section class="slide" id="slide-37">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">PART 04 — 优缺点分析</div>
+            <h2 class="slide-title reveal">OpenClaw 的<span class="accent">五大核心优势</span></h2>
+            <div class="divider reveal"></div>
+            <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap: clamp(0.5rem, 1vw, 0.8rem); margin-top: var(--content-gap);">
+                <div class="card card-accent-red reveal" style="text-align:center">
+                    <div class="card-icon">⚡</div>
+                    <div class="card-title" style="font-size:var(--small-size)">从动嘴到动手</div>
+                    <div class="card-text" style="font-size:calc(var(--small-size)*0.9)">自主执行复杂任务</div>
+                </div>
+                <div class="card card-accent-yellow reveal" style="text-align:center">
+                    <div class="card-icon">🔓</div>
+                    <div class="card-title" style="font-size:var(--small-size)">开源生态</div>
+                    <div class="card-text" style="font-size:calc(var(--small-size)*0.9)">代码公开社区共建</div>
+                </div>
+                <div class="card card-accent-green reveal" style="text-align:center">
+                    <div class="card-icon">🔐</div>
+                    <div class="card-title" style="font-size:var(--small-size)">数据主权</div>
+                    <div class="card-text" style="font-size:calc(var(--small-size)*0.9)">完全私有无需上传</div>
+                </div>
+                <div class="card card-accent-red reveal" style="text-align:center">
+                    <div class="card-icon">🤖</div>
+                    <div class="card-title" style="font-size:var(--small-size)">多智能体协同</div>
+                    <div class="card-text" style="font-size:calc(var(--small-size)*0.9)">多 Agent 并行处理</div>
+                </div>
+                <div class="card card-accent-yellow reveal" style="text-align:center">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title" style="font-size:var(--small-size)">89.5% 成功率</div>
+                    <div class="card-text" style="font-size:calc(var(--small-size)*0.9)">第三方测试验证</div>
+                </div>
+            </div>
+            <style>
+                @media (max-width: 900px) { .grid-5 { grid-template-columns: repeat(3, 1fr) !important; } }
+                @media (max-width: 600px) { .grid-5 { grid-template-columns: repeat(2, 1fr) !important; } }
+            </style>
+        </div>
+    </div>
+    <div class="slide-number">37 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 38: ADVANTAGE DEEP DIVE - EXECUTION
+     ============================================================ -->
+<section class="slide" id="slide-38">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">ADVANTAGE</div>
+            <h2 class="slide-title reveal">核心差异化在于它能<span class="accent">"动手干活"</span></h2>
+            <div class="compare-row" style="margin-top: var(--content-gap)">
+                <div class="compare-col reveal">
+                    <div class="compare-col-title" style="color:var(--text-muted)">传统聊天机器人</div>
+                    <ul class="bullet-list">
+                        <li>只能聊天回复</li>
+                        <li>无法执行任何操作</li>
+                        <li>无法连接外部工具</li>
+                        <li>每次都需要人工介入</li>
+                    </ul>
+                </div>
+                <div class="compare-col highlight reveal">
+                    <div class="compare-col-title" style="color:var(--accent-red)">OpenClaw</div>
+                    <ul class="bullet-list">
+                        <li>自主执行复杂多步骤任务</li>
+                        <li>20+ 平台渠道统一接入</li>
+                        <li>插件系统无限扩展</li>
+                        <li>摄像头 / IoT / 浏览器全能控制</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">38 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 39: ADVANTAGE - OPEN SOURCE & PRIVACY
+     ============================================================ -->
+<section class="slide" id="slide-39">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">ADVANTAGE</div>
+            <h2 class="slide-title reveal">开源透明 + 本地部署 = 数据完全<span class="accent">主权</span></h2>
+            <div class="compare-row" style="margin-top: var(--content-gap)">
+                <div class="compare-col reveal" style="border-left-color:var(--accent-red);">
+                    <div class="compare-col-title" style="color:var(--accent-red)">🔓 开源生态</div>
+                    <ul class="bullet-list">
+                        <li>代码完全公开，可审计</li>
+                        <li>鼓励社区共建</li>
+                        <li>自由定制，不依赖供应商</li>
+                        <li>技术透明，安心使用</li>
+                    </ul>
+                </div>
+                <div class="compare-col reveal" style="border-left-color:var(--accent-green);">
+                    <div class="compare-col-title" style="color:var(--accent-green)">🔐 数据主权</div>
+                    <ul class="bullet-list">
+                        <li>支持完全本地部署</li>
+                        <li>数据完全私有，不上传第三方</li>
+                        <li>无需担心数据泄露</li>
+                        <li>适合企业敏感信息场景</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">39 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 40: 89.5% SUCCESS RATE
+     ============================================================ -->
+<section class="slide" id="slide-40">
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-red"></div>
+    <div class="slide-content">
+        <div class="slide-inner" style="text-align:center">
+            <div class="section-label reveal" style="justify-content:center">DATA</div>
+            <div class="big-number reveal" style="margin-top: clamp(1rem, 3vw, 3rem)">89.5<span style="font-size:0.5em">%</span></div>
+            <p class="reveal" style="font-size:var(--h3-size); color:var(--text-secondary); max-width:600px; margin: clamp(0.8rem, 2vw, 2rem) auto 0">
+                第三方独立测试任务成功率
+            </p>
+            <div class="divider reveal" style="max-width:400px; margin: 0 auto"></div>
+            <p class="reveal" style="font-size:var(--body-size); color:var(--text-muted); margin-top: var(--content-gap)">
+                绝大多数任务可可靠执行，但仍需人工兜底剩余 10.5%
+            </p>
+        </div>
+    </div>
+    <div class="slide-number">40 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 41: DRAWBACKS OVERVIEW
+     ============================================================ -->
+<section class="slide" id="slide-41">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">DRAWBACKS</div>
+            <h2 class="slide-title reveal">在决定使用之前，先看清这<span class="accent">五个短板</span></h2>
+            <div class="warn-list" style="margin-top: var(--content-gap)">
+                <div class="warn-item reveal">
+                    <div class="warn-item-title">💰 Token 成本"吞金兽"</div>
+                    <div class="warn-item-desc">日均几十到上千元，API 调用持续产生费用</div>
+                </div>
+                <div class="warn-item reveal">
+                    <div class="warn-item-title">⚙️ 技术门槛高</div>
+                    <div class="warn-item-desc">部署复杂，常需命令行调试数小时</div>
+                </div>
+                <div class="warn-item reveal">
+                    <div class="warn-item-title">🔒 安全风险</div>
+                    <div class="warn-item-desc">高系统权限 + 意图理解曾得分 0%</div>
+                </div>
+                <div class="warn-item reveal">
+                    <div class="warn-item-title">📦 稳定性不足</div>
+                    <div class="warn-item-desc">快速迭代导致版本升级可能失效</div>
+                </div>
+                <div class="warn-item reveal">
+                    <div class="warn-item-title">🎯 "开箱即用"误区</div>
+                    <div class="warn-item-desc">需安装配置技能，效果依赖 SOP 编写</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">41 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 42: TOKEN COST DEEP DIVE
+     ============================================================ -->
+<section class="slide" id="slide-42">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">COST ANALYSIS</div>
+            <h2 class="slide-title reveal">Token 成本是 OpenClaw 最大的<span class="accent">隐性门槛</span></h2>
+            <div class="divider reveal"></div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 2.5vw, 2rem); margin-top: var(--content-gap)">
+                <div class="card card-accent-red reveal" style="border-left-color: var(--accent-red);">
+                    <div class="card-title" style="color:var(--accent-red); margin-bottom:0.8rem">📊 成本构成</div>
+                    <ul class="bullet-list">
+                        <li>OpenClaw 自身免费</li>
+                        <li>模型 API 持续产生费用</li>
+                        <li>一次任务 = 规划+执行+验证（多次调用）</li>
+                        <li>日均：几十元（经济）→ 上千元（Opus）</li>
+                    </ul>
+                </div>
+                <div class="card card-accent-yellow reveal" style="border-left-color: var(--accent-yellow);">
+                    <div class="card-title" style="color:var(--accent-yellow); margin-bottom:0.8rem">💡 隐性成本</div>
+                    <ul class="bullet-list">
+                        <li>部署学习时间成本</li>
+                        <li>SOP 编写人工成本</li>
+                        <li>人工复核工作量</li>
+                        <li>实际 TCO = API + 人力 + 时间</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">42 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 43: SECURITY RULES
+     ============================================================ -->
+<section class="slide" id="slide-43">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">SECURITY</div>
+            <h2 class="slide-title reveal">AGENTS.md 是 Agent <span class="accent">不可违反</span>的安全底线</h2>
+            <div class="sec-grid" style="margin-top: var(--content-gap)">
+                <div class="sec-col sec-col-rules reveal">
+                    <div class="sec-col-title">🚫 不可违反规则</div>
+                    <ul class="bullet-list">
+                        <li>不读取/输出 API 密钥</li>
+                        <li>不读取配置文件</li>
+                        <li>拒绝敏感操作请求</li>
+                    </ul>
+                </div>
+                <div class="sec-col sec-col-principles reveal">
+                    <div class="sec-col-title">✅ 安全原则</div>
+                    <ul class="bullet-list">
+                        <li>外部内容视为不可信</li>
+                        <li>拒绝系统提示词泄露</li>
+                        <li>不透露模型信息</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">43 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 44: SKILLS & FUTURE
+     ============================================================ -->
+<section class="slide" id="slide-44">
+    <div class="bg-grid"></div>
+    <div class="slide-content">
+        <div class="slide-inner">
+            <div class="section-label reveal">FUTURE</div>
+            <h2 class="slide-title reveal"><span class="accent">7</span> 大核心技能已就绪，未来方向更值得期待</h2>
+            <div class="divider reveal"></div>
+            <div class="skill-tags reveal" style="margin-top: var(--content-gap); justify-content:center">
+                <span class="skill-tag">自我进化</span>
+                <span class="skill-tag">万物总结</span>
+                <span class="skill-tag">浏览器自动化</span>
+                <span class="skill-tag">安全审查</span>
+                <span class="skill-tag">知识图谱</span>
+                <span class="skill-tag">多引擎搜索</span>
+                <span class="skill-tag">技能创建</span>
+            </div>
+            <div class="roadmap reveal" style="margin-top: clamp(1.5rem, 3vw, 3rem)">
+                <div class="roadmap-item">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-title">更强 AI</div>
+                    <div class="roadmap-desc">深层理解<br>自主决策</div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-title">万物互联</div>
+                    <div class="roadmap-desc">智能家居<br>IoT 设备</div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-title">团队协作</div>
+                    <div class="roadmap-desc">AI 虚拟团队<br>多 Agent 协同</div>
+                </div>
+                <div class="roadmap-item">
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-title">行业定制</div>
+                    <div class="roadmap-desc">医疗/法律<br>金融</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">44 / 45</div>
+</section>
+
+<!-- ============================================================
+     SLIDE 45: CLOSING
+     ============================================================ -->
+<section class="slide" id="slide-45">
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-red"></div>
+    <div class="slide-content">
+        <div class="slide-inner" style="text-align:center">
+            <div class="section-label reveal" style="justify-content:center">SUMMARY</div>
+            <h2 class="slide-title reveal" style="font-size: clamp(1.4rem, 4vw, 3rem)">
+                OpenClaw 强大但不是银弹 — <span class="accent">理解权衡</span>才能用好它
+            </h2>
+            <div class="divider reveal"></div>
+            <div class="col-3 reveal" style="margin-top: var(--content-gap); max-width:900px; margin-left:auto; margin-right:auto;">
+                <div class="card card-accent-red" style="text-align:center">
+                    <div class="card-title" style="color:var(--accent-red)">理解架构</div>
+                    <div class="card-text">三层架构 + 四层记忆 = 完整骨架</div>
+                </div>
+                <div class="card card-accent-yellow" style="text-align:center">
+                    <div class="card-title" style="color:var(--accent-yellow)">选对方案</div>
+                    <div class="card-text">平台体验 → 云服务器 → 本地部署</div>
+                </div>
+                <div class="card card-accent-green" style="text-align:center">
+                    <div class="card-title" style="color:var(--accent-green)">认清权衡</div>
+                    <div class="card-text">强大能力 vs 高成本 / 高门槛</div>
+                </div>
+            </div>
+            <div class="divider reveal" style="max-width:600px; margin: clamp(1rem, 2.5vw, 2rem) auto"></div>
+            <div class="action-flow reveal">
+                <div class="action-step">
+                    <div class="action-num">1</div>
+                    <div class="action-text">MimoClaw<br>免费体验 1 小时</div>
+                </div>
+                <div class="action-arrow">→</div>
+                <div class="action-step">
+                    <div class="action-num">2</div>
+                    <div class="action-text">选定一个<br>真实业务场景</div>
+                </div>
+                <div class="action-arrow">→</div>
+                <div class="action-step">
+                    <div class="action-num">3</div>
+                    <div class="action-text">选经济模型<br>跑通流程</div>
+                </div>
+                <div class="action-arrow">→</div>
+                <div class="action-step">
+                    <div class="action-num">4</div>
+                    <div class="action-text">验证效果后<br>再决定投入</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">45 / 45</div>
+</section>
+
+<!-- ============================================================
+     JAVASCRIPT: PRESENTATION CONTROLLER
+     ============================================================ -->
+<script>
+/* ===========================================
+   SLIDE PRESENTATION CONTROLLER
+   Handles navigation, animations, progress
+   =========================================== */
+class SlidePresentation {
+    constructor() {
+        this.slides = document.querySelectorAll('.slide');
+        this.totalSlides = this.slides.length;
+        this.currentSlide = 0;
+        this.isScrolling = false;
+        this.scrollTimeout = null;
+
+        this.init();
+    }
+
+    init() {
+        this.createNavDots();
+        this.setupIntersectionObserver();
+        this.setupKeyboardNav();
+        this.setupWheelNav();
+        this.setupTouchNav();
+        this.markFirstSlideVisible();
+    }
+
+    /* Create navigation dots on the right */
+    createNavDots() {
+        const nav = document.getElementById('navDots');
+        this.slides.forEach((_, i) => {
+            const dot = document.createElement('button');
+            dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+            dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+            dot.addEventListener('click', () => this.goToSlide(i));
+            nav.appendChild(dot);
+        });
+        this.dots = nav.querySelectorAll('.nav-dot');
+    }
+
+    /* Mark first slide as visible on load */
+    markFirstSlideVisible() {
+        this.slides[0].classList.add('visible');
+        this.updateProgress();
+    }
+
+    /* Intersection Observer for scroll-triggered animations */
+    setupIntersectionObserver() {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    const index = Array.from(this.slides).indexOf(entry.target);
+                    this.currentSlide = index;
+                    this.updateNavDots();
+                    this.updateProgress();
+                }
+            });
+        }, {
+            threshold: 0.5,
+            rootMargin: '0px'
+        });
+
+        this.slides.forEach(slide => observer.observe(slide));
+    }
+
+    /* Keyboard navigation */
+    setupKeyboardNav() {
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                this.nextSlide();
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                this.prevSlide();
+            }
+        });
+    }
+
+    /* Mouse wheel navigation */
+    setupWheelNav() {
+        let lastWheelTime = 0;
+        const wheelThrottle = 800;
+
+        document.addEventListener('wheel', (e) => {
+            const now = Date.now();
+            if (now - lastWheelTime < wheelThrottle) return;
+
+            if (e.deltaY > 0) {
+                this.nextSlide();
+            } else {
+                this.prevSlide();
+            }
+            lastWheelTime = now;
+        }, { passive: true });
+    }
+
+    /* Touch/swipe navigation */
+    setupTouchNav() {
+        let touchStartY = 0;
+        let touchEndY = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndY = e.changedTouches[0].screenY;
+            const diff = touchStartY - touchEndY;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                    this.nextSlide();
+                } else {
+                    this.prevSlide();
+                }
+            }
+        }, { passive: true });
+    }
+
+    /* Scroll to a specific slide */
+    goToSlide(index) {
+        if (index >= 0 && index < this.totalSlides) {
+            this.slides[index].scrollIntoView({ behavior: 'smooth' });
+            this.currentSlide = index;
+            this.updateNavDots();
+            this.updateProgress();
+        }
+    }
+
+    nextSlide() {
+        if (this.currentSlide < this.totalSlides - 1) {
+            this.goToSlide(this.currentSlide + 1);
+        }
+    }
+
+    prevSlide() {
+        if (this.currentSlide > 0) {
+            this.goToSlide(this.currentSlide - 1);
+        }
+    }
+
+    /* Update navigation dots */
+    updateNavDots() {
+        this.dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === this.currentSlide);
+        });
+    }
+
+    /* Update progress bar */
+    updateProgress() {
+        const progress = ((this.currentSlide + 1) / this.totalSlides) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+    }
+}
+
+/* Initialize on DOMContentLoaded */
+document.addEventListener('DOMContentLoaded', () => {
+    new SlidePresentation();
+});
+</script>
+</body>
+</html>
