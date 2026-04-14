@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw — 选择风格</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+    :root {
+        --bg: #07090f;
+        --bg-card: #0d1520;
+        --accent: #00e5cc;
+        --text: #e0e8f0;
+        --text-muted: #5a7a8a;
+        --font-display: 'Space Grotesk', 'Noto Sans SC', sans-serif;
+        --font-body: 'Noto Sans SC', sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+        font-family: var(--font-body);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+    }
+
+    /* HEADER */
+    .header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: rgba(7, 9, 15, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(0, 229, 204, 0.1);
+        padding: clamp(0.6rem, 1.5vw, 1rem) clamp(1rem, 3vw, 3rem);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .header-badge {
+        font-family: var(--font-display);
+        font-size: clamp(0.65rem, 1vw, 0.8rem);
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+    .header-title {
+        font-family: var(--font-display);
+        font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+        font-weight: 700;
+        color: var(--text);
+    }
+    .header-title span { color: var(--accent); }
+
+    /* Cards area has right padding so fixed preview doesn't overlap */
+    .layout {
+        padding: clamp(1rem, 2.5vw, 2rem) calc(80vw + clamp(0.5rem, 1vw, 1rem)) clamp(1rem, 2.5vw, 2rem) clamp(0.8rem, 2vw, 1.5rem);
+    }
+
+    /* RIGHT: Preview column (FIXED to right side of viewport) */
+    .preview-column {
+        position: fixed;
+        right: clamp(0.5rem, 1vw, 1rem);
+        top: 70px;
+        width: 78vw;
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        z-index: 200;
+    }
+
+    .section-title {
+        font-family: var(--font-display);
+        font-size: clamp(0.65rem, 1vw, 0.8rem);
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: var(--accent);
+        margin-bottom: clamp(0.8rem, 1.5vw, 1.2rem);
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    .section-title::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(0, 229, 204, 0.15);
+    }
+
+    /* STYLE GRID */
+    .style-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: clamp(0.6rem, 1.5vw, 1rem);
+        margin-bottom: clamp(2rem, 4vw, 3rem);
+    }
+
+    /* STYLE CARD */
+    .style-card {
+        background: var(--bg-card);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+    }
+    .style-card:hover {
+        border-color: rgba(0, 229, 204, 0.3);
+        transform: translateY(-6px);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(0, 229, 204, 0.06);
+    }
+    .style-card.selected {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px var(--accent), 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    /* MINI PREVIEW */
+    .card-preview {
+        height: 160px;
+        position: relative;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .card-preview iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        transform: scale(0.4);
+        transform-origin: top left;
+        width: 250%;
+        height: 250%;
+        pointer-events: none;
+    }
+
+    /* CARD INFO */
+    .card-info {
+        padding: clamp(0.8rem, 2vw, 1.2rem);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    .card-name {
+        font-family: var(--font-display);
+        font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+        font-weight: 700;
+        color: var(--text);
+    }
+    .card-desc {
+        font-size: clamp(0.7rem, 1vw, 0.8rem);
+        color: var(--text-muted);
+        line-height: 1.5;
+    }
+    .card-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+        margin-top: 0.3rem;
+    }
+    .card-tag {
+        font-family: var(--font-display);
+        font-size: 0.6rem;
+        padding: 0.2em 0.6em;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* SELECTED INDICATOR */
+    .selected-badge {
+        position: absolute;
+        top: 0.6rem;
+        right: 0.6rem;
+        background: var(--accent);
+        color: var(--bg);
+        font-family: var(--font-display);
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 0.25em 0.7em;
+        border-radius: 100px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    .style-card.selected .selected-badge { opacity: 1; }
+
+    /* CURRENT PREVIEW SECTION */
+    .preview-section {
+        position: sticky;
+        top: 70px;
+        z-index: 50;
+        background: rgba(7, 9, 15, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(0, 229, 204, 0.15);
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: clamp(2rem, 4vw, 4rem);
+        box-shadow: 0 0 60px rgba(0, 0, 0, 0.4);
+    }
+    .preview-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: clamp(0.6rem, 1.5vw, 1rem) clamp(1rem, 2.5vw, 1.5rem);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .preview-bar-title {
+        font-family: var(--font-display);
+        font-size: clamp(0.8rem, 1.2vw, 0.95rem);
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .preview-bar-title .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 8px var(--accent);
+    }
+    .btn {
+        font-family: var(--font-display);
+        font-size: clamp(0.7rem, 1vw, 0.85rem);
+        font-weight: 700;
+        padding: 0.5em 1.4em;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .btn-primary {
+        background: var(--accent);
+        color: var(--bg);
+    }
+    .btn-primary:hover { background: #00ffdf; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0, 229, 204, 0.3); }
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
+
+    .preview-frame {
+        height: 70vh;
+        min-height: 400px;
+        background: #000;
+        border: none;
+        width: 100%;
+    }
+
+    /* GENERATE SECTION */
+    .generate-section {
+        background: var(--bg-card);
+        border: 1px solid rgba(0, 229, 204, 0.15);
+        border-radius: 16px;
+        padding: clamp(1.5rem, 3vw, 2.5rem);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 2rem;
+    }
+    .generate-info h3 {
+        font-family: var(--font-display);
+        font-size: clamp(1rem, 1.8vw, 1.3rem);
+        color: var(--text);
+        margin-bottom: 0.3rem;
+    }
+    .generate-info p {
+        font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+        color: var(--text-muted);
+    }
+    .generate-info .selected-name {
+        color: var(--accent);
+        font-weight: 600;
+    }
+    .btn-generate {
+        background: var(--accent);
+        color: var(--bg);
+        font-family: var(--font-display);
+        font-size: clamp(0.85rem, 1.5vw, 1rem);
+        font-weight: 700;
+        padding: 0.8em 2em;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: all 0.3s;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .btn-generate:hover {
+        background: #00ffdf;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0, 229, 204, 0.35);
+    }
+
+    /* STYLE-SPECIFIC CARD THEMES */
+    /* Bold Signal */
+    .card[data-style="a"] .card-preview { background: #08080c; }
+    .card[data-style="b"] .card-preview { background: #050a05; }
+    .card[data-style="c"] .card-preview { background: #0b0d0b; }
+    .card[data-style="d"] .card-preview { background: #0a0f1a; }
+    .card[data-style="e"] .card-preview { background: #0f0f0f; }
+    .card[data-style="f"] .card-preview { background: #faf9f7; }
+    .card[data-style="g"] .card-preview { background: #f8f6f3; }
+    .card[data-style="h"] .card-preview { background: linear-gradient(135deg, #ffd6e0 0%, #c4d7f2 100%); }
+    .card[data-style="i"] .card-preview { background: #f5f0e8; }
+    .card[data-style="j"] .card-preview { background: #ffffff; }
+    .card[data-style="k"] .card-preview { background: #f4efe6; }
+
+    /* FOOTER */
+    .footer {
+        text-align: center;
+        padding: clamp(1.5rem, 3vw, 3rem);
+        font-size: clamp(0.7rem, 1vw, 0.8rem);
+        color: var(--text-muted);
+        border-top: 1px solid rgba(255,255,255,0.04);
+        margin-top: 2rem;
+    }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+    <div class="header-left">
+        <div class="header-badge">OpenClaw</div>
+        <div class="header-title">知识图谱 · <span>风格选择器</span></div>
+    </div>
+</header>
+
+<!-- MAIN WRAPPER: provides right padding to clear fixed preview -->
+<div class="layout">
+
+    <!-- GENERATE SECTION — always at top -->
+    <div class="generate-section">
+        <div class="generate-info">
+            <h3>生成完整 45 页演示文稿</h3>
+            <p>已选风格：<span class="selected-name" id="selectedName">Bold Signal</span></p>
+        </div>
+        <button class="btn-generate" id="btnGenerate">⚡ 生成完整版</button>
+    </div>
+
+    <!-- STYLE GRID — scrollable -->
+    <div class="section-title">全部风格 · 点击预览</div>
+    <div class="style-grid">
+
+<!-- A: Bold Signal -->
+<a class="style-card selected" data-style="a" data-name="Bold Signal" data-file="style-a-bold-signal.html" href="#">
+    <div class="card-preview">
+        <div style="padding: 1.5rem; font-family: 'Space Grotesk', sans-serif;">
+            <div style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.2em; color: #ff3b3b; margin-bottom: 0.5rem;">OpenClaw</div>
+            <div style="font-size: 1.2rem; font-weight: 900; line-height: 1.1; margin-bottom: 0.6rem;">
+                <span style="color: #ff3b3b">OpenClaw</span><br>知识图谱
+            </div>
+            <div style="font-size: 0.5rem; color: #888; margin-bottom: 0.8rem;">从部署到实践全指南</div>
+            <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                <div style="background:#111118; border-left:2px solid #ff3b3b; padding:0.3rem 0.5rem; border-radius:4px; font-size:0.45rem; color:#888">⚡ 能动手</div>
+                <div style="background:#111118; border-left:2px solid #ffb800; padding:0.3rem 0.5rem; border-radius:4px; font-size:0.45rem; color:#888">🔓 开源</div>
+                <div style="background:#111118; border-left:2px solid #3bff7a; padding:0.3rem 0.5rem; border-radius:4px; font-size:0.45rem; color:#888">🤖 多平台</div>
+            </div>
+        </div>
+    </div>
+    <div class="card-info">
+        <div class="card-name">Bold Signal</div>
+        <div class="card-desc">高对比亮色卡片 + 深色背景，自信高冲击</div>
+        <div class="card-tags">
+            <span class="card-tag">提案</span>
+            <span class="card-tag">路演</span>
+            <span class="card-tag">Keynote</span>
+        </div>
+    </div>
+    <div class="selected-badge">当前选中</div>
+</a>
+
+        <!-- B: Terminal Green -->
+        <a class="style-card" data-style="b" data-name="Terminal Green" data-file="style-b-terminal-green.html" href="#">
+            <div class="card-preview">
+                <div style="padding: 1rem; font-family: 'JetBrains Mono', monospace; background: #050a05;">
+                    <div style="display:flex; gap:0.4rem; margin-bottom: 0.8rem;">
+                        <div style="width:10px;height:10px;border-radius:50%;background:#ff5f57"></div>
+                        <div style="width:10px;height:10px;border-radius:50%;background:#febc2e"></div>
+                        <div style="width:10px;height:10px;border-radius:50%;background:#28c840"></div>
+                    </div>
+                    <div style="font-size: 0.7rem; color: #00ff41; margin-bottom: 0.5rem;">$ <span style="color:#fff">OpenClaw</span> knowledge_graph_</div>
+                    <div style="font-size: 0.5rem; color: #4a7a4a; margin-bottom: 0.6rem;">// 从部署到实践全指南</div>
+                    <div style="font-size: 0.5rem; color: #00ff41; margin-bottom: 0.2rem;">&gt; gateway — 三层架构</div>
+                    <div style="font-size: 0.5rem; color: #00ff41; margin-bottom: 0.2rem;">&gt; channel — 20+ 平台</div>
+                    <div style="font-size: 0.5rem; color: #00ff41; margin-bottom: 0.2rem;">&gt; memory — 四层记忆</div>
+                    <div style="font-size: 0.5rem; color: #4a7a4a;">&gt; deploy — 平台/云/本地</div>
+                </div>
+            </div>
+            <div class="card-info">
+                <div class="card-name">Terminal Green</div>
+                <div class="card-desc">开发者终端风格，纯黑+绿色等宽字体</div>
+                <div class="card-tags">
+                    <span class="card-tag">DevTools</span>
+                    <span class="card-tag">技术</span>
+                    <span class="card-tag">API</span>
+                </div>
+            </div>
+            <div class="selected-badge">当前选中</div>
+        </a>
+
+        <!-- C: Dark Botanical -->
+        <a class="style-card" data-style="c" data-name="Dark Botanical" data-file="style-c-dark-botanical.html" href="#">
+            <div class="card-preview">
+                <div style="padding: 1.5rem; font-family: 'Cormorant Garamond', serif; background: #0b0d0b;">
+                    <div style="font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.3em; color: #c4a35a; margin-bottom: 0.8rem; font-family: 'DM Sans', sans-serif;">OpenClaw</div>
+                    <div style="font-size: 1.2rem; font-weight: 600; font-style: italic; line-height: 1.1; margin-bottom: 0.6rem; color: #e8e4dc;">
+                        OpenClaw<br><span style="color: #c4a35a; font-style: normal;">知识图谱</span>
+                    </div>
+                    <div style="font-size: 0.5rem; color: #8a8578; line-height: 1.8; margin-bottom: 0.8rem; font-family: 'DM Sans', sans-serif;">
+                        从部署到实践全指南<br>
+                        一份完整技术解析与实战手册
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.3rem;">
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div style="width:20px;height:1px;background:#c4a35a"></div>
+                            <div style="font-size:0.45rem; color:#8a8578; font-family:'DM Sans',sans-serif">三层架构 · 四层记忆</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-info">
+                <div class="card-name">Dark Botanical</div>
+                <div class="card-desc">优雅深色 + 柔美金色衬线，精致高端</div>
+                <div class="card-tags">
+                    <span class="card-tag">高端</span>
+                    <span class="card-tag">品牌</span>
+                    <span class="card-tag">优雅</span>
+                </div>
+            </div>
+            <div class="selected-badge">当前选中</div>
+        </a>
+
+        <!-- D: Electric Studio -->
+        <a class="style-card" data-style="d" data-name="Electric Studio" data-file="style-d-electric-studio.html" href="#">
+            <div class="card-preview">
+                <div style="padding: 1.5rem; font-family: 'Sora', sans-serif; background: #0a0f1a;">
+                    <div style="font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.2em; color: #3b82f6; margin-bottom: 0.6rem;">OpenClaw</div>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem;">OpenClaw 知识图谱</div>
+                    <div style="font-size: 0.5rem; color: #888; margin-bottom: 0.8rem;">从部署到实践全指南</div>
+                    <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:0.4rem;">
+                        <div style="background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.3); border-radius:6px; padding:0.3rem; font-size:0.4rem; color:#3b82f6; text-align:center">三层架构</div>
+                        <div style="background:rgba(139,92,246,0.1); border:1px solid rgba(139,92,246,0.3); border-radius:6px; padding:0.3rem; font-size:0.4rem; color:#8b5cf6; text-align:center">四层记忆</div>
+                        <div style="background:rgba(0,229,204,0.1); border:1px solid rgba(0,229,204,0.3); border-radius:6px; padding:0.3rem; font-size:0.4rem; color:#00e5cc; text-align:center">8大场景</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-info">
+                <div class="card-name">Electric Studio</div>
+                <div class="card-desc">干净专业，蓝紫渐变，现代感</div>
+                <div class="card-tags">
+                    <span class="card-tag">代理</span>
+                    <span class="card-tag">专业</span>
+                    <span class="card-tag">现代</span>
+                </div>
+            </div>
+            <div class="selected-badge">当前选中</div>
+        </a>
+
+        <!-- E: Creative Voltage -->
+        <a class="style-card" data-style="e" data-name="Creative Voltage" data-file="style-e-creative-voltage.html" href="#">
+            <div class="card-preview">
+                <div style="padding: 1.5rem; font-family: 'Unbounded', sans-serif; background: #0f0f0f; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:-20px; right:-20px; width:80px; height:80px; border-radius:50%; background:#f5e642; opacity:0.15;"></div>
+                    <div style="position:absolute; bottom:-15px; left:-15px; width:60px; height:60px; border-radius:50%; background:#ff2d7c; opacity:0.15;"></div>
+                    <div style="font-size: 1.3rem; font-weight: 900; color: #fff; margin-bottom: 0.4rem; line-height:1.1;">
+                        <span style="color:#f5e642">OpenClaw</span><br>知识图谱
+                    </div>
+                    <div style="font-size: 0.5rem; color: #888; margin-bottom: 0.8rem;">从部署到实践全指南</div>
+                    <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                        <div style="background:#f5e642; color:#000; padding:0.2em 0.6em; border-radius:100px; font-size:0.4rem; font-weight:700">三层架构</div>
+                        <div style="background:#ff2d7c; color:#fff; padding:0.2em 0.6em; border-radius:100px; font-size:0.4rem; font-weight:700">四层记忆</div>
+                        <div style="background:rgba(255,255,255,0.1); color:#fff; padding:0.2em 0.6em; border-radius:100px; font-size:0.4rem;">8大场景</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-info">
+                <div class="card-name">Creative Voltage</div>
+                <div class="card-desc">活力复古，黄粉撞色，适合创意 pitch</div>
+                <div class="card-tags">
+                    <span class="card-tag">创意</span>
+                    <span class="card-tag">活力</span>
+                    <span class="card-tag">撞色</span>
+                </div>
+            </div>
+            <div class="selected-badge">当前选中</div>
+        </a>
+
+        <!-- F: Notebook Tabs -->
+        <a class="style-card" data-style="f" data-name="Notebook Tabs" data-file="style-f-notebook-tabs.html" href="#">
+            <div class="card-preview">
+                <div style="background: #faf9f7; padding: 0; font-family: 'Playfair Display', serif; height:100%; display:flex; flex-direction:column;">
+                    <div style="display:flex; gap:0; padding: 0.8rem 0.8rem 0; overflow:hidden;">
+                        <div style="background:#e07a5f; color:#fff; padding:0.25rem 0.6rem; border-radius:6px 6px 0 0; font-size:0.4rem; font-family:'Source Sans Pro',sans-serif; font-weight:600">架构篇</div>
+                        <div style="background:#ddd; color:#888; padding:0.25rem 0.6rem; border-radius:6px 6px 0 0; font-size:0.4rem; font-family:'Source Sans Pro',sans-serif">部署篇</div>
+                        <div style="background:#ddd; color:#888; padding:0.25rem 0.6rem; border-radius:6px 6px 0 0; font-size:0.4rem; font-family:'Source Sans Pro',sans-serif">场景篇</div>
+                    </div>
+                    <div style="padding: 0.8rem 1rem; flex:1;">
+                        <div style="font-size: 1rem; font-weight: 700; color: #1a1a1a; margin-bottom: 0.4rem; font-family:'Playfair Display',serif">OpenClaw 知识图谱</div>
+                        <div style="font-size: 0.45rem; color: #888; margin-bottom: 0.5rem; font-family:'Source Sans Pro',sans-serif">从部署到实践全指南</div>
+                        <div style="font-size: 0.45rem; color: #1a1a1a; line-height: 1.6; font-family:'Source Sans Pro',sans-serif">
+                            三层架构：Channel · Gateway · Node<br>
+                            四层记忆：SOUL · TOOLS · USER
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-info">
+                <div class="card-name">Notebook Tabs</div>
+                <div class="card-desc">杂志编辑风，彩色标签页</div>
+                <div class="card-tags">
+                    <span class="card-tag">报告</span>
+                    <span class="card-tag">复盘</span>
+                    <span class="card-tag">编辑</span>
+                </div>
+            </div>
+            <div class="selected-badge">当前选中</div>
+        </a>
+
+        <!-- G: Pastel Geometry -->
+        <a class="style-card" data-style="g" data-name="Pastel Geometry" data-file="style-g-pastel-geometry.html" href="#">
+            <div class="card-preview">
+                <div style="padding: 1.5rem; font-family: 'Nunito', sans-serif; background: #f8f6f3; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:10px; right:10px; width:50px; height:50px; border-radius:50%; background:#c9b8e8; opacity:0.5;"></div>
+                    <div style="position:absolute; bottom:20px; left:5px; width:40px; height:40px; border-radius:50%; background:#b8e0d2; opacity:0.5;"></div>
+                    <div style="position:absolute; bottom:10px; right:20px; width:30px; height:30px; border-radius:50%; background:#f0c9a8; opacity:0.5;"></div>
+                    <div style="font-size: 1.1rem; font-weight: 800; color: #3a3a3a; margin-bottom: 0.4rem;">OpenClaw 知识图谱</div>
+                    <div style="font-size: 0.5rem; color: #888; margin-bottom: 0.8rem;">从部署到实践全指南</div>
+                    <div style="display:flex; gap:0.3rem; flex-wrap:wrap;">
+                        <div style="background:#c9b8e8; color:#3a3a3a; padding:0.2em 0.6em; border-radius:100px; font-size:0.4rem; font-weight:700">⚡ 能动手</div>
+                        <div style="background:#b8e0d2; color:#3a3a3a; padding:0.2em 0.6em; border-radius:100px; font-size:0.4rem; font-weight:700">🔓 开源</div>
+                        <div style="background:#f0c9a8; color:#3a3a3a; padding:0.2em 0.6em; border-radius:100px; font-size:0.4rem; font-weight:700">🤖 多平台</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-info">
+                <div class="card-name">Pastel Geometry</div>
+                <div class="card-desc">柔和粉彩，友好圆角药丸形</div>
+                <div class="card-tags">
+                    <span class="card-tag">产品</span>
+                    <span class="card-tag">友好</span>
+                    <span class="card-tag">柔和</span>
+                </div>
+            </div>
+            <div class="selected-badge">当前选中</div>
+        </a>
+
+        <!-- H: Split Pastel -->
+        <a class="style-card" data-style="h" data-name="Split Pastel" data-file="style-h-split-pastel.html" href="#">
+            <div class="card-preview">
+                <div style="background: linear-gradient(135deg, #ffd6e0 0%, #c4d7f2 100%); height:100%; padding: 1.5rem; font-family: 'Poppins', sans-serif; display:flex; align-items:center; justify-content:center;">
+                    <div style="background: rgba(255,255,255,0.85); border-radius:12px; padding:1rem; text-align:center; width:90%;">
+                        <div style="font-size: 0.9rem; font-weight: 800; color: #1a1a1a; margin-bottom: 0.3rem;">OpenClaw</div>
+                        <div style="font-size: 0.55rem; color: #888; margin-bottom: 0.6rem;">从部署到实践全指南</div>
+                        <div style="display:flex; gap:0.3rem; justify-content:center; flex-wrap:wrap;">
+                            <div style="background:#ff8a80; color:#fff; padding:0.2em 0.5em; border-radius:4px; font-size:0.4rem; font-weight:700">开源</div>
+                            <div style="background:#c4d7f2; color:#1a1a1a; padding:0.2em 0.5em; border-radius:4px; font-size:0.4rem; font-weight:700">多平台</div>
+                            <div style="background:#ffd6e0; color:#1a1a1a; padding:0.2em 0.5em; border-radius:4px; font-size:0.4rem; font-weight:700">可执行</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-info">
+                <div class="card-name">Split Pastel</div>
+                <div class="card-desc">粉彩斜角分割，现代活泼</div>
+                <div class="card-tags">
+                    <span class="card-tag">创意</span>
+                    <span class="card-tag">活泼</span>
+                    <span class="card-tag">斜角</span>
+                </div>
+            </div>
+            <div class="selected-badge">当前选中</div>
+        </a>
+
+        <!-- I: Vintage Editorial -->
+        <a class="style-card" data-style="i" data-name="Vintage Editorial" data-file="style-i-vintage-editorial.html" href="#">
+            <div class="card-preview">
+                <div style="background: #f5f0e8; padding: 1.5rem; font-family: 'Playfair Display', serif; height:100%; display:flex; flex-direction:column; justify-content:center;">
+                    <div style="font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.2em; color: #8b2635; margin-bottom: 0.8rem; font-family:'Lora',serif;">OpenClaw</div>
+                    <div style="font-size: 1.1rem; font-weight: 600; font-style: italic; color: #2c2416; margin-bottom: 0.4rem; line-height:1.2;">
+                        OpenClaw<br><span style="color: #8b2635;">知识图谱</span>
+                    </div>
+                    <div style="font-size: 0.45rem; color: #8b7355; margin-bottom: 0.8rem; font-family:'Lora',serif;">从部署到实践全指南</div>
+                    <div style="border-top:1px solid #c9a84c; padding-top:0.5rem; font-size:0.45rem; color:#8b7355; font-family:'Lora',serif; font-style:italic; line-height:1.6;">
+                        "关于 AI 助手，你可能<br>一直理解错了。"
+                    </div>
+                </div>
+            </div>
+            <div class="card-info">
+                <div class="card-name">Vintage Editorial</div>
+                <div class="card-desc">复古印刷风，文艺衬线，个性幽默</div>
+                <div class="card-tags">
+                    <span class="card-tag">个人</span>
+                    <span class="card-tag">复古</span>
+                    <span class="card-tag">文艺</span>
+                </div>
+            </div>
+            <div class="selected-badge">当前选中</div>
+        </a>
+
+        <!-- J: Swiss Modern -->
+        <a class="style-card" data-style="j" data-name="Swiss Modern" data-file="style-j-swiss-modern.html" href="#">
+            <div class="card-preview">
+                <div style="background: #ffffff; padding: 1.5rem; font-family: 'IBM Plex Sans', sans-serif; height:100%; display:flex; flex-direction:column; justify-content:center;">
+                    <div style="font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.2em; color: #e63329; margin-bottom: 0.6rem; font-weight:600;">OpenClaw</div>
+                    <div style="font-size: 1.2rem; font-weight: 700; color: #0d0d0d; margin-bottom: 0.4rem;">OpenClaw 知识图谱</div>
+                    <div style="font-size: 0.5rem; color: #888; margin-bottom: 0.8rem;">从部署到实践全指南</div>
+                    <div style="display:grid; grid-template-columns: repeat(4,1fr); gap:0.4rem; margin-bottom:0.6rem;">
+                        <div style="text-align:center; padding:0.4rem; border:1px solid #e5e5e5; border-radius:4px;">
+                            <div style="font-size:0.6rem; font-weight:700; color:#0d0d0d">45</div>
+                            <div style="font-size:0.4rem; color:#888">页</div>
+                        </div>
+                        <div style="text-align:center; padding:0.4rem; border:1px solid #e5e5e5; border-radius:4px;">
+                            <div style="font-size:0.6rem; font-weight:700; color:#0d0d0d">5</div>
+                            <div style="font-size:0.4rem; color:#888">章节</div>
+                        </div>
+                        <div style="text-align:center; padding:0.4rem; border:1px solid #e5e5e5; border-radius:4px;">
+                            <div style="font-size:0.6rem; font-weight:700; color:#0d0d0d">8</div>
+                            <div style="font-size:0.4rem; color:#888">场景</div>
+                        </div>
+                        <div style="text-align:center; padding:0.4rem; border:1px solid #e5e5e5; border-radius:4px;">
+                            <div style="font-size:0.6rem; font-weight:700; color:#0d0d0d">3</div>
+                            <div style="font-size:0.4rem; color:#888">部署</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:0.8rem;">
+                        <div style="font-size:0.5rem; color:#888">架构</div>
+                        <div style="font-size:0.5rem; color:#888">记忆</div>
+                        <div style="font-size:0.5rem; color:#888">部署</div>
+                        <div style="font-size:0.5rem; color:#888">场景</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-info">
+                <div class="card-name">Swiss Modern</div>
+                <div class="card-desc">极简精确网格，瑞士风格</div>
+                <div class="card-tags">
+                    <span class="card-tag">企业</span>
+                    <span class="card-tag">数据</span>
+                    <span class="card-tag">极简</span>
+                </div>
+            </div>
+            <div class="selected-badge">当前选中</div>
+        </a>
+
+        <!-- K: Paper & Ink -->
+        <a class="style-card" data-style="k" data-name="Paper & Ink" data-file="style-k-paper-ink.html" href="#">
+            <div class="card-preview">
+                <div style="background: #f4efe6; padding: 1.5rem; font-family: 'Merriweather', serif; height:100%; display:flex; flex-direction:column; justify-content:center; position:relative;">
+                    <div style="position:absolute; top:0; left:0; right:0; bottom:0; background:radial-gradient(ellipse at 30% 70%, rgba(139,115,85,0.08) 0%, transparent 60%);"></div>
+                    <div style="font-size: 0.45rem; text-transform: uppercase; letter-spacing: 0.2em; color: #8b7355; margin-bottom: 0.8rem; font-family:'Source Sans Pro',sans-serif;">OpenClaw</div>
+                    <div style="font-size: 1.1rem; font-weight: 400; color: #2c2416; margin-bottom: 0.4rem; line-height:1.3;">OpenClaw<br>知识图谱</div>
+                    <div style="font-size: 0.5rem; color: #8b7355; margin-bottom: 0.8rem;">从部署到实践全指南</div>
+                    <div style="font-size: 0.5rem; font-style: italic; color: #8b7355; line-height: 1.6; font-family:'Merriweather',serif; border-left: 2px solid #8b7355; padding-left: 0.6rem;">
+                        "理解一个工具的局限，<br>比盲目吹捧它更重要。"
+                    </div>
+                </div>
+            </div>
+            <div class="card-info">
+                <div class="card-name">Paper & Ink</div>
+                <div class="card-desc">暖纸色文学衬线，沉稳思考感</div>
+                <div class="card-tags">
+                    <span class="card-tag">故事</span>
+                    <span class="card-tag">文学</span>
+                    <span class="card-tag">沉稳</span>
+                </div>
+            </div>
+            <div class="selected-badge">当前选中</div>
+        </a>
+
+</div><!-- end style-grid -->
+
+</div><!-- end layout -->
+
+<!-- RIGHT FIXED PANEL -->
+<div class="preview-column">
+    <div class="preview-section">
+        <div class="preview-bar">
+            <div class="preview-bar-title">
+                <span class="dot"></span>
+                <span id="previewLabel">Bold Signal</span>
+            </div>
+            <a id="previewFullscreen" href="../../OpenClaw-presentation-BOLD-SIGNAL.html" target="_blank" class="btn btn-secondary">↗ 全屏</a>
+        </div>
+        <iframe id="previewFrame" class="preview-frame" src="style-a-bold-signal.html"></iframe>
+    </div>
+</div>
+
+<footer class="footer">
+    OpenClaw 知识图谱 · 风格选择器 &nbsp;|&nbsp; 共 11 种风格 &nbsp;|&nbsp; 选择后可生成完整 45 页演示文稿
+</footer>
+
+<script>
+/* ===========================================
+   STYLE SELECTOR + GALLERY CONTROLLER
+   =========================================== */
+const cards = document.querySelectorAll('.style-card');
+const previewFrame = document.getElementById('previewFrame');
+const previewLabel = document.getElementById('previewLabel');
+const previewFullscreen = document.getElementById('previewFullscreen');
+const selectedName = document.getElementById('selectedName');
+const btnGenerate = document.getElementById('btnGenerate');
+
+let currentStyle = 'a';
+let currentName = 'Bold Signal';
+let currentFile = 'style-a-bold-signal.html';
+
+// Maps style id -> actual full presentation file
+const idToFile = {
+    'a': '../../OpenClaw-presentation-BOLD-SIGNAL.html',
+    'n': '../../OpenClaw-presentation-Neon-Cyber.html',
+    'b': '../../OpenClaw-presentation-TERMINAL-GREEN.html',
+    'c': '../../OpenClaw-presentation-DARK-BOTANICAL.html',
+    'd': '../../OpenClaw-presentation-ELECTRIC-STUDIO.html',
+    'e': '../../OpenClaw-presentation-CREATIVE-VOLTAGE.html',
+    'f': '../../OpenClaw-presentation-NOTEBOOK-TABS.html',
+    'g': '../../OpenClaw-presentation-PASTEL-GEOMETRY.html',
+    'h': '../../OpenClaw-presentation-SPLIT-PASTEL.html',
+    'i': '../../OpenClaw-presentation-VINTAGE-EDITORIAL.html',
+    'j': '../../OpenClaw-presentation-SWISS-MODERN.html',
+    'k': '../../OpenClaw-presentation-PAPER-INK.html'
+};
+
+cards.forEach(card => {
+    card.addEventListener('click', (e) => {
+        e.preventDefault();
+        const style = card.dataset.style;
+        const name = card.dataset.name;
+        const file = card.dataset.file;
+
+        currentStyle = style;
+        currentName = name;
+        currentFile = file;
+
+        // Update selection UI
+        cards.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+
+        // Update preview
+        previewFrame.src = file;
+        previewLabel.textContent = '当前预览：' + name;
+        previewFullscreen.href = idToFile[style] || file;
+        selectedName.textContent = name;
+
+        // Scroll to preview section smoothly
+        document.querySelector('.preview-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+
+// Generate button — goes to a generation page
+btnGenerate.addEventListener('click', () => {
+    // Navigate to the selected style's full preview first as confirmation
+    // Then user can request full generation
+    const msg = confirm('将为「' + currentName + '」风格生成完整 45 页 HTML 演示文稿。\n\n确认继续？');
+    if (msg) {
+        // Store selection and redirect to generation instruction
+        window.location.hash = '#generate=' + currentStyle;
+        alert('已选择「' + currentName + '」风格。\n\n请在聊天中告诉我："生成 ' + currentName + ' 版本的完整 45 页"。');
+    }
+});
+</script>
+
+</body>
+</html>
