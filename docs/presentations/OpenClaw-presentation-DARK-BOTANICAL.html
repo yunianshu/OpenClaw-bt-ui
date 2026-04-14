@@ -1,0 +1,2796 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw 知识图谱 — Dark Botanical</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0d0b;
+            --bg-warm: #0f110f;
+            --accent: #c4a35a;
+            --accent2: #7a9e7a;
+            --accent3: #d4c4a0;
+            --text: #e8e4dc;
+            --text-muted: #8a8578;
+            --text-dim: #5a5548;
+            --border: rgba(196, 163, 90, 0.3);
+            --border-strong: rgba(196, 163, 90, 0.6);
+            --shadow: rgba(0, 0, 0, 0.4);
+            --glow: rgba(196, 163, 90, 0.15);
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .slide {
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: clamp(2rem, 5vw, 4rem);
+            position: relative;
+            scroll-snap-align: start;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--bg) 0%, var(--bg-warm) 50%, var(--bg) 100%);
+        }
+
+        .slide::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(196, 163, 90, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(122, 158, 122, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .slide-content {
+            max-width: 1200px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-weight: 600;
+            line-height: 1.2;
+            color: var(--text);
+        }
+
+        .display {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .gold { color: var(--accent); }
+        .sage { color: var(--accent2); }
+        .muted { color: var(--text-muted); }
+        .dim { color: var(--text-dim); }
+
+        .fleuron {
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--accent);
+            opacity: 0.7;
+        }
+
+        .divider {
+            width: clamp(60px, 10vw, 120px);
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            margin: 1.5rem auto;
+        }
+
+        .divider-left {
+            width: 60px;
+            height: 1px;
+            background: var(--accent);
+            margin: 1rem 0;
+        }
+
+        .accent-bar {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 60%;
+            background: linear-gradient(180deg, transparent, var(--accent), transparent);
+        }
+
+        .top-border {
+            border-top: 2px solid var(--accent);
+        }
+
+        .botanical-border {
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .botanical-border::before,
+        .botanical-border::after {
+            content: '❧';
+            position: absolute;
+            font-size: 1.2rem;
+            color: var(--accent);
+            opacity: 0.5;
+        }
+
+        .botanical-border::before {
+            top: -0.7rem;
+            left: 1rem;
+            background: var(--bg);
+            padding: 0 0.5rem;
+        }
+
+        .botanical-border::after {
+            bottom: -0.7rem;
+            right: 1rem;
+            background: var(--bg);
+            padding: 0 0.5rem;
+            transform: rotate(180deg);
+        }
+
+        /* Typography */
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 400;
+            letter-spacing: 0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            color: var(--accent);
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .large-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(6rem, 20vw, 14rem);
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+            text-align: center;
+        }
+
+        .card {
+            background: rgba(196, 163, 90, 0.03);
+            border: 1px solid var(--border);
+            padding: clamp(1.5rem, 3vw, 2rem);
+            position: relative;
+            transition: all 0.4s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-strong);
+            background: rgba(196, 163, 90, 0.06);
+        }
+
+        .card-gold {
+            border-left: 3px solid var(--accent);
+        }
+
+        .card-sage {
+            border-left: 3px solid var(--accent2);
+        }
+
+        .card-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.2rem, 2vw, 1.5rem);
+            margin-bottom: 0.75rem;
+            color: var(--accent);
+        }
+
+        .card-body {
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+            color: var(--text-muted);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background: rgba(196, 163, 90, 0.1);
+            border: 1px solid var(--border);
+            font-size: clamp(0.75rem, 1vw, 0.9rem);
+            margin: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            background: rgba(196, 163, 90, 0.2);
+            border-color: var(--accent);
+        }
+
+        .tag-sage {
+            background: rgba(122, 158, 122, 0.1);
+            border-color: rgba(122, 158, 122, 0.3);
+        }
+
+        .tag-sage:hover {
+            background: rgba(122, 158, 122, 0.2);
+            border-color: var(--accent2);
+        }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr));
+            gap: clamp(1rem, 3vw, 2rem);
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+            gap: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+            gap: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        .grid-5 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+            gap: clamp(0.75rem, 1.5vw, 1rem);
+        }
+
+        .grid-7 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+            gap: clamp(0.5rem, 1vw, 0.75rem);
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes growWidth {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal-left {
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .reveal-left.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal, .reveal-left {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+            * {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Navigation */
+        .nav-dots {
+            position: fixed;
+            right: clamp(1rem, 2vw, 2rem);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 1000;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            padding: 0;
+        }
+
+        .nav-dot:hover {
+            background: var(--text-muted);
+            transform: scale(1.3);
+        }
+
+        .nav-dot.active {
+            background: var(--accent);
+            transform: scale(1.2);
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: clamp(1rem, 2vw, 2rem);
+            right: clamp(1rem, 2vw, 2rem);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            color: var(--text-dim);
+            z-index: 1000;
+        }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: var(--accent);
+            z-index: 1001;
+            transition: width 0.3s ease;
+        }
+
+        /* Tables */
+        .elegant-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(0.85rem, 1.5vw, 1rem);
+        }
+
+        .elegant-table th {
+            font-family: 'Cormorant Garamond', serif;
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 2px solid var(--accent);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .elegant-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .elegant-table tr:hover td {
+            background: rgba(196, 163, 90, 0.03);
+        }
+
+        /* Lists */
+        .elegant-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .elegant-list li {
+            padding: 0.75rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-muted);
+        }
+
+        .elegant-list li::before {
+            content: '—';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+
+        .numbered-list {
+            counter-reset: item;
+            list-style: none;
+            padding: 0;
+        }
+
+        .numbered-list li {
+            counter-increment: item;
+            padding: 0.5rem 0;
+            padding-left: 2.5rem;
+            position: relative;
+            color: var(--text-muted);
+        }
+
+        .numbered-list li::before {
+            content: counter(item, decimal-leading-zero);
+            position: absolute;
+            left: 0;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+
+        /* Steps */
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .step-number {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            color: var(--accent);
+            line-height: 1;
+            min-width: 2.5rem;
+        }
+
+        .step-content h4 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1.1rem, 2vw, 1.3rem);
+            margin-bottom: 0.25rem;
+        }
+
+        .step-content p {
+            color: var(--text-muted);
+            font-size: clamp(0.9rem, 1.5vw, 1rem);
+        }
+
+        /* Flow */
+        .flow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 2rem 0;
+        }
+
+        .flow-item {
+            padding: 0.75rem 1.25rem;
+            background: rgba(196, 163, 90, 0.05);
+            border: 1px solid var(--border);
+            font-size: clamp(0.85rem, 1.2vw, 1rem);
+        }
+
+        .flow-arrow {
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        /* Pyramid */
+        .pyramid {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 2rem 0;
+        }
+
+        .pyramid-layer {
+            padding: clamp(0.75rem, 2vw, 1.25rem) clamp(1rem, 3vw, 2rem);
+            text-align: center;
+            border: 1px solid;
+            transition: all 0.3s ease;
+        }
+
+        .pyramid-layer:nth-child(1) {
+            width: 40%;
+            background: rgba(196, 163, 90, 0.15);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .pyramid-layer:nth-child(2) {
+            width: 55%;
+            background: rgba(196, 163, 90, 0.1);
+            border-color: rgba(196, 163, 90, 0.6);
+            color: var(--text);
+        }
+
+        .pyramid-layer:nth-child(3) {
+            width: 70%;
+            background: rgba(122, 158, 122, 0.1);
+            border-color: rgba(122, 158, 122, 0.5);
+            color: var(--accent2);
+        }
+
+        .pyramid-layer:nth-child(4) {
+            width: 85%;
+            background: rgba(232, 228, 220, 0.05);
+            border-color: rgba(232, 228, 220, 0.3);
+            color: var(--text-muted);
+        }
+
+        .pyramid-label {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(1rem, 1.5vw, 1.2rem);
+            margin-bottom: 0.25rem;
+        }
+
+        .pyramid-desc {
+            font-size: clamp(0.75rem, 1vw, 0.9rem);
+        }
+
+        /* Bars */
+        .bar-container {
+            margin: 1.5rem 0;
+        }
+
+        .bar-label {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .bar {
+            height: 8px;
+            background: rgba(196, 163, 90, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent3));
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        /* Two column */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1rem, 4vw, 3rem);
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Vertical cards */
+        .vertical-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .vertical-card {
+            padding: 1.25rem;
+            border-left: 3px solid var(--accent);
+            background: rgba(196, 163, 90, 0.03);
+        }
+
+        .vertical-card h4 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .vertical-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Compare */
+        .compare-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .compare-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .compare-old {
+            padding: 1.5rem;
+            background: rgba(138, 133, 120, 0.1);
+            border: 1px solid rgba(138, 133, 120, 0.3);
+        }
+
+        .compare-old h4 {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .compare-new {
+            padding: 1.5rem;
+            background: rgba(196, 163, 90, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        .compare-new h4 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        /* Warning */
+        .warning {
+            padding: 1rem 1.5rem;
+            background: rgba(122, 158, 122, 0.1);
+            border: 1px solid rgba(122, 158, 122, 0.4);
+            border-left: 3px solid var(--accent2);
+            margin: 1rem 0;
+        }
+
+        .warning-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            color: var(--accent2);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Cover specific */
+        .cover {
+            text-align: center;
+            position: relative;
+        }
+
+        .cover::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, var(--glow) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .cover-fleuron {
+            font-size: clamp(2rem, 5vw, 4rem);
+            color: var(--accent);
+            opacity: 0.6;
+            margin-bottom: 1rem;
+        }
+
+        .cover-tagline {
+            margin-top: 3rem;
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+            color: var(--text-muted);
+            letter-spacing: 0.15em;
+        }
+
+        .cover-bottom {
+            margin-top: 4rem;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .cover-badge {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border);
+            font-size: clamp(0.75rem, 1vw, 0.9rem);
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+        }
+
+        /* TOC specific */
+        .toc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .toc-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-left: 2px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .toc-item:hover {
+            border-left-color: var(--accent);
+            background: rgba(196, 163, 90, 0.03);
+        }
+
+        .toc-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            color: var(--accent);
+            min-width: 2rem;
+        }
+
+        .toc-text {
+            font-size: clamp(1rem, 1.5vw, 1.2rem);
+        }
+
+        /* Horizontal steps */
+        .h-steps {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .h-step {
+            flex: 1;
+            min-width: 200px;
+            max-width: 280px;
+            padding: 1.5rem;
+            text-align: center;
+            border-top: 3px solid var(--accent);
+            background: rgba(196, 163, 90, 0.03);
+            position: relative;
+        }
+
+        .h-step::after {
+            content: '→';
+            position: absolute;
+            right: -1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        .h-step:last-child::after {
+            display: none;
+        }
+
+        .h-step-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .h-step-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .h-step-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* File card */
+        .file-card {
+            padding: 0.75rem;
+            background: rgba(196, 163, 90, 0.03);
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .file-card:hover {
+            border-color: var(--accent);
+            background: rgba(196, 163, 90, 0.08);
+        }
+
+        .file-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .file-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.95rem;
+            color: var(--accent);
+        }
+
+        .file-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Summary cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .summary-card {
+            padding: 1.5rem;
+            border-top: 3px solid var(--accent);
+            background: rgba(196, 163, 90, 0.03);
+            text-align: center;
+        }
+
+        .summary-card h4 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+
+        .summary-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Closing action */
+        .action-steps {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .action-step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            border: 1px solid var(--border);
+            background: rgba(196, 163, 90, 0.03);
+            transition: all 0.3s ease;
+        }
+
+        .action-step:hover {
+            border-color: var(--accent);
+            background: rgba(196, 163, 90, 0.08);
+        }
+
+        .action-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.3rem;
+            color: var(--accent);
+        }
+
+        /* Special elements */
+        .deco-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .deco-line::before,
+        .deco-line::after {
+            content: '';
+            flex: 1;
+            max-width: 100px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent));
+        }
+
+        .deco-line::after {
+            background: linear-gradient(90deg, var(--accent), transparent);
+        }
+
+        .deco-symbol {
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        /* Browser layers */
+        .layer {
+            padding: 1rem 1.5rem;
+            margin: 0.5rem 0;
+            border-left: 3px solid;
+            background: rgba(196, 163, 90, 0.03);
+        }
+
+        .layer-l0 { border-color: var(--text-dim); }
+        .layer-l1 { border-color: var(--accent2); }
+        .layer-l2 { border-color: var(--accent); }
+        .layer-l3 { border-color: #e8c4a0; }
+
+        .layer-label {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .layer-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Skills */
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        /* Roadmap */
+        .roadmap {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .roadmap-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(196, 163, 90, 0.03);
+            border: 1px solid var(--border);
+        }
+
+        .roadmap-icon {
+            font-size: 1.2rem;
+        }
+
+        .roadmap-text h4 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .roadmap-text p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Utility */
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .mt-1 { margin-top: 1rem; }
+        .mt-2 { margin-top: 2rem; }
+        .mb-1 { margin-bottom: 1rem; }
+        .mb-2 { margin-bottom: 2rem; }
+        .mb-3 { margin-bottom: 3rem; }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <nav class="nav-dots" id="navDots"></nav>
+
+    <div class="slide-number" id="slideNumber">01 / 45</div>
+
+    <!-- SLIDE 1: Cover -->
+    <section class="slide" id="slide-1">
+        <div class="accent-bar"></div>
+        <div class="slide-content cover">
+            <div class="cover-fleuron">❧</div>
+            <h1 class="hero-title display">OpenClaw</h1>
+            <p class="hero-subtitle">知识图谱</p>
+            <div class="divider"></div>
+            <p class="section-subtitle">从部署到实践全指南</p>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="cover-bottom">
+                <span class="cover-badge">Gateway</span>
+                <span class="cover-badge">Channel</span>
+                <span class="cover-badge">Node</span>
+                <span class="cover-badge">Agent</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 2: TOC -->
+    <section class="slide" id="slide-2">
+        <div class="slide-content">
+            <h2 class="section-title">Contents</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="toc-grid">
+                <div class="toc-item reveal">
+                    <span class="toc-num">01</span>
+                    <span class="toc-text">认识 OpenClaw</span>
+                </div>
+                <div class="toc-item reveal">
+                    <span class="toc-num">02</span>
+                    <span class="toc-text">OpenClaw 部署</span>
+                </div>
+                <div class="toc-item reveal">
+                    <span class="toc-num">03</span>
+                    <span class="toc-text">OpenClaw 应用</span>
+                </div>
+                <div class="toc-item reveal">
+                    <span class="toc-num">04</span>
+                    <span class="toc-text">优缺点分析</span>
+                </div>
+                <div class="toc-item reveal">
+                    <span class="toc-num">05</span>
+                    <span class="toc-text">实践补充与总结</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 3: Problem -->
+    <section class="slide" id="slide-3">
+        <div class="slide-content">
+            <div class="two-col">
+                <div class="reveal-left">
+                    <h2 class="section-title text-left">OpenClaw 是什么</h2>
+                    <div class="divider-left"></div>
+                    <p class="card-body" style="margin-top: 1.5rem;">
+                        运行在你自己设备上的<br>个人 AI 助手平台
+                    </p>
+                    <p class="muted mt-2">
+                        本地优先 · 多渠道接入 · 可执行任务
+                    </p>
+                </div>
+                <div class="card card-gold reveal" style="padding: 2rem;">
+                    <h3 class="card-title">三层架构</h3>
+                    <div class="deco-line" style="margin: 1rem 0;">
+                        <span class="deco-symbol">❧</span>
+                    </div>
+                    <p class="card-body">聊天入口 → Gateway 控制平面 → 工具执行</p>
+                    <p class="mt-2 muted">端到端智能处理链路</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 4: Positioning -->
+    <section class="slide" id="slide-4">
+        <div class="slide-content">
+            <h2 class="section-title">核心架构</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-4 mt-2">
+                <div class="card top-border reveal">
+                    <h3 class="card-title">Gateway</h3>
+                    <p class="card-body">中央控制平面</p>
+                    <div class="divider-left" style="margin: 1rem 0;"></div>
+                    <p class="dim" style="font-size: 0.85rem;">ws://127.0.0.1:18789</p>
+                    <p class="muted mt-1" style="font-size: 0.85rem;">Session 管理 · Agent 调度</p>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">Channel</h3>
+                    <p class="card-body">20+ IM 平台</p>
+                    <div class="divider-left" style="margin: 1rem 0;"></div>
+                    <p class="muted" style="font-size: 0.85rem;">WhatsApp / Telegram / Discord</p>
+                    <p class="muted" style="font-size: 0.85rem;">飞书 / 钉钉 / Slack</p>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">Node</h3>
+                    <p class="card-body">执行节点</p>
+                    <div class="divider-left" style="margin: 1rem 0;"></div>
+                    <p class="muted" style="font-size: 0.85rem;">摄像头 / 录屏</p>
+                    <p class="muted" style="font-size: 0.85rem;">系统命令 / IoT 控制</p>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">Agent</h3>
+                    <p class="card-body">智能体核心</p>
+                    <div class="divider-left" style="margin: 1rem 0;"></div>
+                    <p class="muted" style="font-size: 0.85rem;">记忆系统 / 工具调用</p>
+                    <p class="muted" style="font-size: 0.85rem;">自主决策 / 任务执行</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 5: Architecture -->
+    <section class="slide" id="slide-5">
+        <div class="slide-content">
+            <h2 class="section-title">消息处理流程</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="mt-2">
+                <div class="bar-container reveal">
+                    <div class="bar-label">
+                        <span>① 用户发消息</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="bar-container reveal" style="padding-left: 2rem;">
+                    <div class="bar-label">
+                        <span>② Channel 接收</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 85%;"></div>
+                    </div>
+                </div>
+                <div class="bar-container reveal" style="padding-left: 4rem;">
+                    <div class="bar-label">
+                        <span>③ Gateway 路由</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 70%;"></div>
+                    </div>
+                </div>
+                <div class="bar-container reveal" style="padding-left: 6rem;">
+                    <div class="bar-label">
+                        <span>④ Agent 处理</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 55%;"></div>
+                    </div>
+                </div>
+                <div class="bar-container reveal" style="padding-left: 8rem;">
+                    <div class="bar-label">
+                        <span>⑤ Node 执行</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 40%;"></div>
+                    </div>
+                </div>
+                <div class="bar-container reveal" style="padding-left: 10rem;">
+                    <div class="bar-label">
+                        <span>⑥ 回复用户</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 25%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 6: Channel -->
+    <section class="slide" id="slide-6">
+        <div class="slide-content">
+            <h2 class="section-title">Channel 多渠道接入</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-3 mt-2">
+                <div class="card top-border reveal">
+                    <h3 class="card-title">国际平台</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>WhatsApp</li>
+                        <li>Telegram</li>
+                        <li>Discord</li>
+                        <li>Slack</li>
+                        <li>Line</li>
+                    </ul>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">国内平台</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>飞书 Lark</li>
+                        <li>企业微信</li>
+                        <li>钉钉</li>
+                        <li>微信</li>
+                        <li>QQ</li>
+                    </ul>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">更多渠道</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>API Webhook</li>
+                        <li>Web 界面</li>
+                        <li>Terminal</li>
+                        <li>Email</li>
+                        <li>自建平台</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 7: Gateway -->
+    <section class="slide" id="slide-7">
+        <div class="slide-content text-center">
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <h2 class="section-title">Gateway 中央控制平面</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="card botanical-border reveal" style="max-width: 700px; margin: 2rem auto; padding: 2.5rem;">
+                <p class="display" style="font-size: clamp(1.2rem, 2vw, 1.5rem); color: var(--accent); margin-bottom: 1rem;">
+                    ws://127.0.0.1:18789
+                </p>
+                <div class="divider"></div>
+                <div class="grid-2 mt-2">
+                    <div>
+                        <h4 class="gold" style="font-family: 'Cormorant Garamond', serif;">Session 管理</h4>
+                        <p class="muted mt-1">多会话追踪与状态维护</p>
+                    </div>
+                    <div>
+                        <h4 class="gold" style="font-family: 'Cormorant Garamond', serif;">Agent 调度</h4>
+                        <p class="muted mt-1">智能任务分配与执行</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 8: Node -->
+    <section class="slide" id="slide-8">
+        <div class="slide-content">
+            <h2 class="section-title">Node 执行节点</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-4 mt-2">
+                <div class="card card-gold reveal">
+                    <div class="step-number" style="margin-bottom: 0.5rem;">📷</div>
+                    <h4 style="font-family: 'Cormorant Garamond', serif;">视觉输入</h4>
+                    <p class="muted" style="font-size: 0.9rem;">摄像头 / 截图</p>
+                </div>
+                <div class="card card-gold reveal">
+                    <div class="step-number" style="margin-bottom: 0.5rem;">🎬</div>
+                    <h4 style="font-family: 'Cormorant Garamond', serif;">屏幕录制</h4>
+                    <p class="muted" style="font-size: 0.9rem;">录屏 / 窗口捕获</p>
+                </div>
+                <div class="card card-gold reveal">
+                    <div class="step-number" style="margin-bottom: 0.5rem;">⚙️</div>
+                    <h4 style="font-family: 'Cormorant Garamond', serif;">系统命令</h4>
+                    <p class="muted" style="font-size: 0.9rem;">Shell / 脚本执行</p>
+                </div>
+                <div class="card card-gold reveal">
+                    <div class="step-number" style="margin-bottom: 0.5rem;">🏠</div>
+                    <h4 style="font-family: 'Cormorant Garamond', serif;">IoT 控制</h4>
+                    <p class="muted" style="font-size: 0.9rem;">智能家居设备</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 9: Message Flow -->
+    <section class="slide" id="slide-9">
+        <div class="slide-content">
+            <h2 class="section-title">端到端消息流</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="mt-2">
+                <div class="step reveal">
+                    <div class="step-number">①</div>
+                    <div class="step-content">
+                        <h4>用户发送消息</h4>
+                        <p>通过任意渠道（飞书/微信/Telegram 等）发送指令</p>
+                    </div>
+                </div>
+                <div class="step reveal">
+                    <div class="step-number">②</div>
+                    <div class="step-content">
+                        <h4>Channel 接收路由</h4>
+                        <p>统一接入层接收并解析消息内容</p>
+                    </div>
+                </div>
+                <div class="step reveal">
+                    <div class="step-number">③</div>
+                    <div class="step-content">
+                        <h4>Gateway 智能调度</h4>
+                        <p>Session 管理与 Agent 任务分配</p>
+                    </div>
+                </div>
+                <div class="step reveal">
+                    <div class="step-number">④</div>
+                    <div class="step-content">
+                        <h4>Node 执行反馈</h4>
+                        <p>调用工具执行操作并返回结果</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 10: Memory Pyramid -->
+    <section class="slide" id="slide-10">
+        <div class="slide-content text-center">
+            <h2 class="section-title">记忆系统金字塔</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="pyramid mt-2">
+                <div class="pyramid-layer reveal">
+                    <div class="pyramid-label">SOUL 不可变</div>
+                    <div class="pyramid-desc">Agent 人格 / 价值观 / 永久核心</div>
+                </div>
+                <div class="pyramid-layer reveal">
+                    <div class="pyramid-label">TOOLS 动态</div>
+                    <div class="pyramid-desc">Skills / Extensions / 按需加载</div>
+                </div>
+                <div class="pyramid-layer reveal">
+                    <div class="pyramid-label">USER 长期记忆</div>
+                    <div class="pyramid-desc">MEMORY.md / 向量数据库 / SQLite-vec</div>
+                </div>
+                <div class="pyramid-layer reveal">
+                    <div class="pyramid-label">Session 实时</div>
+                    <div class="pyramid-desc">内存 + sessions.json / Pre-Compaction</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 11: SOUL -->
+    <section class="slide" id="slide-11">
+        <div class="slide-content text-center">
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <h2 class="section-title display">SOUL 不可变内聚</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="card botanical-border reveal" style="max-width: 700px; margin: 2rem auto; padding: 2.5rem;">
+                <p class="display" style="font-size: clamp(1.3rem, 2.5vw, 1.8rem); color: var(--accent); margin-bottom: 1.5rem;">
+                    SOUL.md
+                </p>
+                <div class="divider"></div>
+                <div class="mt-2">
+                    <p class="card-body">Agent 的人格、价值观、核心身份定义</p>
+                    <div class="divider-left" style="margin: 1.5rem auto;"></div>
+                    <p class="muted">创建后不应被修改</p>
+                    <p class="gold mt-1">永久不可变 — Agent 的核心身份锚点</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 12: TOOLS -->
+    <section class="slide" id="slide-12">
+        <div class="slide-content">
+            <h2 class="section-title">TOOLS 动态工具系统</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-2 mt-2">
+                <div class="card top-border reveal">
+                    <h3 class="card-title">Skills 技能模块</h3>
+                    <p class="card-body">自动化能力核心单元</p>
+                    <div class="divider-left" style="margin: 1rem 0;"></div>
+                    <ul class="elegant-list">
+                        <li>按需加载</li>
+                        <li>热插拔设计</li>
+                        <li>社区共享</li>
+                    </ul>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">Extensions 扩展插件</h3>
+                    <p class="card-body">功能增强扩展系统</p>
+                    <div class="divider-left" style="margin: 1rem 0;"></div>
+                    <ul class="elegant-list">
+                        <li>动态挂载</li>
+                        <li>功能增强</li>
+                        <li>定制开发</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="text-center muted mt-2">当前可用工具和技能列表 — 随安装和加载动态变化</p>
+        </div>
+    </section>
+
+    <!-- SLIDE 13: USER -->
+    <section class="slide" id="slide-13">
+        <div class="slide-content">
+            <h2 class="section-title">USER 语义长期记忆</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-2 mt-2" style="max-width: 900px; margin: 0 auto;">
+                <div class="card card-gold reveal text-center">
+                    <h3 class="card-title">MEMORY.md</h3>
+                    <p class="card-body">用户偏好 / 决策 / 历史事实</p>
+                    <div class="divider" style="margin: 1rem auto;"></div>
+                    <p class="muted" style="font-size: 0.9rem;">持久化存储</p>
+                    <p class="sage" style="font-size: 0.9rem;">支持语义搜索</p>
+                </div>
+                <div class="card card-sage reveal text-center">
+                    <h3 class="card-title" style="color: var(--accent2);">向量数据库</h3>
+                    <p class="card-body">SQLite-vec / 向量存储</p>
+                    <div class="divider" style="margin: 1rem auto;"></div>
+                    <p class="muted" style="font-size: 0.9rem;">加速语义检索</p>
+                    <p class="sage" style="font-size: 0.9rem;">高效相似度匹配</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 14: Session -->
+    <section class="slide" id="slide-14">
+        <div class="slide-content">
+            <h2 class="section-title">Session 实时场景</h2>
+            <p class="section-subtitle">Pre-Compaction 智能压缩</p>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="h-steps mt-2">
+                <div class="h-step reveal">
+                    <div class="h-step-num">①</div>
+                    <div class="h-step-title">检测阈值</div>
+                    <div class="h-step-desc">Token 用量接近上限</div>
+                </div>
+                <div class="h-step reveal">
+                    <div class="h-step-num">②</div>
+                    <div class="h-step-title">静默保存</div>
+                    <div class="h-step-desc">后台写入 MEMORY.md</div>
+                </div>
+                <div class="h-step reveal">
+                    <div class="h-step-num">③</div>
+                    <div class="h-step-title">压缩上下文</div>
+                    <div class="h-step-desc">旧消息压缩截断</div>
+                </div>
+            </div>
+            <div class="card reveal mt-2" style="max-width: 700px; margin: 0 auto; text-align: center;">
+                <p class="gold" style="font-family: 'Cormorant Garamond', serif; font-size: 1.2rem;">
+                    保证关键信息不随上下文窗口滑动而丢失
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 15: Workspace -->
+    <section class="slide" id="slide-15">
+        <div class="slide-content">
+            <h2 class="section-title">Agent 工作区文件体系</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-7 mt-2">
+                <div class="file-card reveal">
+                    <div class="file-icon">📋</div>
+                    <div class="file-name">AGENTS.md</div>
+                    <div class="file-desc">行为规则</div>
+                </div>
+                <div class="file-card reveal">
+                    <div class="file-icon">💎</div>
+                    <div class="file-name">SOUL.md</div>
+                    <div class="file-desc">人格定义</div>
+                </div>
+                <div class="file-card reveal">
+                    <div class="file-icon">👤</div>
+                    <div class="file-name">USER.md</div>
+                    <div class="file-desc">用户画像</div>
+                </div>
+                <div class="file-card reveal">
+                    <div class="file-icon">🧠</div>
+                    <div class="file-name">MEMORY.md</div>
+                    <div class="file-desc">长期记忆</div>
+                </div>
+                <div class="file-card reveal">
+                    <div class="file-icon">💓</div>
+                    <div class="file-name">HEARTBEAT.md</div>
+                    <div class="file-desc">心跳任务</div>
+                </div>
+                <div class="file-card reveal">
+                    <div class="file-icon">📁</div>
+                    <div class="file-name">memory/</div>
+                    <div class="file-desc">每日日志</div>
+                </div>
+                <div class="file-card reveal">
+                    <div class="file-icon">🔄</div>
+                    <div class="file-name">sessions.json</div>
+                    <div class="file-desc">会话状态</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 16: Memory Flow -->
+    <section class="slide" id="slide-16">
+        <div class="slide-content">
+            <h2 class="section-title">记忆流动</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="mt-2" style="max-width: 800px; margin: 0 auto;">
+                <div class="step reveal">
+                    <div class="step-number">①</div>
+                    <div class="step-content">
+                        <h4>实时会话</h4>
+                        <p>当前对话上下文，内存级访问</p>
+                    </div>
+                </div>
+                <div class="step reveal">
+                    <div class="step-number">②</div>
+                    <div class="step-content">
+                        <h4>Pre-Compaction</h4>
+                        <p>检测 Token 阈值，触发压缩流程</p>
+                    </div>
+                </div>
+                <div class="step reveal">
+                    <div class="step-number">③</div>
+                    <div class="step-content">
+                        <h4>Daily Log</h4>
+                        <p>写入 memory/ 每日日志</p>
+                    </div>
+                </div>
+                <div class="step reveal">
+                    <div class="step-number">④</div>
+                    <div class="step-content">
+                        <h4>MEMORY.md</h4>
+                        <p>关键信息持久化存储</p>
+                    </div>
+                </div>
+                <div class="step reveal">
+                    <div class="step-number">⑤</div>
+                    <div class="step-content">
+                        <h4>向量检索</h4>
+                        <p>SQLite-vec 语义搜索</p>
+                    </div>
+                </div>
+                <div class="step reveal">
+                    <div class="step-number">⑥</div>
+                    <div class="step-content">
+                        <h4>上下文重建</h4>
+                        <p>下次会话时恢复记忆</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 17: Deployment -->
+    <section class="slide" id="slide-17">
+        <div class="slide-content">
+            <h2 class="section-title">选择部署平台</h2>
+            <p class="section-subtitle">平台服务器方案</p>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-3 mt-2">
+                <div class="card top-border reveal">
+                    <h3 class="card-title">MaxClaw</h3>
+                    <p class="card-body">积分制付费</p>
+                    <div class="divider-left" style="margin: 1rem 0;"></div>
+                    <p class="gold" style="font-size: 1.5rem; font-family: 'Cormorant Garamond', serif;">最低 ¥39</p>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">ArkClaw</h3>
+                    <p class="card-body">订阅制服务</p>
+                    <div class="divider-left" style="margin: 1rem 0;"></div>
+                    <p class="gold" style="font-size: 1.5rem; font-family: 'Cormorant Garamond', serif;">¥200/月</p>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">KimiClaw</h3>
+                    <p class="card-body">订阅制服务</p>
+                    <div class="divider-left" style="margin: 1rem 0;"></div>
+                    <p class="gold" style="font-size: 1.5rem; font-family: 'Cormorant Garamond', serif;">¥199/月</p>
+                </div>
+            </div>
+            <div class="card card-sage reveal mt-2" style="text-align: center; max-width: 400px; margin: 0 auto;">
+                <h4 style="font-family: 'Cormorant Garamond', serif; color: var(--accent2);">MimoClaw</h4>
+                <p class="muted">免费体验</p>
+                <p class="sage" style="font-family: 'Cormorant Garamond', serif; font-size: 1.3rem;">1 小时免费试用</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 18: Platform Table -->
+    <section class="slide" id="slide-18">
+        <div class="slide-content">
+            <h2 class="section-title">平台对比</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="mt-2" style="overflow-x: auto;">
+                <table class="elegant-table">
+                    <thead>
+                        <tr>
+                            <th>平台</th>
+                            <th>定价</th>
+                            <th>特点</th>
+                            <th>适合用户</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="reveal">
+                            <td>MaxClaw</td>
+                            <td class="gold">积分制</td>
+                            <td>灵活按量付费</td>
+                            <td>轻度使用者</td>
+                        </tr>
+                        <tr class="reveal">
+                            <td>ArkClaw</td>
+                            <td class="gold">¥200/月</td>
+                            <td>稳定订阅</td>
+                            <td>企业用户</td>
+                        </tr>
+                        <tr class="reveal">
+                            <td>KimiClaw</td>
+                            <td class="gold">¥199/月</td>
+                            <td>Kimi 模型加持</td>
+                            <td>需要 Kimi 能力</td>
+                        </tr>
+                        <tr class="reveal">
+                            <td>MimoClaw</td>
+                            <td class="sage">免费</td>
+                            <td>1小时体验</td>
+                            <td>尝鲜体验</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 19: Tencent -->
+    <section class="slide" id="slide-19">
+        <div class="slide-content">
+            <h2 class="section-title">腾讯龙虾系列</h2>
+            <p class="section-subtitle">现成平台本地版</p>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="two-col mt-2">
+                <div class="reveal-left">
+                    <div class="card card-gold" style="margin-bottom: 1rem;">
+                        <h4 style="font-family: 'Cormorant Garamond', serif;">腾讯龙虾产品</h4>
+                        <div class="divider-left" style="margin: 0.75rem 0;"></div>
+                        <div class="skills-container">
+                            <span class="tag">QClaw</span>
+                            <span class="tag">QQClaw</span>
+                            <span class="tag">WorkBuddy</span>
+                            <span class="tag">QBot</span>
+                        </div>
+                    </div>
+                    <div class="card card-sage">
+                        <h4 style="font-family: 'Cormorant Garamond', serif; color: var(--accent2);">其他平台</h4>
+                        <div class="divider-left" style="margin: 0.75rem 0;"></div>
+                        <div class="skills-container">
+                            <span class="tag tag-sage">EasyClaw</span>
+                            <span class="tag tag-sage">AutoClaw</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card reveal" style="text-align: center; padding: 2rem;">
+                    <h3 class="card-title">接入平台</h3>
+                    <div class="deco-line" style="margin: 1rem 0;">
+                        <span class="deco-symbol">❧</span>
+                    </div>
+                    <p class="card-body">飞书</p>
+                    <p class="card-body">企业微信</p>
+                    <p class="card-body">钉钉</p>
+                    <p class="card-body">等更多平台...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 20: Server Config -->
+    <section class="slide" id="slide-20">
+        <div class="slide-content">
+            <h2 class="section-title">云服务器配置</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="two-col mt-2">
+                <div class="reveal-left">
+                    <table class="elegant-table">
+                        <thead>
+                            <tr>
+                                <th>配置项</th>
+                                <th>推荐</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="reveal">
+                                <td>CPU</td>
+                                <td class="gold">2 vCPU+</td>
+                            </tr>
+                            <tr class="reveal">
+                                <td>内存</td>
+                                <td class="gold">4GB RAM+</td>
+                            </tr>
+                            <tr class="reveal">
+                                <td>存储</td>
+                                <td class="gold">40GB SSD+</td>
+                            </tr>
+                            <tr class="reveal">
+                                <td>浏览器</td>
+                                <td class="sage">需要 4G+</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="reveal">
+                    <div class="warning">
+                        <div class="warning-title">⚠ 避坑指南</div>
+                        <p class="muted" style="font-size: 0.95rem;">服务器买海外</p>
+                        <p class="muted" style="font-size: 0.95rem;">内存至少 4G</p>
+                        <p class="muted" style="font-size: 0.95rem;">推荐 8G 或 16G</p>
+                    </div>
+                    <div class="warning">
+                        <div class="warning-title">⚠ 跑浏览器</div>
+                        <p class="muted" style="font-size: 0.95rem;">需要额外 4G+ 内存</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 21: Model Table -->
+    <section class="slide" id="slide-21">
+        <div class="slide-content">
+            <h2 class="section-title">模型方案选择</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="mt-2">
+                <div class="bar-container reveal">
+                    <div class="bar-label">
+                        <span class="gold" style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;">最强 — Claude Opus 4.6</span>
+                        <span class="muted">有钱首选</span>
+                    </div>
+                    <div class="bar"><div class="bar-fill" style="width: 100%; background: var(--accent);"></div></div>
+                </div>
+                <div class="bar-container reveal">
+                    <div class="bar-label">
+                        <span class="gold" style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;">次选 — GPT 5.4</span>
+                        <span class="muted">强力备选</span>
+                    </div>
+                    <div class="bar"><div class="bar-fill" style="width: 85%; background: var(--accent);"></div></div>
+                </div>
+                <div class="bar-container reveal">
+                    <div class="bar-label">
+                        <span class="sage" style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;">经济 — GLM / Kimi / Minimax / Qwen</span>
+                        <span class="muted">成本优化</span>
+                    </div>
+                    <div class="bar"><div class="bar-fill" style="width: 60%; background: var(--accent2);"></div></div>
+                </div>
+                <div class="bar-container reveal">
+                    <div class="bar-label">
+                        <span class="muted" style="font-family: 'Cormorant Garamond', serif; font-size: 1.1rem;">本地 — 自建模型</span>
+                        <span class="muted">需要高配电脑</span>
+                    </div>
+                    <div class="bar"><div class="bar-fill" style="width: 40%; background: var(--text-dim);"></div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 22: 4-step -->
+    <section class="slide" id="slide-22">
+        <div class="slide-content text-center">
+            <h2 class="section-title">开始部署配置</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="h-steps mt-2">
+                <div class="h-step reveal">
+                    <div class="h-step-num">①</div>
+                    <div class="h-step-title">选择平台</div>
+                    <div class="h-step-desc">服务器 / 本地 / 云平台</div>
+                </div>
+                <div class="h-step reveal">
+                    <div class="h-step-num">②</div>
+                    <div class="h-step-title">选择模型</div>
+                    <div class="h-step-desc">Claude / GPT / GLM / Qwen</div>
+                </div>
+                <div class="h-step reveal">
+                    <div class="h-step-num">③</div>
+                    <div class="h-step-title">安装配置</div>
+                    <div class="h-step-desc">一键脚本 / Docker / 源码</div>
+                </div>
+                <div class="h-step reveal">
+                    <div class="h-step-num">④</div>
+                    <div class="h-step-title">连接渠道</div>
+                    <div class="h-step-desc">WhatsApp / 微信 / 飞书 / 钉钉</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 23: Pitfall -->
+    <section class="slide" id="slide-23">
+        <div class="slide-content text-center">
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <h2 class="section-title display">部署避坑指南</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="warning reveal" style="max-width: 600px; margin: 2rem auto; text-align: left;">
+                <div class="warning-title">⚠ 环境坑</div>
+                <p class="muted" style="font-size: 0.95rem;">使用 AI 安装 / 避免找环境问题</p>
+                <p class="muted" style="font-size: 0.95rem;">OpenCode 有免费模型</p>
+            </div>
+            <div class="warning reveal" style="max-width: 600px; margin: 1rem auto; text-align: left;">
+                <div class="warning-title">⚠ 配置坑</div>
+                <p class="muted" style="font-size: 0.95rem;">内存至少 4G / 跑浏览器需 4G+</p>
+            </div>
+            <div class="warning reveal" style="max-width: 600px; margin: 1rem auto; text-align: left;">
+                <div class="warning-title">⚠ 网络坑</div>
+                <p class="muted" style="font-size: 0.95rem;">服务器买海外 / 国内访问慢</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 24: Pitfalls -->
+    <section class="slide" id="slide-24">
+        <div class="slide-content">
+            <h2 class="section-title">常见部署问题</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-2 mt-2" style="max-width: 900px; margin: 0 auto;">
+                <div class="warning reveal" style="padding: 1.5rem;">
+                    <div class="warning-title">环境配置困难</div>
+                    <p class="muted mt-1">部署过程极其复杂，通常需要命令行操作</p>
+                    <p class="sage mt-1">连专业人士都可能耗费数小时调试</p>
+                </div>
+                <div class="warning reveal" style="padding: 1.5rem;">
+                    <div class="warning-title">技术门槛高</div>
+                    <p class="muted mt-1">令人望而却步的配置流程</p>
+                    <p class="sage mt-1">需要一定的技术背景知识</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 25: AI Install -->
+    <section class="slide" id="slide-25">
+        <div class="slide-content">
+            <h2 class="section-title">AI 辅助安装方案</h2>
+            <p class="section-subtitle">用 AI 来安装配置 AI</p>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-3 mt-2">
+                <div class="card top-border reveal text-center">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">🤖</div>
+                    <h3 class="card-title">OpenCode</h3>
+                    <p class="card-body">免费模型 / 客户端+CLI</p>
+                    <div class="divider-left" style="margin: 1rem auto;"></div>
+                    <p class="gold" style="font-size: 0.9rem;">opencode.ai</p>
+                </div>
+                <div class="card top-border reveal text-center">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">💎</div>
+                    <h3 class="card-title">Claude Code</h3>
+                    <p class="card-body">需要登录 Anthropic</p>
+                    <div class="divider-left" style="margin: 1rem auto;"></div>
+                    <p class="gold" style="font-size: 0.9rem;">官方 CLI 工具</p>
+                </div>
+                <div class="card top-border reveal text-center">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">✨</div>
+                    <h3 class="card-title">其他 AI 工具</h3>
+                    <p class="card-body">避免环境问题</p>
+                    <div class="divider-left" style="margin: 1rem auto;"></div>
+                    <p class="gold" style="font-size: 0.9rem;">自动处理依赖</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 26: Checklist -->
+    <section class="slide" id="slide-26">
+        <div class="slide-content">
+            <h2 class="section-title">部署检查清单</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="two-col mt-2" style="max-width: 900px; margin: 0 auto;">
+                <div class="reveal-left">
+                    <ul class="elegant-list">
+                        <li>服务器/本地设备准备就绪</li>
+                        <li>确定使用平台方案</li>
+                        <li>选择并配置模型 API</li>
+                        <li>准备渠道接入凭证</li>
+                    </ul>
+                </div>
+                <div class="reveal">
+                    <ul class="elegant-list">
+                        <li>安装 OpenClaw 核心</li>
+                        <li>配置 Gateway 连接</li>
+                        <li>安装所需 Skills</li>
+                        <li>测试各渠道连通性</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card reveal mt-2" style="text-align: center; max-width: 500px; margin: 0 auto;">
+                <p class="gold" style="font-family: 'Cormorant Garamond', serif;">Pro Tip: 使用 AI 辅助安装事半功倍</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 27: 8 Scenes -->
+    <section class="slide" id="slide-27">
+        <div class="slide-content">
+            <h2 class="section-title">应用场景总览</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-4 mt-2">
+                <div class="card card-gold reveal">
+                    <h4 style="font-family: 'Cormorant Garamond', serif;">企业微信</h4>
+                    <p class="muted" style="font-size: 0.85rem;">日程/会议管理</p>
+                </div>
+                <div class="card card-gold reveal">
+                    <h4 style="font-family: 'Cormorant Garamond', serif;">禅道</h4>
+                    <p class="muted" style="font-size: 0.85rem;">任务/工时/版本</p>
+                </div>
+                <div class="card card-gold reveal">
+                    <h4 style="font-family: 'Cormorant Garamond', serif;">小红书</h4>
+                    <p class="muted" style="font-size: 0.85rem;">差评收集</p>
+                </div>
+                <div class="card card-gold reveal">
+                    <h4 style="font-family: 'Cormorant Garamond', serif;">文章分析</h4>
+                    <p class="muted" style="font-size: 0.85rem;">总结/深度分析</p>
+                </div>
+                <div class="card card-sage reveal">
+                    <h4 style="font-family: 'Cormorant Garamond', serif;">定时任务</h4>
+                    <p class="muted" style="font-size: 0.85rem;">日报/周报</p>
+                </div>
+                <div class="card card-sage reveal">
+                    <h4 style="font-family: 'Cormorant Garamond', serif;">PPT/网页</h4>
+                    <p class="muted" style="font-size: 0.85rem;">自动生成</p>
+                </div>
+                <div class="card card-sage reveal">
+                    <h4 style="font-family: 'Cormorant Garamond', serif;">群消息</h4>
+                    <p class="muted" style="font-size: 0.85rem;">汇总成文档</p>
+                </div>
+                <div class="card card-sage reveal">
+                    <h4 style="font-family: 'Cormorant Garamond', serif;">代码审查</h4>
+                    <p class="muted" style="font-size: 0.85rem;">质量检测</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 28: Wecom -->
+    <section class="slide" id="slide-28">
+        <div class="slide-content">
+            <h2 class="section-title">企业微信日程/会议</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="vertical-cards mt-2" style="max-width: 700px; margin: 0 auto;">
+                <div class="vertical-card reveal">
+                    <h4>日程创建</h4>
+                    <p>自动安排会议 / 设置提醒 / 时间冲突检测</p>
+                </div>
+                <div class="vertical-card reveal">
+                    <h4>会议管理</h4>
+                    <p>邀请发送 / 议程生成 / 会议纪要</p>
+                </div>
+                <div class="vertical-card reveal">
+                    <h4>消息推送</h4>
+                    <p>日程提醒推送到企业微信群</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 29: Zentao -->
+    <section class="slide" id="slide-29">
+        <div class="slide-content">
+            <h2 class="section-title">禅道任务管理</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-3 mt-2">
+                <div class="card top-border reveal">
+                    <h3 class="card-title">任务管理</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>创建任务</li>
+                        <li>查询任务</li>
+                        <li>修改任务</li>
+                        <li>自动分配</li>
+                    </ul>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">工时统计</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>工时记录</li>
+                        <li>效率分析</li>
+                        <li>报表生成</li>
+                    </ul>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">版本管理</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>版本发布</li>
+                        <li>更新日志</li>
+                        <li>变更记录</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 30: Xiaohongshu -->
+    <section class="slide" id="slide-30">
+        <div class="slide-content text-center">
+            <h2 class="section-title">小红书差评收集推送</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="h-steps mt-2">
+                <div class="h-step reveal">
+                    <div class="h-step-num">①</div>
+                    <div class="h-step-title">数据采集</div>
+                    <div class="h-step-desc">监控评论 / 识别差评 / 自动抓取</div>
+                </div>
+                <div class="h-step reveal">
+                    <div class="h-step-num">②</div>
+                    <div class="h-step-title">智能分析</div>
+                    <div class="h-step-desc">情感分析 / 问题分类 / 优先级排序</div>
+                </div>
+                <div class="h-step reveal">
+                    <div class="h-step-num">③</div>
+                    <div class="h-step-title">推送汇总</div>
+                    <div class="h-step-desc">推送企业微信 / 生成智能表格</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 31: Article -->
+    <section class="slide" id="slide-31">
+        <div class="slide-content">
+            <h2 class="section-title">文章总结/行业分析</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="two-col mt-2">
+                <div class="card top-border reveal">
+                    <h3 class="card-title">文章总结</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>自动读取文章内容</li>
+                        <li>提取核心观点</li>
+                        <li>结构化摘要</li>
+                        <li>关键数据提取</li>
+                    </ul>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">行业分析</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>技术深度分析</li>
+                        <li>趋势研判</li>
+                        <li>竞品对比</li>
+                        <li>报告生成</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 32: Scheduled -->
+    <section class="slide" id="slide-32">
+        <div class="slide-content">
+            <h2 class="section-title">定时任务/日报周报</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="mt-2">
+                <div class="bar-container reveal">
+                    <div class="bar-label">
+                        <span style="font-family: 'Cormorant Garamond', serif;">定时搜索</span>
+                    </div>
+                    <p class="muted" style="font-size: 0.9rem; margin-top: 0.5rem;">定时搜索行业信息 / 自动抓取最新内容</p>
+                    <div class="bar" style="margin-top: 0.5rem;"><div class="bar-fill" style="width: 75%;"></div></div>
+                </div>
+                <div class="bar-container reveal">
+                    <div class="bar-label">
+                        <span style="font-family: 'Cormorant Garamond', serif;">日报生成</span>
+                    </div>
+                    <p class="muted" style="font-size: 0.9rem; margin-top: 0.5rem;">每日工作汇总 / 自动生成日报 / 推送提醒</p>
+                    <div class="bar" style="margin-top: 0.5rem;"><div class="bar-fill" style="width: 85%;"></div></div>
+                </div>
+                <div class="bar-container reveal">
+                    <div class="bar-label">
+                        <span style="font-family: 'Cormorant Garamond', serif;">周报汇总</span>
+                    </div>
+                    <p class="muted" style="font-size: 0.9rem; margin-top: 0.5rem;">周度数据汇总 / 趋势分析 / 周报输出</p>
+                    <div class="bar" style="margin-top: 0.5rem;"><div class="bar-fill" style="width: 65%;"></div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 33: PPT Generation -->
+    <section class="slide" id="slide-33">
+        <div class="slide-content text-center">
+            <h2 class="section-title">PPT / 网页生成</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-2 mt-2" style="max-width: 800px; margin: 0 auto;">
+                <div class="card top-border reveal">
+                    <h3 class="card-title">PPT 生成</h3>
+                    <div class="deco-line" style="margin: 1rem 0;">
+                        <span class="deco-symbol">❧</span>
+                    </div>
+                    <p class="card-body">多风格选择</p>
+                    <p class="card-body">自动排版</p>
+                    <p class="card-body">内容配图</p>
+                    <p class="gold mt-1">一键导出</p>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">网页展示</h3>
+                    <div class="deco-line" style="margin: 1rem 0;">
+                        <span class="deco-symbol">❧</span>
+                    </div>
+                    <p class="card-body">生成可交互页面</p>
+                    <p class="card-body">在线预览</p>
+                    <p class="card-body">实时演示</p>
+                    <p class="gold mt-1">Web 部署</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 34: Group Messages -->
+    <section class="slide" id="slide-34">
+        <div class="slide-content">
+            <h2 class="section-title">群消息汇总成文档</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="h-steps mt-2">
+                <div class="h-step reveal">
+                    <div class="h-step-num">①</div>
+                    <div class="h-step-title">消息抓取</div>
+                    <div class="h-step-desc">监听群聊 / 提取问题 / 过滤无关</div>
+                </div>
+                <div class="h-step reveal">
+                    <div class="h-step-num">②</div>
+                    <div class="h-step-title">分类整理</div>
+                    <div class="h-step-desc">问题归类 / 优先级排序 / 去重合并</div>
+                </div>
+                <div class="h-step reveal">
+                    <div class="h-step-num">③</div>
+                    <div class="h-step-title">文档生成</div>
+                    <div class="h-step-desc">结构化汇总 / 生成文档 / 团队同步</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 35: Code Review -->
+    <section class="slide" id="slide-35">
+        <div class="slide-content">
+            <h2 class="section-title">代码审查</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-3 mt-2">
+                <div class="card top-border reveal">
+                    <h3 class="card-title">自动审查</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>代码质量检查</li>
+                        <li>风格规范</li>
+                        <li>潜在 Bug 检测</li>
+                    </ul>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">问题分析</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>根因分析</li>
+                        <li>修复建议</li>
+                        <li>最佳实践推荐</li>
+                    </ul>
+                </div>
+                <div class="card top-border reveal">
+                    <h3 class="card-title">报告输出</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>审查报告生成</li>
+                        <li>问题清单</li>
+                        <li>改进建议</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 36: Browser Layers -->
+    <section class="slide" id="slide-36">
+        <div class="slide-content">
+            <h2 class="section-title">AI 浏览器搜索 — 4 层架构</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="mt-2" style="max-width: 800px; margin: 0 auto;">
+                <div class="layer layer-l0 reveal">
+                    <div class="layer-label">L0 搜索+抓取</div>
+                    <div class="layer-desc">搜索引擎查找 / 提取正文 / 速度快成本低</div>
+                </div>
+                <div class="layer layer-l1 reveal">
+                    <div class="layer-label">L1 无头浏览器</div>
+                    <div class="layer-desc">Headless Chrome / JS 动态渲染 / React/Vue 支持</div>
+                </div>
+                <div class="layer layer-l2 reveal">
+                    <div class="layer-label">L2 有头浏览器+DOM</div>
+                    <div class="layer-desc">真实浏览器 / 点击输入 / 登录操作</div>
+                </div>
+                <div class="layer layer-l3 reveal">
+                    <div class="layer-label">L3 截图+视觉识别</div>
+                    <div class="layer-desc">页面截图 / 视觉理解 / 兜底方案最强</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 37: Advantages -->
+    <section class="slide" id="slide-37">
+        <div class="slide-content">
+            <h2 class="section-title">五大优势</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-5 mt-2">
+                <div class="card top-border reveal">
+                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🗣️→✋</div>
+                    <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 0.95rem;">从"动嘴"到"动手"</h4>
+                </div>
+                <div class="card top-border reveal">
+                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🌱</div>
+                    <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 0.95rem;">开源生态</h4>
+                </div>
+                <div class="card top-border reveal">
+                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🏠</div>
+                    <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 0.95rem;">本地部署</h4>
+                </div>
+                <div class="card top-border reveal">
+                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🤖🤖</div>
+                    <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 0.95rem;">多智能体协同</h4>
+                </div>
+                <div class="card top-border reveal">
+                    <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📈</div>
+                    <h4 style="font-family: 'Cormorant Garamond', serif; font-size: 0.95rem;">89.5% 成功率</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 38: Advantage Compare -->
+    <section class="slide" id="slide-38">
+        <div class="slide-content">
+            <h2 class="section-title">从"动嘴"到"动手"</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="compare-container mt-2">
+                <div class="compare-old reveal">
+                    <h4>传统聊天机器人</h4>
+                    <ul class="elegant-list mt-1">
+                        <li>只能聊天回复</li>
+                        <li>无法执行操作</li>
+                        <li>被动响应</li>
+                    </ul>
+                </div>
+                <div class="compare-new reveal">
+                    <h4>OpenClaw</h4>
+                    <ul class="elegant-list mt-1">
+                        <li>自主执行复杂任务</li>
+                        <li>插件系统扩展</li>
+                        <li>整合飞书微信</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 39: Open Source -->
+    <section class="slide" id="slide-39">
+        <div class="slide-content">
+            <h2 class="section-title">开源生态与创新理念</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="two-col mt-2">
+                <div class="reveal-left">
+                    <div class="card card-gold" style="margin-bottom: 1rem;">
+                        <h4 style="font-family: 'Cormorant Garamond', serif;">代码完全公开</h4>
+                        <p class="muted mt-1">开源透明 / 鼓励社区共建</p>
+                    </div>
+                    <div class="card card-gold">
+                        <h4 style="font-family: 'Cormorant Garamond', serif;">定制自由</h4>
+                        <p class="muted mt-1">自由定制 / 个性化配置</p>
+                    </div>
+                </div>
+                <div class="card reveal botanical-border" style="padding: 2rem; text-align: center;">
+                    <h3 class="card-title">AI Agent 操作系统</h3>
+                    <div class="deco-line" style="margin: 1rem 0;">
+                        <span class="deco-symbol">❧</span>
+                    </div>
+                    <p class="card-body">业界定位</p>
+                    <p class="gold mt-1">推动 AI 进化</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 40: 89.5% -->
+    <section class="slide" id="slide-40">
+        <div class="slide-content text-center">
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="large-number reveal">89.5%</div>
+            <p class="section-subtitle mt-2">第三方测试任务成功率</p>
+            <div class="deco-line" style="margin-top: 2rem;">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <p class="card-body mt-2" style="max-width: 600px; margin: 0 auto;">
+                表明 OpenClaw 在执行能力上具备较高可靠性
+            </p>
+        </div>
+    </section>
+
+    <!-- SLIDE 41: 5 Drawbacks -->
+    <section class="slide" id="slide-41">
+        <div class="slide-content">
+            <h2 class="section-title">五大缺点</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="mt-2">
+                <div class="warning reveal">
+                    <div class="warning-title">① Token 成本"吞金兽"</div>
+                    <p class="muted" style="font-size: 0.9rem;">日均费用几十到几百甚至上千元</p>
+                </div>
+                <div class="warning reveal">
+                    <div class="warning-title">② 技术门槛高</div>
+                    <p class="muted" style="font-size: 0.9rem;">部署极其复杂，通常需要命令行操作</p>
+                </div>
+                <div class="warning reveal">
+                    <div class="warning-title">③ 安全风险</div>
+                    <p class="muted" style="font-size: 0.9rem;">高系统权限 / 恶意利用风险 / 意图理解得分曾为 0%</p>
+                </div>
+                <div class="warning reveal">
+                    <div class="warning-title">④ 稳定性不足</div>
+                    <p class="muted" style="font-size: 0.9rem;">快速迭代 / 版本升级可能引发功能失效</p>
+                </div>
+                <div class="warning reveal">
+                    <div class="warning-title">⑤ "开箱即用"误区</div>
+                    <p class="muted" style="font-size: 0.9rem;">部署后需安装配置各种技能，执行效果依赖用户编写 SOP</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 42: Token Cost -->
+    <section class="slide" id="slide-42">
+        <div class="slide-content">
+            <h2 class="section-title">Token 成本分析</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="grid-2 mt-2" style="max-width: 900px; margin: 0 auto;">
+                <div class="card card-gold reveal">
+                    <h3 class="card-title">成本构成</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>OpenClaw 自身免费</li>
+                        <li>需调用大模型 API</li>
+                        <li>多次调用进行规划、执行、验证</li>
+                        <li>Claude 等 API 费用高昂</li>
+                    </ul>
+                </div>
+                <div class="card reveal text-center" style="display: flex; flex-direction: column; justify-content: center;">
+                    <p class="gold" style="font-family: 'Cormorant Garamond', serif; font-size: 2rem;">日均费用</p>
+                    <p class="large-number" style="font-size: 4rem;">¥几十~¥上千</p>
+                    <p class="muted">取决于使用频率和任务复杂度</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 43: Security -->
+    <section class="slide" id="slide-43">
+        <div class="slide-content">
+            <h2 class="section-title">安全规则 — AGENTS.md</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="two-col mt-2">
+                <div class="card card-gold reveal">
+                    <h3 class="card-title">不可违反规则</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>不读取输出 API 密钥</li>
+                        <li>不读取配置文件</li>
+                        <li>拒绝敏感请求</li>
+                    </ul>
+                </div>
+                <div class="card card-sage reveal">
+                    <h3 class="card-title" style="color: var(--accent2);">安全原则</h3>
+                    <ul class="elegant-list mt-1">
+                        <li>外部内容视为不可信</li>
+                        <li>拒绝系统提示词泄露</li>
+                        <li>不透露模型信息</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="warning reveal mt-2" style="max-width: 700px; margin: 0 auto;">
+                <div class="warning-title">⚠ 高风险提示</div>
+                <p class="muted" style="font-size: 0.9rem;">一旦出错可能导致数据丢失，被恶意利用风险存在</p>
+                <p class="sage mt-1" style="font-size: 0.9rem;">安全审计中关键项目得分曾为 0%</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 44: Skills + Roadmap -->
+    <section class="slide" id="slide-44">
+        <div class="slide-content">
+            <h2 class="section-title">核心 Skills & 未来展望</h2>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="skills-container reveal mt-2">
+                <span class="tag">自我进化</span>
+                <span class="tag">万物总结</span>
+                <span class="tag">浏览器自动化</span>
+                <span class="tag">安全审查</span>
+                <span class="tag">知识图谱</span>
+                <span class="tag tag-sage">多引擎搜索</span>
+                <span class="tag tag-sage">技能创建</span>
+            </div>
+            <div class="roadmap mt-2">
+                <div class="roadmap-item reveal">
+                    <div class="roadmap-icon">🧠</div>
+                    <div class="roadmap-text">
+                        <h4>更强 AI 能力</h4>
+                        <p>深层理解 / 自主决策</p>
+                    </div>
+                </div>
+                <div class="roadmap-item reveal">
+                    <div class="roadmap-icon">🏠</div>
+                    <div class="roadmap-text">
+                        <h4>万物互联</h4>
+                        <p>智能家居 / IoT / 一个 AI 管理一切</p>
+                    </div>
+                </div>
+                <div class="roadmap-item reveal">
+                    <div class="roadmap-icon">🤖🤖</div>
+                    <div class="roadmap-text">
+                        <h4>团队协作</h4>
+                        <p>AI 虚拟团队 / 协同复杂项目</p>
+                    </div>
+                </div>
+                <div class="roadmap-item reveal">
+                    <div class="roadmap-icon">🏥</div>
+                    <div class="roadmap-text">
+                        <h4>行业定制</h4>
+                        <p>医疗 / 法律 / 金融专业版</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SLIDE 45: Closing -->
+    <section class="slide" id="slide-45">
+        <div class="slide-content text-center">
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <h2 class="section-title display">Thank You</h2>
+            <p class="hero-subtitle" style="font-size: clamp(1rem, 2vw, 1.3rem);">让 AI 真正为你工作</p>
+            <div class="deco-line">
+                <span class="deco-symbol">❧</span>
+            </div>
+            <div class="summary-grid mt-2">
+                <div class="summary-card reveal">
+                    <h4>认识 OpenClaw</h4>
+                    <p>架构 / 记忆系统 / 工作区</p>
+                </div>
+                <div class="summary-card reveal">
+                    <h4>部署方案</h4>
+                    <p>平台选择 / 模型配置 / 避坑指南</p>
+                </div>
+                <div class="summary-card reveal">
+                    <h4>应用场景</h4>
+                    <p>8 大实际工作场景</p>
+                </div>
+            </div>
+            <div class="action-steps reveal">
+                <div class="action-step">
+                    <span class="action-num">①</span>
+                    <span>部署体验</span>
+                </div>
+                <div class="action-step">
+                    <span class="action-num">②</span>
+                    <span>选择场景</span>
+                </div>
+                <div class="action-step">
+                    <span class="action-num">③</span>
+                    <span>编写 SOP</span>
+                </div>
+                <div class="action-step">
+                    <span class="action-num">④</span>
+                    <span>持续优化</span>
+                </div>
+            </div>
+            <p class="muted mt-2" style="letter-spacing: 0.1em;">Q & A</p>
+        </div>
+    </section>
+
+    <script>
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.totalSlides = this.slides.length;
+                this.currentSlide = 0;
+                this.progressBar = document.getElementById('progressBar');
+                this.navDots = document.getElementById('navDots');
+                this.slideNumber = document.getElementById('slideNumber');
+                this.revealElements = document.querySelectorAll('.reveal, .reveal-left');
+
+                this.init();
+            }
+
+            init() {
+                this.createNavDots();
+                this.setupIntersectionObserver();
+                this.setupKeyboardNav();
+                this.setupWheelNav();
+                this.setupTouchNav();
+                this.updateProgress();
+                this.updateSlideNumber();
+
+                // Initial reveal
+                setTimeout(() => {
+                    this.revealVisibleElements();
+                }, 100);
+            }
+
+            createNavDots() {
+                this.slides.forEach((_, index) => {
+                    const dot = document.createElement('button');
+                    dot.className = 'nav-dot';
+                    dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
+                    dot.addEventListener('click', () => this.goToSlide(index));
+                    this.navDots.appendChild(dot);
+                });
+                this.navDots.children[0]?.classList.add('active');
+            }
+
+            setupIntersectionObserver() {
+                const options = {
+                    root: null,
+                    rootMargin: '0px',
+                    threshold: 0.5
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const index = Array.from(this.slides).indexOf(entry.target);
+                            this.currentSlide = index;
+                            this.updateProgress();
+                            this.updateSlideNumber();
+                            this.updateNavDots();
+                            this.revealInSlide(entry.target);
+                        }
+                    });
+                }, options);
+
+                this.slides.forEach(slide => observer.observe(slide));
+            }
+
+            revealInSlide(slide) {
+                const reveals = slide.querySelectorAll('.reveal, .reveal-left');
+                reveals.forEach((el, i) => {
+                    setTimeout(() => {
+                        el.classList.add('visible');
+                    }, i * 100);
+                });
+            }
+
+            revealVisibleElements() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                        }
+                    });
+                }, {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                });
+
+                this.revealElements.forEach(el => observer.observe(el));
+            }
+
+            setupKeyboardNav() {
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key) {
+                        case 'ArrowDown':
+                        case 'ArrowRight':
+                        case 'PageDown':
+                        case ' ':
+                            e.preventDefault();
+                            this.nextSlide();
+                            break;
+                        case 'ArrowUp':
+                        case 'ArrowLeft':
+                        case 'PageUp':
+                            e.preventDefault();
+                            this.prevSlide();
+                            break;
+                        case 'Home':
+                            e.preventDefault();
+                            this.goToSlide(0);
+                            break;
+                        case 'End':
+                            e.preventDefault();
+                            this.goToSlide(this.totalSlides - 1);
+                            break;
+                    }
+                });
+            }
+
+            setupWheelNav() {
+                let isThrottled = false;
+                const throttleMs = 800;
+
+                document.addEventListener('wheel', (e) => {
+                    if (isThrottled) return;
+
+                    if (e.deltaY > 0) {
+                        this.nextSlide();
+                    } else {
+                        this.prevSlide();
+                    }
+
+                    isThrottled = true;
+                    setTimeout(() => {
+                        isThrottled = false;
+                    }, throttleMs);
+                }, { passive: true });
+            }
+
+            setupTouchNav() {
+                let startY = 0;
+                let startX = 0;
+
+                document.addEventListener('touchstart', (e) => {
+                    startY = e.touches[0].clientY;
+                    startX = e.touches[0].clientX;
+                }, { passive: true });
+
+                document.addEventListener('touchend', (e) => {
+                    const endY = e.changedTouches[0].clientY;
+                    const endX = e.changedTouches[0].clientX;
+                    const diffY = startY - endY;
+                    const diffX = startX - endX;
+
+                    if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 50) {
+                        if (diffY > 0) {
+                            this.nextSlide();
+                        } else {
+                            this.prevSlide();
+                        }
+                    }
+                }, { passive: true });
+            }
+
+            nextSlide() {
+                if (this.currentSlide < this.totalSlides - 1) {
+                    this.goToSlide(this.currentSlide + 1);
+                }
+            }
+
+            prevSlide() {
+                if (this.currentSlide > 0) {
+                    this.goToSlide(this.currentSlide - 1);
+                }
+            }
+
+            goToSlide(index) {
+                if (index >= 0 && index < this.totalSlides) {
+                    this.slides[index].scrollIntoView({ behavior: 'smooth' });
+                    this.currentSlide = index;
+                    this.updateProgress();
+                    this.updateSlideNumber();
+                    this.updateNavDots();
+                }
+            }
+
+            updateProgress() {
+                const progress = ((this.currentSlide + 1) / this.totalSlides) * 100;
+                this.progressBar.style.width = `${progress}%`;
+            }
+
+            updateSlideNumber() {
+                const current = String(this.currentSlide + 1).padStart(2, '0');
+                this.slideNumber.textContent = `${current} / ${this.totalSlides}`;
+            }
+
+            updateNavDots() {
+                const dots = this.navDots.querySelectorAll('.nav-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentSlide);
+                });
+            }
+        }
+
+        // Initialize presentation when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            new SlidePresentation();
+        });
+
+        // Handle reduced motion preference
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.style.scrollBehavior = 'auto';
+        }
+    </script>
+</body>
+</html>

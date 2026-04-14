@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw — AI Agent Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff;
+  --text: #0d0d0d;
+  --red: #e63329;
+  --gray: #e5e5e5;
+  --text-muted: #888;
+}
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100%;
+}
+
+body {
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--red);
+  color: var(--bg);
+}
+
+.slide {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: clamp(2rem, 5vw, 4rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  scroll-snap-align: start;
+  overflow: hidden;
+  position: relative;
+}
+
+.slide-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.slide.visible .slide-inner {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide-inner {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Typography */
+h1 {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+h3 {
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+p {
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  color: var(--text-muted);
+}
+
+.accent {
+  color: var(--red);
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.divider {
+  height: 1px;
+  background: var(--gray);
+  margin: clamp(1.5rem, 3vw, 2rem) 0;
+}
+
+.accent-line {
+  width: 60px;
+  height: 2px;
+  background: var(--red);
+  margin: clamp(1rem, 2vw, 1.5rem) 0;
+}
+
+.grid {
+  display: grid;
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-5 { grid-template-columns: repeat(5, 1fr); }
+.grid-7 { grid-template-columns: repeat(7, 1fr); }
+
+.card {
+  border: 1px solid var(--gray);
+  padding: clamp(1rem, 2vw, 1.5rem);
+  background: var(--bg);
+}
+
+.card-red {
+  border-left: 3px solid var(--red);
+}
+
+.card-grid {
+  display: grid;
+  gap: clamp(0.75rem, 1.5vw, 1rem);
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--gray);
+  font-size: clamp(0.75rem, 1vw, 0.875rem);
+  font-weight: 500;
+}
+
+.tag-red {
+  background: var(--red);
+  color: var(--bg);
+  border-color: var(--red);
+}
+
+.number {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 700;
+  color: var(--red);
+  line-height: 1;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(0.75rem, 1.5vw, 1rem);
+}
+
+.step-num {
+  width: clamp(2rem, 3vw, 2.5rem);
+  height: clamp(2rem, 3vw, 2.5rem);
+  border: 1px solid var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  flex-shrink: 0;
+  font-size: clamp(0.875rem, 1.25vw, 1rem);
+}
+
+.step-num-red {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.step-content h3 {
+  margin-bottom: 0.25rem;
+}
+
+.step-content p {
+  font-size: clamp(0.875rem, 1.25vw, 1rem);
+}
+
+.bar {
+  height: clamp(2rem, 4vw, 3rem);
+  background: var(--gray);
+  position: relative;
+}
+
+.bar-red {
+  background: var(--red);
+  color: var(--bg);
+  padding: 0 clamp(0.75rem, 1.5vw, 1rem);
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  font-size: clamp(0.75rem, 1vw, 0.875rem);
+}
+
+.layer {
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid var(--gray);
+  text-align: center;
+}
+
+.warning-card {
+  border: 1px solid var(--gray);
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border-left: 3px solid var(--red);
+  background: #fffaf9;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: clamp(0.875rem, 1.25vw, 1rem);
+}
+
+th {
+  background: var(--red);
+  color: var(--bg);
+  padding: clamp(0.75rem, 1.5vw, 1rem);
+  text-align: left;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: clamp(0.75rem, 1vw, 0.875rem);
+  letter-spacing: 0.05em;
+}
+
+td {
+  padding: clamp(0.75rem, 1.5vw, 1rem);
+  border-bottom: 1px solid var(--gray);
+  vertical-align: top;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2rem, 4vw, 4rem);
+  align-items: start;
+}
+
+.flow {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.5rem, 1vw, 1rem);
+  flex-wrap: wrap;
+}
+
+.flow-item {
+  padding: clamp(0.5rem, 1vw, 0.75rem) clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid var(--gray);
+  font-weight: 500;
+  font-size: clamp(0.875rem, 1.25vw, 1rem);
+}
+
+.flow-arrow {
+  color: var(--text-muted);
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+}
+
+.pyramid {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.5rem, 1vw, 0.75rem);
+}
+
+.list {
+  list-style: none;
+}
+
+.list li {
+  padding: clamp(0.5rem, 1vw, 0.75rem) 0;
+  border-bottom: 1px solid var(--gray);
+  display: flex;
+  align-items: center;
+  gap: clamp(0.75rem, 1.5vw, 1rem);
+  font-size: clamp(0.875rem, 1.25vw, 1rem);
+}
+
+.list-num {
+  color: var(--red);
+  font-weight: 600;
+  width: clamp(1.5rem, 2vw, 2rem);
+}
+
+/* Navigation */
+.nav-dots {
+  position: fixed;
+  right: clamp(1rem, 2vw, 2rem);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 100;
+}
+
+.nav-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gray);
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
+  padding: 0;
+}
+
+.nav-dot:hover {
+  transform: scale(1.3);
+}
+
+.nav-dot.active {
+  background: var(--red);
+}
+
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: var(--red);
+  z-index: 101;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.slide-number {
+  position: fixed;
+  bottom: clamp(1rem, 2vw, 2rem);
+  right: clamp(1rem, 2vw, 2rem);
+  font-size: clamp(0.75rem, 1vw, 0.875rem);
+  color: var(--text-muted);
+  font-weight: 500;
+  z-index: 100;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .grid-4, .grid-5, .grid-7 {
+    grid-template-columns: 1fr;
+  }
+  .two-col {
+    grid-template-columns: 1fr;
+    gap: clamp(1.5rem, 3vw, 2rem);
+  }
+  .nav-dots {
+    display: none;
+  }
+  .flow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .flow-arrow {
+    transform: rotate(90deg);
+  }
+}
+
+/* Slide specific */
+.slide-cover {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+}
+
+.slide-cover .slide-inner {
+  max-width: 800px;
+}
+
+.slide-toc .toc-item {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(1rem, 2vw, 1.5rem);
+  padding: clamp(0.75rem, 1.5vw, 1rem) 0;
+  border-bottom: 1px solid var(--gray);
+}
+
+.slide-toc .toc-num {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  color: var(--red);
+  min-width: clamp(2rem, 3vw, 3rem);
+}
+
+.slide-toc .toc-text {
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-weight: 500;
+}
+
+.problem-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2rem, 4vw, 4rem);
+}
+
+.problem-left {
+  background: var(--gray);
+  padding: clamp(2rem, 4vw, 3rem);
+}
+
+.problem-right {
+  padding: clamp(2rem, 4vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cards-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.cards-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.bars-3 {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.75rem, 1.5vw, 1rem);
+}
+
+.bars-3 .bar {
+  border-left: 3px solid var(--red);
+  padding-left: clamp(1rem, 2vw, 1.5rem);
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.cols-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(2rem, 4vw, 3rem);
+}
+
+.cols-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(2rem, 4vw, 3rem);
+}
+
+.thin-divider {
+  width: 1px;
+  background: var(--gray);
+  align-self: stretch;
+}
+
+.compare-table td:first-child {
+  font-weight: 600;
+}
+
+.large-num {
+  text-align: center;
+  font-size: clamp(6rem, 15vw, 12rem);
+  font-weight: 700;
+  color: var(--red);
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .cards-4, .cards-3, .cols-3, .cols-2, .problem-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<nav class="nav-dots" id="navDots"></nav>
+
+<div class="slide-number" id="slideNumber">1 / 45</div>
+
+<!-- SLIDE 1: Cover -->
+<section class="slide slide-cover" data-slide="1">
+  <div class="slide-inner">
+    <h1>OpenClaw</h1>
+    <div class="accent-line" style="margin: 1.5rem auto;"></div>
+    <p style="font-size: clamp(1.125rem, 2vw, 1.5rem); color: var(--text);">AI 智能体平台</p>
+    <p style="margin-top: 2rem;">企业级智能自动化</p>
+  </div>
+</section>
+
+<!-- SLIDE 2: TOC -->
+<section class="slide slide-toc" data-slide="2">
+  <div class="slide-inner">
+    <h2>目录</h2>
+    <div class="toc-item">
+      <span class="toc-num">01</span>
+      <span class="toc-text">平台概述与架构</span>
+    </div>
+    <div class="toc-item">
+      <span class="toc-num">02</span>
+      <span class="toc-text">核心组件与消息流程</span>
+    </div>
+    <div class="toc-item">
+      <span class="toc-num">03</span>
+      <span class="toc-text">企业集成</span>
+    </div>
+    <div class="toc-item">
+      <span class="toc-num">04</span>
+      <span class="toc-text">部署与配置</span>
+    </div>
+    <div class="toc-item">
+      <span class="toc-num">05</span>
+      <span class="toc-text">优势与路线图</span>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3: Problem -->
+<section class="slide" data-slide="3">
+  <div class="slide-inner">
+    <h2>挑战</h2>
+    <div class="problem-grid">
+      <div class="problem-left">
+        <h3 style="margin-bottom: 1rem;">企业痛点</h3>
+        <ul class="list">
+          <li><span class="list-num">1.</span> 分散的沟通渠道</li>
+          <li><span class="list-num">2.</span> 手动、重复的工作流程</li>
+          <li><span class="list-num">3.</span> 数据和系统孤岛</li>
+          <li><span class="list-num">4.</span> AI采用有限</li>
+          <li><span class="list-num">5.</span> 安全与合规风险</li>
+        </ul>
+      </div>
+      <div class="problem-right">
+        <h3 style="margin-bottom: 1rem;">OpenClaw 解决方案</h3>
+        <p>统一的AI智能体平台，连接企业系统，自动化复杂工作流程，实现全渠道智能决策。</p>
+        <div class="accent-line" style="margin-top: 1.5rem;"></div>
+        <p style="margin-top: 1rem; color: var(--text); font-weight: 500;">单一平台，无限可能。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4: Positioning -->
+<section class="slide" data-slide="4">
+  <div class="slide-inner">
+    <h2>平台定位</h2>
+    <div class="cards-4">
+      <div class="card">
+        <h3>连接</h3>
+        <p style="margin-top: 0.75rem;">集成企业系统与沟通渠道</p>
+      </div>
+      <div class="card">
+        <h3>自动化</h3>
+        <p style="margin-top: 0.75rem;">以AI驱动的智能执行复杂工作流程</p>
+      </div>
+      <div class="card">
+        <h3>分析</h3>
+        <p style="margin-top: 0.75rem;">处理企业数据并获取洞察</p>
+      </div>
+      <div class="card">
+        <h3>部署</h3>
+        <p style="margin-top: 0.75rem;">几分钟内启动AI智能体，而非数月</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5: Architecture -->
+<section class="slide" data-slide="5">
+  <div class="slide-inner">
+    <h2>系统架构</h2>
+    <div class="bars-3">
+      <div class="bar bar-red">
+        <span>网关层 — API网关、认证、限速</span>
+      </div>
+      <div class="bar" style="border-left: 3px solid var(--red); padding-left: clamp(1rem, 2vw, 1.5rem); display: flex; align-items: center; font-weight: 500;">
+        <span>核心引擎 — 消息处理、SOUL运行时、工具执行</span>
+      </div>
+      <div class="bar" style="border-left: 3px solid var(--red); padding-left: clamp(1rem, 2vw, 1.5rem); display: flex; align-items: center; font-weight: 500;">
+        <span>集成层 — 企业连接器、渠道适配器</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6: Channel -->
+<section class="slide" data-slide="6">
+  <div class="slide-inner">
+    <h2>多渠道支持</h2>
+    <div class="cols-3">
+      <div style="text-align: center; padding: clamp(2rem, 4vw, 3rem) 0;">
+        <h3 style="font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 0.5rem;">REST</h3>
+        <p class="muted">API优先集成</p>
+      </div>
+      <div style="text-align: center; padding: clamp(2rem, 4vw, 3rem) 0; border-left: 1px solid var(--gray); border-right: 1px solid var(--gray);">
+        <h3 style="font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 0.5rem;">WebSocket</h3>
+        <p class="muted">实时消息</p>
+      </div>
+      <div style="text-align: center; padding: clamp(2rem, 4vw, 3rem) 0;">
+        <h3 style="font-size: clamp(2rem, 4vw, 3rem); margin-bottom: 0.5rem;">Webhook</h3>
+        <p class="muted">事件驱动触发</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7: Gateway -->
+<section class="slide" data-slide="7">
+  <div class="slide-inner">
+    <h2>API 网关</h2>
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--gray);">
+        <span style="font-weight: 600;">网关功能</span>
+        <span class="tag tag-red">活跃</span>
+      </div>
+      <ul class="list" style="margin-top: 1rem;">
+        <li><span class="list-num">1.</span> 基于令牌的身份认证</li>
+        <li><span class="list-num">2.</span> 请求限速</li>
+        <li><span class="list-num">3.</span> 输入验证与清理</li>
+        <li><span class="list-num">4.</span> 响应缓存</li>
+        <li><span class="list-num">5.</span> 全面日志记录</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 8: Node -->
+<section class="slide" data-slide="8">
+  <div class="slide-inner">
+    <h2>智能体节点类型</h2>
+    <div class="cards-4">
+      <div class="card">
+        <h3>SOUL 节点</h3>
+        <p style="margin-top: 0.75rem; font-size: clamp(0.875rem, 1.25vw, 1rem);">核心AI推理与决策</p>
+      </div>
+      <div class="card">
+        <h3>TOOL 节点</h3>
+        <p style="margin-top: 0.75rem; font-size: clamp(0.875rem, 1.25vw, 1rem);">外部系统集成</p>
+      </div>
+      <div class="card">
+        <h3>USER 节点</h3>
+        <p style="margin-top: 0.75rem; font-size: clamp(0.875rem, 1.25vw, 1rem);">人机交互处理</p>
+      </div>
+      <div class="card">
+        <h3>MEM 节点</h3>
+        <p style="margin-top: 0.75rem; font-size: clamp(0.875rem, 1.25vw, 1rem);">上下文与记忆管理</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 9: Message Flow -->
+<section class="slide" data-slide="9">
+  <div class="slide-inner">
+    <h2>消息处理流程</h2>
+    <div class="flow" style="justify-content: center; margin-top: clamp(2rem, 4vw, 3rem);">
+      <div class="flow-item">1. 输入</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">2. 解析</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">3. 路由</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">4. SOUL</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">5. 执行</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">6. 响应</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 10: Memory Pyramid -->
+<section class="slide" data-slide="10">
+  <div class="slide-inner">
+    <h2>记忆架构</h2>
+    <div class="pyramid">
+      <div class="layer" style="background: var(--red); color: var(--bg);">
+        <h3 style="font-size: clamp(0.875rem, 1.25vw, 1rem);">L1 — 工作记忆</h3>
+        <p style="font-size: clamp(0.75rem, 1vw, 0.875rem); margin-top: 0.25rem;">当前会话上下文（4小时后遗忘）</p>
+      </div>
+      <div class="layer" style="background: var(--gray);">
+        <h3 style="font-size: clamp(0.875rem, 1.25vw, 1rem);">L2 — 情景记忆</h3>
+        <p style="font-size: clamp(0.75rem, 1vw, 0.875rem); margin-top: 0.25rem;">会话摘要与关键事件</p>
+      </div>
+      <div class="layer" style="border: 1px solid var(--gray);">
+        <h3 style="font-size: clamp(0.875rem, 1.25vw, 1rem);">L3 — 语义记忆</h3>
+        <p style="font-size: clamp(0.75rem, 1vw, 0.875rem); margin-top: 0.25rem;">结构化知识与学习模式</p>
+      </div>
+      <div class="layer" style="border: 1px solid var(--gray);">
+        <h3 style="font-size: clamp(0.875rem, 1.25vw, 1rem);">L4 — 持久存储</h3>
+        <p style="font-size: clamp(0.75rem, 1vw, 0.875rem); margin-top: 0.25rem;">长期工作区文件与产物</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 11: SOUL -->
+<section class="slide" data-slide="11">
+  <div class="slide-inner">
+    <h2>SOUL 运行时</h2>
+    <div class="card card-red" style="max-width: 700px; margin: 0 auto; padding: clamp(2rem, 4vw, 3rem);">
+      <h3 style="margin-bottom: 1rem;">状态化全知通用层</h3>
+      <p style="margin-bottom: 1.5rem;">核心执行环境，管理智能体状态，处理思维，并在所有会话中协调工具执行。</p>
+      <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <span class="tag">状态管理</span>
+        <span class="tag">思维处理</span>
+        <span class="tag">工具编排</span>
+        <span class="tag">上下文注入</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 12: TOOLS -->
+<section class="slide" data-slide="12">
+  <div class="slide-inner">
+    <h2>工具系统</h2>
+    <div class="cols-2">
+      <div>
+        <h3 style="margin-bottom: 1rem;">内置工具</h3>
+        <ul class="list">
+          <li><span class="list-num">1.</span> 浏览器自动化</li>
+          <li><span class="list-num">2.</span> 代码解释器</li>
+          <li><span class="list-num">3.</span> 文件操作</li>
+          <li><span class="list-num">4.</span> HTTP请求</li>
+          <li><span class="list-num">5.</span> 数据库查询</li>
+        </ul>
+      </div>
+      <div class="thin-divider"></div>
+      <div>
+        <h3 style="margin-bottom: 1rem;">自定义工具</h3>
+        <ul class="list">
+          <li><span class="list-num">1.</span> REST API封装</li>
+          <li><span class="list-num">2.</span> Python函数</li>
+          <li><span class="list-num">3.</span> Shell脚本</li>
+          <li><span class="list-num">4.</span> Webhook处理器</li>
+          <li><span class="list-num">5.</span> 企业连接器</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 13: USER -->
+<section class="slide" data-slide="13">
+  <div class="slide-inner">
+    <h2>用户交互</h2>
+    <div class="cols-2" style="gap: clamp(1.5rem, 3vw, 2rem);">
+      <div class="card">
+        <h3>直接输入</h3>
+        <p style="margin-top: 0.75rem;">通过原生接口进行文本、语音和文件上传</p>
+      </div>
+      <div class="card">
+        <h3>渠道集成</h3>
+        <p style="margin-top: 0.75rem;">在微信、Slack、Discord等多个平台上获得无缝体验</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 14: Session -->
+<section class="slide" data-slide="14">
+  <div class="slide-inner">
+    <h2>会话生命周期</h2>
+    <div class="grid grid-3" style="margin-top: clamp(2rem, 4vw, 3rem);">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>初始化</h3>
+          <p>创建会话，加载上下文，认证用户</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>处理</h3>
+          <p>处理请求，执行工具，生成响应</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>归档</h3>
+          <p>保存记忆，更新上下文，为下次会话做准备</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 15: Workspace -->
+<section class="slide" data-slide="15">
+  <div class="slide-inner">
+    <h2>工作区结构</h2>
+    <div class="card" style="padding: clamp(1.5rem, 3vw, 2rem);">
+      <div style="font-family: monospace; font-size: clamp(0.875rem, 1.25vw, 1rem);">
+        <div style="padding: 0.5rem 0; border-bottom: 1px solid var(--gray);"><span style="color: var(--red);">/workspace</span>/</div>
+        <div style="padding: 0.5rem 0 0.5rem 1.5rem; border-bottom: 1px solid var(--gray);"><span style="color: var(--text-muted);">├──</span> /memory</div>
+        <div style="padding: 0.5rem 0 0.5rem 1.5rem; border-bottom: 1px solid var(--gray);"><span style="color: var(--text-muted);">├──</span> /sessions</div>
+        <div style="padding: 0.5rem 0 0.5rem 1.5rem; border-bottom: 1px solid var(--gray);"><span style="color: var(--text-muted);">├──</span> /tools</div>
+        <div style="padding: 0.5rem 0 0.5rem 1.5rem; border-bottom: 1px solid var(--gray);"><span style="color: var(--text-muted);">├──</span> /skills</div>
+        <div style="padding: 0.5rem 0 0.5rem 1.5rem; border-bottom: 1px solid var(--gray);"><span style="color: var(--text-muted);">├──</span> /prompts</div>
+        <div style="padding: 0.5rem 0 0.5rem 1.5rem; border-bottom: 1px solid var(--gray);"><span style="color: var(--text-muted);">├──</span> /config</div>
+        <div style="padding: 0.5rem 0 0.5rem 1.5rem;"><span style="color: var(--text-muted);">└──</span> /outputs</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 16: Memory Flow -->
+<section class="slide" data-slide="16">
+  <div class="slide-inner">
+    <h2>记忆流程处理</h2>
+    <div class="flow" style="flex-direction: column; align-items: flex-start; gap: clamp(1rem, 2vw, 1.5rem); margin-top: clamp(2rem, 4vw, 3rem);">
+      <div class="step">
+        <div class="step-num step-num-red">1</div>
+        <div class="step-content">
+          <h3>捕获</h3>
+          <p>记录所有用户交互与智能体响应</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num step-num-red">2</div>
+        <div class="step-content">
+          <h3>摘要</h3>
+          <p>提取关键信息与语义含义</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num step-num-red">3</div>
+        <div class="step-content">
+          <h3>索引</h3>
+          <p>存储到向量数据库以供检索</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num step-num-red">4</div>
+        <div class="step-content">
+          <h3>检索</h3>
+          <p>根据上下文查询相关记忆</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num step-num-red">5</div>
+        <div class="step-content">
+          <h3>注入</h3>
+          <p>将检索到的记忆嵌入智能体上下文</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num step-num-red">6</div>
+        <div class="step-content">
+          <h3>遗忘</h3>
+          <p>根据保留策略使旧记忆过期</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 17: Deployment -->
+<section class="slide" data-slide="17">
+  <div class="slide-inner">
+    <h2>部署选项</h2>
+    <div class="cards-3">
+      <div class="card">
+        <h3>云端</h3>
+        <p style="margin-top: 0.75rem;">完全托管，自动扩展，全球部署</p>
+      </div>
+      <div class="card">
+        <h3>本地部署</h3>
+        <p style="margin-top: 0.75rem;">私有数据中心，完全控制，企业级安全</p>
+      </div>
+      <div class="card">
+        <h3>混合</h3>
+        <p style="margin-top: 0.75rem;">兼顾两者：本地处理配合云端协调</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 18: Platform Table -->
+<section class="slide" data-slide="18">
+  <div class="slide-inner">
+    <h2>平台对比</h2>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>功能</th>
+          <th>OpenClaw</th>
+          <th>竞品 A</th>
+          <th>竞品 B</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>多渠道支持</td>
+          <td class="accent">15+ 渠道</td>
+          <td>5 渠道</td>
+          <td>8 渠道</td>
+        </tr>
+        <tr>
+          <td>自定义工具开发</td>
+          <td class="accent">无限制</td>
+          <td>限10个</td>
+          <td>限20个</td>
+        </tr>
+        <tr>
+          <td>记忆架构</td>
+          <td class="accent">4层金字塔</td>
+          <td>2层基础</td>
+          <td>3层标准</td>
+        </tr>
+        <tr>
+          <td>企业SSO</td>
+          <td class="accent">完全支持</td>
+          <td>部分支持</td>
+          <td>完全支持</td>
+        </tr>
+        <tr>
+          <td>部署选项</td>
+          <td class="accent">云端/混合/本地</td>
+          <td>仅云端</td>
+          <td>云端+本地</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- SLIDE 19: Tencent -->
+<section class="slide" data-slide="19">
+  <div class="slide-inner">
+    <h2>腾讯集成</h2>
+    <div class="cols-2" style="align-items: center;">
+      <div>
+        <h3 style="margin-bottom: 1rem;">微信与企业微信</h3>
+        <p>原生集成腾讯企业生态系统。支持：</p>
+        <ul class="list" style="margin-top: 1rem;">
+          <li><span class="list-num">1.</span> 企业微信消息</li>
+          <li><span class="list-num">2.</span> 企业微信机器人</li>
+          <li><span class="list-num">3.</span> 小程序集成</li>
+          <li><span class="list-num">4.</span> 公众号处理</li>
+        </ul>
+      </div>
+      <div style="text-align: center;">
+        <div style="font-size: clamp(4rem, 8vw, 6rem); font-weight: 700; color: var(--red);">Tencent</div>
+        <p class="muted" style="margin-top: 0.5rem;">官方合作伙伴</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 20: Server -->
+<section class="slide" data-slide="20">
+  <div class="slide-inner">
+    <h2>服务器配置</h2>
+    <table style="margin-bottom: clamp(1.5rem, 3vw, 2rem);">
+      <thead>
+        <tr>
+          <th>组件</th>
+          <th>最低配置</th>
+          <th>推荐配置</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>CPU</td>
+          <td>4 核</td>
+          <td>8+ 核</td>
+        </tr>
+        <tr>
+          <td>内存</td>
+          <td>8 GB RAM</td>
+          <td>16+ GB RAM</td>
+        </tr>
+        <tr>
+          <td>存储</td>
+          <td>50 GB SSD</td>
+          <td>200+ GB SSD</td>
+        </tr>
+        <tr>
+          <td>网络</td>
+          <td>100 Mbps</td>
+          <td>1 Gbps</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="warning-card">
+      <h3 style="margin-bottom: 0.5rem;">重要提示</h3>
+      <p>确保正确的防火墙配置。API网关需要能够访问8080端口。</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 21: Model Table -->
+<section class="slide" data-slide="21">
+  <div class="slide-inner">
+    <h2>AI模型层级</h2>
+    <div class="cards-4" style="margin-top: clamp(1.5rem, 3vw, 2rem);">
+      <div class="card" style="text-align: center;">
+        <h3 style="color: var(--text-muted);">基础</h3>
+        <p style="margin-top: 0.5rem; font-size: clamp(0.875rem, 1.25vw, 1rem);">GPT-3.5 / Claude Haiku</p>
+        <p style="margin-top: 0.5rem; color: var(--text-muted);">简单任务</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <h3 style="color: var(--text-muted);">标准</h3>
+        <p style="margin-top: 0.5rem; font-size: clamp(0.875rem, 1.25vw, 1rem);">GPT-4 / Claude Sonnet</p>
+        <p style="margin-top: 0.5rem; color: var(--text-muted);">复杂推理</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <h3 style="color: var(--text-muted);">高级</h3>
+        <p style="margin-top: 0.5rem; font-size: clamp(0.875rem, 1.25vw, 1rem);">GPT-4 Turbo / Claude Opus</p>
+        <p style="margin-top: 0.5rem; color: var(--text-muted);">高复杂度</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <h3 style="color: var(--text-muted);">企业级</h3>
+        <p style="margin-top: 0.5rem; font-size: clamp(0.875rem, 1.25vw, 1rem);">自定义模型</p>
+        <p style="margin-top: 0.5rem; color: var(--text-muted);">定制解决方案</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 22: 4-step -->
+<section class="slide" data-slide="22">
+  <div class="slide-inner">
+    <h2>快速启动流程</h2>
+    <div class="grid grid-4" style="margin-top: clamp(2rem, 4vw, 3rem);">
+      <div class="step">
+        <div class="step-num step-num-red">1</div>
+        <div class="step-content">
+          <h3>安装</h3>
+          <p>npm install -g openclaw</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num step-num-red">2</div>
+        <div class="step-content">
+          <h3>配置</h3>
+          <p>设置API密钥和渠道</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num step-num-red">3</div>
+        <div class="step-content">
+          <h3>部署</h3>
+          <p>启动您的第一个智能体</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num step-num-red">4</div>
+        <div class="step-content">
+          <h3>扩展</h3>
+          <p>扩展到生产环境</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 23: Pitfall -->
+<section class="slide" data-slide="23">
+  <div class="slide-inner">
+    <h2>常见陷阱</h2>
+    <div class="warning-card" style="max-width: 600px; margin: 0 auto;">
+      <h3 style="margin-bottom: 0.75rem;">上下文窗口溢出</h3>
+      <p>超出模型的上下文限制会导致重要对话历史被截断。务必实施适当的记忆管理和上下文摘要。</p>
+      <div class="accent-line" style="margin: 1rem 0;"></div>
+      <p style="font-weight: 500;">解决方案：使用L1-L4记忆架构高效管理上下文。</p>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 24: Pitfalls -->
+<section class="slide" data-slide="24">
+  <div class="slide-inner">
+    <h2>其他陷阱</h2>
+    <div class="cols-2" style="gap: clamp(1.5rem, 3vw, 2rem);">
+      <div class="warning-card">
+        <h3 style="margin-bottom: 0.5rem;">工具循环</h3>
+        <p>智能体重复调用同一工具而无进展。实施迭代限制和错误处理。</p>
+      </div>
+      <div class="warning-card">
+        <h3 style="margin-bottom: 0.5rem;">上下文漂移</h3>
+        <p>智能体在长对话中失去对原始任务的关注。使用周期性上下文注入来保持专注。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 25: AI install -->
+<section class="slide" data-slide="25">
+  <div class="slide-inner">
+    <h2>AI安装方法</h2>
+    <div class="cards-3">
+      <div class="card">
+        <h3>npm</h3>
+        <p style="margin-top: 0.75rem; font-family: monospace; font-size: clamp(0.875rem, 1.25vw, 1rem);">npm install -g openclaw</p>
+      </div>
+      <div class="card">
+        <h3>Docker</h3>
+        <p style="margin-top: 0.75rem; font-family: monospace; font-size: clamp(0.875rem, 1.25vw, 1rem);">docker pull openclaw/agent:latest</p>
+      </div>
+      <div class="card">
+        <h3>源码</h3>
+        <p style="margin-top: 0.75rem; font-family: monospace; font-size: clamp(0.875rem, 1.25vw, 1rem);">git clone &amp;&amp; make build</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 26: Checklist -->
+<section class="slide" data-slide="26">
+  <div class="slide-inner">
+    <h2>部署前检查清单</h2>
+    <ul class="list">
+      <li><span class="list-num">1.</span> 配置API网关身份认证</li>
+      <li><span class="list-num">2.</span> 设置限速规则</li>
+      <li><span class="list-num">3.</span> 启用记忆持久化</li>
+      <li><span class="list-num">4.</span> 配置监控与日志</li>
+      <li><span class="list-num">5.</span> 测试所有渠道集成</li>
+      <li><span class="list-num">6.</span> 验证工具权限</li>
+      <li><span class="list-num">7.</span> 设置保留策略</li>
+      <li><span class="list-num">8.</span> 记录自定义工具</li>
+    </ul>
+  </div>
+</section>
+
+<!-- SLIDE 27: 8 scenes -->
+<section class="slide" data-slide="27">
+  <div class="slide-inner">
+    <h2>使用场景</h2>
+    <div class="grid grid-4" style="margin-top: clamp(1.5rem, 3vw, 2rem);">
+      <div class="card" style="text-align: center; padding: clamp(1rem, 2vw, 1.5rem);">
+        <h3 style="font-size: clamp(1rem, 1.5vw, 1.25rem);">客户支持</h3>
+      </div>
+      <div class="card" style="text-align: center; padding: clamp(1rem, 2vw, 1.5rem);">
+        <h3 style="font-size: clamp(1rem, 1.5vw, 1.25rem);">代码审查</h3>
+      </div>
+      <div class="card" style="text-align: center; padding: clamp(1rem, 2vw, 1.5rem);">
+        <h3 style="font-size: clamp(1rem, 1.5vw, 1.25rem);">内容创作</h3>
+      </div>
+      <div class="card" style="text-align: center; padding: clamp(1rem, 2vw, 1.5rem);">
+        <h3 style="font-size: clamp(1rem, 1.5vw, 1.25rem);">数据分析</h3>
+      </div>
+      <div class="card" style="text-align: center; padding: clamp(1rem, 2vw, 1.5rem);">
+        <h3 style="font-size: clamp(1rem, 1.5vw, 1.25rem);">文档处理</h3>
+      </div>
+      <div class="card" style="text-align: center; padding: clamp(1rem, 2vw, 1.5rem);">
+        <h3 style="font-size: clamp(1rem, 1.5vw, 1.25rem);">会议摘要</h3>
+      </div>
+      <div class="card" style="text-align: center; padding: clamp(1rem, 2vw, 1.5rem);">
+        <h3 style="font-size: clamp(1rem, 1.5vw, 1.25rem);">任务自动化</h3>
+      </div>
+      <div class="card" style="text-align: center; padding: clamp(1rem, 2vw, 1.5rem);">
+        <h3 style="font-size: clamp(1rem, 1.5vw, 1.25rem);">研究助手</h3>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 28: Wecom -->
+<section class="slide" data-slide="28">
+  <div class="slide-inner">
+    <h2>企业微信集成</h2>
+    <div class="cards-3">
+      <div class="card">
+        <h3>机器人设置</h3>
+        <p style="margin-top: 0.75rem;">配置Webhook机器人以实现自动响应</p>
+      </div>
+      <div class="card">
+        <h3>消息类型</h3>
+        <p style="margin-top: 0.75rem;">支持文本、图片、文件和富媒体</p>
+      </div>
+      <div class="card">
+        <h3>群组管理</h3>
+        <p style="margin-top: 0.75rem;">在群聊中进行多智能体协调</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 29: Zentao -->
+<section class="slide" data-slide="29">
+  <div class="slide-inner">
+    <h2>禅道集成</h2>
+    <div class="cols-3">
+      <div>
+        <h3 style="margin-bottom: 1rem;">项目管理</h3>
+        <p>自动创建、更新和跟踪项目任务</p>
+      </div>
+      <div class="thin-divider"></div>
+      <div>
+        <h3 style="margin-bottom: 1rem;">缺陷跟踪</h3>
+        <p>从聊天消息或代码审查中自动创建缺陷</p>
+      </div>
+      <div class="thin-divider"></div>
+      <div>
+        <h3 style="margin-bottom: 1rem;">文档流程</h3>
+        <p>从对话中生成和更新文档</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 30: Xiaohongshu -->
+<section class="slide" data-slide="30">
+  <div class="slide-inner">
+    <h2>小红书工作流</h2>
+    <div class="flow" style="justify-content: center; margin-top: clamp(2rem, 4vw, 3rem);">
+      <div class="flow-item">1. 监控</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">2. 生成</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">3. 发布</div>
+    </div>
+    <p style="text-align: center; margin-top: clamp(2rem, 4vw, 3rem); max-width: 600px; margin-left: auto; margin-right: auto;">为小红书社交平台自动创建和安排多模态内容生成。</p>
+  </div>
+</section>
+
+<!-- SLIDE 31: Article -->
+<section class="slide" data-slide="31">
+  <div class="slide-inner">
+    <h2>文章生成</h2>
+    <div class="cols-2">
+      <div>
+        <h3 style="margin-bottom: 1rem;">输入处理</h3>
+        <ul class="list">
+          <li><span class="list-num">1.</span> 主题分析</li>
+          <li><span class="list-num">2.</span> 风格匹配</li>
+          <li><span class="list-num">3.</span> SEO优化</li>
+          <li><span class="list-num">4.</span> 图片选择</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-bottom: 1rem;">输出生成</h3>
+        <ul class="list">
+          <li><span class="list-num">1.</span> 完整文章草稿</li>
+          <li><span class="list-num">2.</span> 元数据标签</li>
+          <li><span class="list-num">3.</span> 封面图片</li>
+          <li><span class="list-num">4.</span> 可直接发布</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 32: Scheduled -->
+<section class="slide" data-slide="32">
+  <div class="slide-inner">
+    <h2>定时任务</h2>
+    <div class="bars-3">
+      <div class="bar bar-red">
+        <span>每小时 — 状态更新、健康检查</span>
+      </div>
+      <div class="bar" style="border-left: 3px solid var(--red); padding-left: clamp(1rem, 2vw, 1.5rem); display: flex; align-items: center; font-weight: 500;">
+        <span>每日 — 报告生成、数据同步</span>
+      </div>
+      <div class="bar" style="border-left: 3px solid var(--red); padding-left: clamp(1rem, 2vw, 1.5rem); display: flex; align-items: center; font-weight: 500;">
+        <span>每周 — 分析、内容日历</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 33: PPT generation -->
+<section class="slide" data-slide="33">
+  <div class="slide-inner">
+    <h2>PPT生成流程</h2>
+    <div class="flow" style="justify-content: center; margin-top: clamp(2rem, 4vw, 3rem);">
+      <div class="flow-item">大纲</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">内容</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">设计</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">导出</div>
+    </div>
+    <p style="text-align: center; margin-top: clamp(2rem, 4vw, 3rem);">从自然语言描述AI驱动的演示文稿生成</p>
+  </div>
+</section>
+
+<!-- SLIDE 34: Group messages -->
+<section class="slide" data-slide="34">
+  <div class="slide-inner">
+    <h2>群消息处理</h2>
+    <div class="grid grid-3" style="margin-top: clamp(2rem, 4vw, 3rem);">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>路由</h3>
+          <p>识别提及与群组上下文</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>处理</h3>
+          <p>生成上下文感知的响应</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>回复</h3>
+          <p>发送给适当的群组成员</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 35: Code review -->
+<section class="slide" data-slide="35">
+  <div class="slide-inner">
+    <h2>代码审查流程</h2>
+    <div class="cols-3">
+      <div>
+        <h3 style="margin-bottom: 1rem;">静态分析</h3>
+        <p>自动检测代码异味、缺陷和安全问题</p>
+      </div>
+      <div>
+        <h3 style="margin-bottom: 1rem;">AI审查</h3>
+        <p>关于改进、可读性和性能方面的智能建议</p>
+      </div>
+      <div>
+        <h3 style="margin-bottom: 1rem;">报告生成</h3>
+        <p>带有可操作建议的全面的审查摘要</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 36: Browser layers -->
+<section class="slide" data-slide="36">
+  <div class="slide-inner">
+    <h2>浏览器自动化层级</h2>
+    <div class="bars-3">
+      <div class="bar bar-red">
+        <span>应用层 — 业务逻辑、工作流程</span>
+      </div>
+      <div class="bar" style="border-left: 3px solid var(--red); padding-left: clamp(1rem, 2vw, 1.5rem); display: flex; align-items: center; font-weight: 500;">
+        <span>交互层 — 点击、输入、滚动操作</span>
+      </div>
+      <div class="bar" style="border-left: 3px solid var(--red); padding-left: clamp(1rem, 2vw, 1.5rem); display: flex; align-items: center; font-weight: 500;">
+        <span>渲染层 — DOM、视觉状态、截图</span>
+      </div>
+      <div class="bar" style="border-left: 3px solid var(--red); padding-left: clamp(1rem, 2vw, 1.5rem); display: flex; align-items: center; font-weight: 500;">
+        <span>网络层 — 请求、响应、WebSocket</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 37: Advantages -->
+<section class="slide" data-slide="37">
+  <div class="slide-inner">
+    <h2>核心优势</h2>
+    <div class="cards-5" style="grid-template-columns: repeat(5, 1fr);">
+      <div class="card" style="text-align: center; padding: clamp(1rem, 2vw, 1.5rem);">
+        <h3 style="font-size: clamp(0.875rem, 1.25vw, 1rem);">快速</h3>
+        <p style="margin-top: 0.5rem; font-size: clamp(0.75rem, 1vw, 0.875rem);">亚秒级响应</p>
+      </div>
+      <div class="card" style="text-align: center; padding: clamp(1rem, 2vw, 1.5rem);">
+        <h3 style="font-size: clamp(0.875rem, 1.25vw, 1rem);">可扩展</h3>
+        <p style="margin-top: 0.5rem; font-size: clamp(0.75rem, 1vw, 0.875rem);">自动扩展</p>
+      </div>
+      <div class="card" style="text-align: center; padding: clamp(1rem, 2vw, 1.5rem);">
+        <h3 style="font-size: clamp(0.875rem, 1.25vw, 1rem);">安全</h3>
+        <p style="margin-top: 0.5rem; font-size: clamp(0.75rem, 1vw, 0.875rem);">企业级</p>
+      </div>
+      <div class="card" style="text-align: center; padding: clamp(1rem, 2vw, 1.5rem);">
+        <h3 style="font-size: clamp(0.875rem, 1.25vw, 1rem);">灵活</h3>
+        <p style="margin-top: 0.5rem; font-size: clamp(0.75rem, 1vw, 0.875rem);">自定义工具</p>
+      </div>
+      <div class="card" style="text-align: center; padding: clamp(1rem, 2vw, 1.5rem);">
+        <h3 style="font-size: clamp(0.875rem, 1.25vw, 1rem);">开放</h3>
+        <p style="margin-top: 0.5rem; font-size: clamp(0.75rem, 1vw, 0.875rem);">源码可用</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 38: Advantage -->
+<section class="slide" data-slide="38">
+  <div class="slide-inner">
+    <h2>竞争优势</h2>
+    <div class="cols-2" style="margin-top: clamp(2rem, 4vw, 3rem);">
+      <div>
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>指标</th>
+              <th>OpenClaw</th>
+              <th>行业平均</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>设置时间</td>
+              <td class="accent">15分钟</td>
+              <td>4小时</td>
+            </tr>
+            <tr>
+              <td>响应延迟</td>
+              <td class="accent">200毫秒</td>
+              <td>800毫秒</td>
+            </tr>
+            <tr>
+              <td>工具集成</td>
+              <td class="accent">无限制</td>
+              <td>有限</td>
+            </tr>
+            <tr>
+              <td>记忆保留</td>
+              <td class="accent">4层</td>
+              <td>1-2层</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="display: flex; flex-direction: column; justify-content: center;">
+        <p style="font-size: clamp(1.25rem, 2vw, 1.75rem); font-weight: 600; color: var(--text);">部署速度快10倍</p>
+        <p style="font-size: clamp(1.25rem, 2vw, 1.75rem); font-weight: 600; color: var(--text);">记忆能力提升4倍</p>
+        <p style="font-size: clamp(1.25rem, 2vw, 1.75rem); font-weight: 600; color: var(--text);">无限扩展</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 39: Open source -->
+<section class="slide" data-slide="39">
+  <div class="slide-inner">
+    <h2>开源优势</h2>
+    <div class="cols-2">
+      <div>
+        <h3 style="margin-bottom: 1rem;">社区</h3>
+        <ul class="list">
+          <li><span class="list-num">1.</span> 公开GitHub仓库</li>
+          <li><span class="list-num">2.</span> 活跃的Discord社区</li>
+          <li><span class="list-num">3.</span> 定期的社区贡献</li>
+          <li><span class="list-num">4.</span> 每月发布</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-bottom: 1rem;">企业</h3>
+        <ul class="list">
+          <li><span class="list-num">1.</span> 可提供商业许可证</li>
+          <li><span class="list-num">2.</span> 优先支持</li>
+          <li><span class="list-num">3.</span> 定制开发</li>
+          <li><span class="list-num">4.</span> 现场培训</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 40: 89.5% -->
+<section class="slide" data-slide="40">
+  <div class="slide-inner">
+    <div class="large-num">89.5%</div>
+    <p style="text-align: center; font-size: clamp(1.125rem, 2vw, 1.5rem); margin-top: 1rem;">任务完成率</p>
+    <p style="text-align: center; margin-top: 0.5rem;" class="muted">基于所有企业部署</p>
+  </div>
+</section>
+
+<!-- SLIDE 41: 5 drawbacks -->
+<section class="slide" data-slide="41">
+  <div class="slide-inner">
+    <h2>已知局限性</h2>
+    <div class="warning-card" style="max-width: 700px; margin: 0 auto;">
+      <ul class="list">
+        <li><span class="list-num">1.</span> 云端功能需要互联网连接</li>
+        <li><span class="list-num">2.</span> 高级功能需要培训</li>
+        <li><span class="list-num">3.</span> 模型成本因提供商而异</li>
+        <li><span class="list-num">4.</span> 复杂设置需要DevOps</li>
+        <li><span class="list-num">5.</span> 自定义工具调试可能比较棘手</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 42: Token cost -->
+<section class="slide" data-slide="42">
+  <div class="slide-inner">
+    <h2>Token成本优化</h2>
+    <div class="cols-2" style="gap: clamp(1.5rem, 3vw, 2rem);">
+      <div class="card">
+        <h3>策略</h3>
+        <p style="margin-top: 0.75rem;">实施智能上下文窗口、积极摘要和高效的提示压缩。</p>
+      </div>
+      <div class="card">
+        <h3>节省</h3>
+        <p style="margin-top: 0.75rem;">在保持响应质量的同时，Token消耗减少高达60%。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 43: Security -->
+<section class="slide" data-slide="43">
+  <div class="slide-inner">
+    <h2>安全架构</h2>
+    <div class="cols-2">
+      <div>
+        <h3 style="margin-bottom: 1rem;">数据保护</h3>
+        <ul class="list">
+          <li><span class="list-num">1.</span> 端到端加密</li>
+          <li><span class="list-num">2.</span> 数据驻留控制</li>
+          <li><span class="list-num">3.</span> PII检测与掩码</li>
+          <li><span class="list-num">4.</span> 审计日志</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="margin-bottom: 1rem;">访问控制</h3>
+        <ul class="list">
+          <li><span class="list-num">1.</span> RBAC权限</li>
+          <li><span class="list-num">2.</span> API密钥管理</li>
+          <li><span class="list-num">3.</span> SSO集成</li>
+          <li><span class="list-num">4.</span> 会话隔离</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 44: Skills + roadmap -->
+<section class="slide" data-slide="44">
+  <div class="slide-inner">
+    <h2>技能与路线图</h2>
+    <div style="margin-bottom: clamp(2rem, 4vw, 3rem);">
+      <p style="font-weight: 600; margin-bottom: 1rem;">可用技能</p>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <span class="tag">browser</span>
+        <span class="tag">code</span>
+        <span class="tag">file</span>
+        <span class="tag">http</span>
+        <span class="tag">database</span>
+        <span class="tag">schedule</span>
+        <span class="tag">slack</span>
+        <span class="tag">wechat</span>
+      </div>
+    </div>
+    <div>
+      <p style="font-weight: 600; margin-bottom: 1rem;">2026年Q2路线图</p>
+      <div class="grid grid-4" style="gap: clamp(0.75rem, 1.5vw, 1rem);">
+        <div class="card" style="padding: clamp(0.75rem, 1.5vw, 1rem);">
+          <h3 style="font-size: clamp(0.875rem, 1.25vw, 1rem);">多智能体</h3>
+          <p style="font-size: clamp(0.75rem, 1vw, 0.875rem); margin-top: 0.25rem;" class="muted">协调</p>
+        </div>
+        <div class="card" style="padding: clamp(0.75rem, 1.5vw, 1rem);">
+          <h3 style="font-size: clamp(0.875rem, 1.25vw, 1rem);">视觉</h3>
+          <p style="font-size: clamp(0.75rem, 1vw, 0.875rem); margin-top: 0.25rem;" class="muted">图像分析</p>
+        </div>
+        <div class="card" style="padding: clamp(0.75rem, 1.5vw, 1rem);">
+          <h3 style="font-size: clamp(0.875rem, 1.25vw, 1rem);">语音</h3>
+          <p style="font-size: clamp(0.75rem, 1vw, 0.875rem); margin-top: 0.25rem;" class="muted">语音输入/输出</p>
+        </div>
+        <div class="card" style="padding: clamp(0.75rem, 1.5vw, 1rem);">
+          <h3 style="font-size: clamp(0.875rem, 1.25vw, 1rem);">插件</h3>
+          <p style="font-size: clamp(0.75rem, 1vw, 0.875rem); margin-top: 0.25rem;" class="muted">市场</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 45: Closing -->
+<section class="slide" data-slide="45">
+  <div class="slide-inner">
+    <h2>立即开始</h2>
+    <div class="cards-3" style="margin-top: clamp(1.5rem, 3vw, 2rem);">
+      <div class="card" style="text-align: center;">
+        <h3 style="margin-bottom: 0.5rem;">文档</h3>
+        <p style="font-size: clamp(0.875rem, 1.25vw, 1rem);">docs.openclaw.ai</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <h3 style="margin-bottom: 0.5rem;">社区</h3>
+        <p style="font-size: clamp(0.875rem, 1.25vw, 1rem);">discord.gg/openclaw</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <h3 style="margin-bottom: 0.5rem;">企业版</h3>
+        <p style="font-size: clamp(0.875rem, 1.25vw, 1rem);">contact@openclaw.ai</p>
+      </div>
+    </div>
+    <div class="divider" style="margin: clamp(2rem, 4vw, 3rem) 0;"></div>
+    <div class="flow" style="justify-content: center;">
+      <div class="flow-item">1. 安装</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">2. 配置</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">3. 部署</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-item">4. 扩展</div>
+    </div>
+  </div>
+</section>
+
+<script>
+class SlidePresentation {
+  constructor() {
+    this.slides = document.querySelectorAll('.slide');
+    this.totalSlides = this.slides.length;
+    this.currentSlide = 0;
+    this.progressBar = document.getElementById('progress');
+    this.navDots = document.getElementById('navDots');
+    this.slideNumber = document.getElementById('slideNumber');
+    this.scrollTimeout = null;
+    this.isScrolling = false;
+
+    this.init();
+  }
+
+  init() {
+    this.createNavDots();
+    this.setupIntersectionObserver();
+    this.setupKeyboardNav();
+    this.setupWheelNav();
+    this.setupTouchNav();
+    this.updateSlide(0);
+  }
+
+  createNavDots() {
+    for (let i = 0; i < this.totalSlides; i++) {
+      const dot = document.createElement('button');
+      dot.className = 'nav-dot';
+      dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+      dot.addEventListener('click', () => this.goToSlide(i));
+      this.navDots.appendChild(dot);
+    }
+  }
+
+  setupIntersectionObserver() {
+    const options = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.5
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const slideIndex = parseInt(entry.target.dataset.slide) - 1;
+          this.updateSlide(slideIndex);
+          entry.target.classList.add('visible');
+        }
+      });
+    }, options);
+
+    this.slides.forEach(slide => observer.observe(slide));
+  }
+
+  setupKeyboardNav() {
+    document.addEventListener('keydown', (e) => {
+      switch(e.key) {
+        case 'ArrowDown':
+        case 'ArrowRight':
+        case ' ':
+        case 'PageDown':
+          e.preventDefault();
+          this.nextSlide();
+          break;
+        case 'ArrowUp':
+        case 'ArrowLeft':
+        case 'PageUp':
+          e.preventDefault();
+          this.prevSlide();
+          break;
+        case 'Home':
+          e.preventDefault();
+          this.goToSlide(0);
+          break;
+        case 'End':
+          e.preventDefault();
+          this.goToSlide(this.totalSlides - 1);
+          break;
+      }
+    });
+  }
+
+  setupWheelNav() {
+    let lastWheelTime = 0;
+    const wheelThrottle = 800;
+
+    document.addEventListener('wheel', (e) => {
+      const now = Date.now();
+      if (now - lastWheelTime < wheelThrottle) return;
+
+      const delta = Math.sign(e.deltaY);
+      if (delta > 0) {
+        this.nextSlide();
+      } else {
+        this.prevSlide();
+      }
+      lastWheelTime = now;
+    }, { passive: true });
+  }
+
+  setupTouchNav() {
+    let touchStartY = 0;
+    let touchEndY = 0;
+
+    document.addEventListener('touchstart', (e) => {
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      touchEndY = e.changedTouches[0].screenY;
+      const diff = touchStartY - touchEndY;
+
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          this.nextSlide();
+        } else {
+          this.prevSlide();
+        }
+      }
+    }, { passive: true });
+  }
+
+  goToSlide(index) {
+    if (index >= 0 && index < this.totalSlides) {
+      this.slides[index].scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  nextSlide() {
+    if (this.currentSlide < this.totalSlides - 1) {
+      this.goToSlide(this.currentSlide + 1);
+    }
+  }
+
+  prevSlide() {
+    if (this.currentSlide > 0) {
+      this.goToSlide(this.currentSlide - 1);
+    }
+  }
+
+  updateSlide(index) {
+    this.currentSlide = index;
+    const progress = ((index + 1) / this.totalSlides) * 100;
+    this.progressBar.style.width = `${progress}%`;
+    this.slideNumber.textContent = `${index + 1} / ${this.totalSlides}`;
+
+    const dots = this.navDots.querySelectorAll('.nav-dot');
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === index);
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  new SlidePresentation();
+});
+</script>
+
+</body>
+</html>

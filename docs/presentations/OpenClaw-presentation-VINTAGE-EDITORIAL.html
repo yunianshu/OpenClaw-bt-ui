@@ -1,0 +1,2138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw — AI Agent Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f0e8;
+            --text: #2c2416;
+            --burgundy: #8b2635;
+            --gold: #c9a84c;
+            --sage: #81b29a;
+            --text-muted: #8b7355;
+            --cream-dark: #e8e0d0;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: 'Lora', Georgia, serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Slide Base */
+        .slide {
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: clamp(2rem, 5vw, 4rem);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            scroll-snap-align: start;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .slide-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-style: italic;
+        }
+
+        h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-style: italic;
+            margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+        }
+
+        h3 {
+            font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+            font-style: italic;
+        }
+
+        p {
+            font-size: clamp(1rem, 1.5vw, 1.125rem);
+        }
+
+        /* Decorative Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin: clamp(1.5rem, 3vw, 2.5rem) 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            height: 1px;
+            width: clamp(3rem, 10vw, 8rem);
+            background: linear-gradient(to right, transparent, var(--text-muted), transparent);
+        }
+
+        .divider-diamond {
+            width: 8px;
+            height: 8px;
+            background: var(--gold);
+            transform: rotate(45deg);
+        }
+
+        /* Pull Quote */
+        .pull-quote {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-style: italic;
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            color: var(--burgundy);
+            border-left: 3px solid var(--gold);
+            padding-left: clamp(1rem, 2vw, 2rem);
+            margin: clamp(1.5rem, 3vw, 2.5rem) 0;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--cream-dark);
+            border: 1px solid rgba(139, 115, 85, 0.2);
+            padding: clamp(1.25rem, 2.5vw, 2rem);
+            position: relative;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--burgundy);
+        }
+
+        .card-gold {
+            border: 2px solid var(--gold);
+        }
+
+        .card-gold::before {
+            background: var(--gold);
+            width: 4px;
+        }
+
+        /* Navigation */
+        .nav-dots {
+            position: fixed;
+            right: clamp(1rem, 2vw, 2rem);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 100;
+        }
+
+        .nav-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            opacity: 0.4;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .nav-dot:hover {
+            opacity: 0.8;
+            transform: scale(1.2);
+        }
+
+        .nav-dot.active {
+            opacity: 1;
+            background: var(--burgundy);
+            transform: scale(1.3);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: var(--gold);
+            z-index: 101;
+            transition: width 0.3s ease;
+        }
+
+        /* Slide Numbers */
+        .slide-number {
+            position: absolute;
+            bottom: clamp(1rem, 2vw, 2rem);
+            right: clamp(1rem, 2vw, 2rem);
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: clamp(0.875rem, 1.5vw, 1rem);
+            color: var(--text-muted);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .slide.reveal .animate-in {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .animate-in {
+            opacity: 0;
+        }
+
+        .delay-1 { animation-delay: 0.1s !important; }
+        .delay-2 { animation-delay: 0.2s !important; }
+        .delay-3 { animation-delay: 0.3s !important; }
+        .delay-4 { animation-delay: 0.4s !important; }
+        .delay-5 { animation-delay: 0.5s !important; }
+        .delay-6 { animation-delay: 0.6s !important; }
+        .delay-7 { animation-delay: 0.7s !important; }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            html {
+                scroll-behavior: auto;
+            }
+        }
+
+        /* Cover Slide */
+        .slide-cover {
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide-cover h1 {
+            margin-bottom: 1rem;
+        }
+
+        .slide-cover .subtitle {
+            font-size: clamp(1.125rem, 2vw, 1.5rem);
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .slide-cover .tagline {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: clamp(1rem, 1.5vw, 1.25rem);
+            color: var(--burgundy);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Grid layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: clamp(1rem, 2vw, 2rem);
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(1rem, 2vw, 2rem);
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: clamp(0.75rem, 1.5vw, 1.5rem);
+        }
+
+        .grid-5 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: clamp(0.5rem, 1vw, 1rem);
+        }
+
+        .grid-7 {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: clamp(0.5rem, 1vw, 0.75rem);
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .grid-4, .grid-5, .grid-7 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* TOC */
+        .toc-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(139, 115, 85, 0.2);
+        }
+
+        .toc-number {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            color: var(--burgundy);
+            min-width: 2.5rem;
+        }
+
+        .toc-bullet {
+            width: 8px;
+            height: 8px;
+            background: var(--gold);
+            transform: rotate(45deg);
+        }
+
+        /* Warning/Alert styling */
+        .warning-card {
+            background: rgba(139, 38, 53, 0.08);
+            border: 1px solid var(--burgundy);
+        }
+
+        .warning-card::before {
+            content: '!';
+            position: absolute;
+            top: -0.75rem;
+            left: 1rem;
+            background: var(--burgundy);
+            color: var(--bg);
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* Table styling */
+        .editorial-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(0.875rem, 1.25vw, 1rem);
+        }
+
+        .editorial-table th {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            background: var(--cream-dark);
+            color: var(--burgundy);
+            padding: clamp(0.75rem, 1.5vw, 1rem);
+            text-align: left;
+            border-bottom: 2px solid var(--gold);
+        }
+
+        .editorial-table td {
+            padding: clamp(0.5rem, 1vw, 0.75rem);
+            border-bottom: 1px solid rgba(139, 115, 85, 0.2);
+        }
+
+        .editorial-table tr:nth-child(even) {
+            background: rgba(232, 224, 208, 0.3);
+        }
+
+        /* Tags */
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: var(--cream-dark);
+            border: 1px solid var(--text-muted);
+            font-size: clamp(0.75rem, 1vw, 0.875rem);
+            margin: 0.25rem;
+        }
+
+        .tag-burgundy {
+            background: var(--burgundy);
+            color: var(--bg);
+            border-color: var(--burgundy);
+        }
+
+        .tag-gold {
+            background: var(--gold);
+            color: var(--text);
+            border-color: var(--gold);
+        }
+
+        /* Large number */
+        .big-number {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(4rem, 12vw, 10rem);
+            color: var(--burgundy);
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        /* Steps */
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .step-number {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            font-size: clamp(2rem, 3vw, 2.5rem);
+            color: var(--gold);
+            min-width: 2.5rem;
+        }
+
+        /* Bars */
+        .bar {
+            background: var(--cream-dark);
+            border-left: 3px solid var(--burgundy);
+            padding: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        .bar-sage {
+            border-left-color: var(--sage);
+        }
+
+        .bar-gold {
+            border-left-color: var(--gold);
+        }
+
+        /* Flow arrows */
+        .flow-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .flow-arrow {
+            color: var(--gold);
+            font-size: 1.5rem;
+        }
+
+        /* Pyramid layers */
+        .pyramid-layer {
+            text-align: center;
+            padding: clamp(0.75rem, 1.5vw, 1.25rem);
+            color: var(--bg);
+        }
+
+        .pyramid-1 { background: var(--burgundy); }
+        .pyramid-2 { background: var(--gold); color: var(--text); }
+        .pyramid-3 { background: var(--sage); }
+        .pyramid-4 { background: var(--text-muted); }
+
+        /* Footer credit */
+        .footer-credit {
+            position: absolute;
+            bottom: clamp(0.5rem, 1vw, 1rem);
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(0.625rem, 0.875vw, 0.75rem);
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <nav class="nav-dots" id="navDots"></nav>
+
+    <!-- SLIDE 1: Cover -->
+    <section class="slide slide-cover" data-slide="1">
+        <div class="slide-inner">
+            <h1 class="animate-in">OpenClaw</h1>
+            <div class="divider animate-in delay-1">
+                <div class="divider-diamond"></div>
+            </div>
+            <p class="subtitle animate-in delay-2">企业级 AI Agent 平台</p>
+            <p class="tagline animate-in delay-3">智能体翩翩起舞，工作流徐徐展开，生产力翱翔于平庸之上。</p>
+            <div class="divider animate-in delay-4">
+                <div class="divider-diamond"></div>
+            </div>
+            <p class="animate-in delay-5" style="margin-top: 2rem; color: var(--text-muted); font-style: italic;">平台演示</p>
+        </div>
+        <div class="slide-number">I</div>
+    </section>
+
+    <!-- SLIDE 2: TOC -->
+    <section class="slide" data-slide="2">
+        <div class="slide-inner">
+            <h2 class="animate-in">目录</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="toc-item animate-in delay-1">
+                <span class="toc-number">01</span>
+                <div class="toc-bullet"></div>
+                <span>我们解决的问题</span>
+            </div>
+            <div class="toc-item animate-in delay-2">
+                <span class="toc-number">02</span>
+                <div class="toc-bullet"></div>
+                <span>平台架构</span>
+            </div>
+            <div class="toc-item animate-in delay-2">
+                <span class="toc-number">03</span>
+                <div class="toc-bullet"></div>
+                <span>核心组件</span>
+            </div>
+            <div class="toc-item animate-in delay-3">
+                <span class="toc-number">04</span>
+                <div class="toc-bullet"></div>
+                <span>部署与模型</span>
+            </div>
+            <div class="toc-item animate-in delay-3">
+                <span class="toc-number">05</span>
+                <div class="toc-bullet"></div>
+                <span>陷阱与最佳实践</span>
+            </div>
+            <div class="toc-item animate-in delay-4">
+                <span class="toc-number">06</span>
+                <div class="toc-bullet"></div>
+                <span>企业集成</span>
+            </div>
+            <div class="toc-item animate-in delay-4">
+                <span class="toc-number">07</span>
+                <div class="toc-bullet"></div>
+                <span>优势与考量</span>
+            </div>
+            <div class="toc-item animate-in delay-5">
+                <span class="toc-number">08</span>
+                <div class="toc-bullet"></div>
+                <span>前进之路</span>
+            </div>
+        </div>
+        <div class="slide-number">II</div>
+    </section>
+
+    <!-- SLIDE 3: Problem -->
+    <section class="slide" data-slide="3">
+        <div class="slide-inner">
+            <h2 class="animate-in">现代困境</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-2" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>碎片化工作流</h3>
+                    <p>企业同时运营数十种工具，每种都是信息孤岛。数据在混乱中流转，上下文在混乱中丢失。</p>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">"普通员工每小时在9.4个应用之间切换。"</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>上下文危机</h3>
+                    <p>AI模型会遗忘，对话会重置，制度知识随着每位离职员工离开而流失。</p>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">"记忆不是一项功能，它是核心功能。"</p>
+                </div>
+            </div>
+            <div class="pull-quote animate-in delay-4" style="margin-top: 3rem;">
+                "如果你的AI能够记住、学习，并以整个组织的智慧行动，会怎样？"
+            </div>
+        </div>
+        <div class="slide-number">03</div>
+    </section>
+
+    <!-- SLIDE 4: Positioning -->
+    <section class="slide" data-slide="4">
+        <div class="slide-inner">
+            <h2 class="animate-in">OpenClaw 定位</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-4" style="margin-top: 2rem;">
+                <div class="card card-gold animate-in delay-1">
+                    <h3>智能</h3>
+                    <p>多模型AI，优雅地推理、规划和执行。</p>
+                </div>
+                <div class="card card-gold animate-in delay-2">
+                    <h3>互联</h3>
+                    <p>与企业系统和通信渠道无缝集成。</p>
+                </div>
+                <div class="card card-gold animate-in delay-3">
+                    <h3>记忆</h3>
+                    <p>持续上下文，每次交互都更加智能。</p>
+                </div>
+                <div class="card card-gold animate-in delay-4">
+                    <h3>企业级</h3>
+                    <p>为规模、安全和企业实际需求而构建。</p>
+                </div>
+            </div>
+            <p class="animate-in delay-5" style="margin-top: 2.5rem; text-align: center; font-style: italic; color: var(--text-muted);">
+                智能自动化的四大支柱。
+            </p>
+        </div>
+        <div class="slide-number">04</div>
+    </section>
+
+    <!-- SLIDE 5: Architecture -->
+    <section class="slide" data-slide="5">
+        <div class="slide-inner">
+            <h2 class="animate-in">架构体系</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem;">
+                <div class="bar bar-sage animate-in delay-2">
+                    <h3 style="color: var(--sage);">展示层</h3>
+                    <p>用户界面、仪表盘和人机交互点。</p>
+                </div>
+                <div class="bar animate-in delay-3" style="margin-left: 2rem;">
+                    <h3 style="color: var(--burgundy);">编排层</h3>
+                    <p>交响乐团的指挥家——管理工作流、路由消息、协调智能体。</p>
+                </div>
+                <div class="bar bar-gold animate-in delay-4" style="margin-left: 4rem;">
+                    <h3 style="color: var(--gold);">能力层</h3>
+                    <p>SOUL、TOOLS和MEMORY汇聚创造智能行动的地方。</p>
+                </div>
+            </div>
+            <p class="animate-in delay-5" style="margin-top: 2rem; text-align: center; font-style: italic;">
+                三层合一， 一个愿景：AI与你<em>同行</em>，而不仅仅是为你<em>服务</em>。
+            </p>
+        </div>
+        <div class="slide-number">05</div>
+    </section>
+
+    <!-- SLIDE 6: Channel -->
+    <section class="slide" data-slide="6">
+        <div class="slide-inner">
+            <h2 class="animate-in">渠道架构</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-3" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>渠道</h3>
+                    <p>入口点——微信、企业微信、钉钉、飞书，或自定义渠道。</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">每条消息都从这里开始旅程。</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>OpenClaw 网关</h3>
+                    <p>伟大的翻译官——转换协议、规范消息、处理认证。</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">一个接口统领一切。</p>
+                </div>
+                <div class="card animate-in delay-4">
+                    <h3>Agent 节点</h3>
+                    <p>智能处理器，理解、推理、有目的地回应。</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">我们运行的核心。</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">06</div>
+    </section>
+
+    <!-- SLIDE 7: Gateway -->
+    <section class="slide" data-slide="7">
+        <div class="slide-inner">
+            <h2 class="animate-in">网关</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="max-width: 700px; margin: 2.5rem auto;">
+                <div class="card card-gold animate-in delay-2" style="text-align: center; padding: clamp(2rem, 4vw, 3rem);">
+                    <h3>OpenClaw 网关</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>我们生态系统的外交翻译官。它说每种协议，懂每种格式，确保每条消息完整到达。</p>
+                    <div style="margin-top: 1.5rem;">
+                        <span class="tag">协议翻译</span>
+                        <span class="tag">消息规范化</span>
+                        <span class="tag">认证</span>
+                        <span class="tag">限流</span>
+                        <span class="tag">缓存</span>
+                    </div>
+                </div>
+            </div>
+            <p class="animate-in delay-3" style="text-align: center; font-style: italic; color: var(--text-muted);">
+                "网关是混沌变秩序、噪声变信号的地方。"
+            </p>
+        </div>
+        <div class="slide-number">VII</div>
+    </section>
+
+    <!-- SLIDE 8: Node -->
+    <section class="slide" data-slide="8">
+        <div class="slide-inner">
+            <h2 class="animate-in">Agent 节点结构</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-4" style="margin-top: 2rem;">
+                <div class="card animate-in delay-1">
+                    <h3>USER</h3>
+                    <p>身份、偏好、历史——每个用户的数字画像。</p>
+                </div>
+                <div class="card animate-in delay-2">
+                    <h3>SOUL</h3>
+                    <p>定义性格的人格、准则和行为模式。</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>TOOLS</h3>
+                    <p>智能体可以执行的能力、集成和操作。</p>
+                </div>
+                <div class="card animate-in delay-4">
+                    <h3>MEMORY</h3>
+                    <p>会话上下文、持久知识和学习到的模式。</p>
+                </div>
+            </div>
+            <p class="animate-in delay-5" style="margin-top: 2rem; text-align: center; font-style: italic; color: var(--text-muted);">
+                完整智能体的四个维度。
+            </p>
+        </div>
+        <div class="slide-number">VIII</div>
+    </section>
+
+    <!-- SLIDE 9: Message Flow -->
+    <section class="slide" data-slide="9">
+        <div class="slide-inner">
+            <h2 class="animate-in">消息流程</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem;">
+                <div class="flow-item animate-in delay-2">
+                    <span class="step-number">1</span>
+                    <div>
+                        <h3>消息接收</h3>
+                        <p>用户说话，渠道接收，网关规范化。</p>
+                    </div>
+                </div>
+                <div style="margin-left: 1.25rem; border-left: 2px solid var(--gold); height: 2rem;"></div>
+                <div class="flow-item animate-in delay-3">
+                    <span class="step-number">2</span>
+                    <div>
+                        <h3>上下文组装</h3>
+                        <p>加载USER profile，收集SESSION历史，检索相关MEMORY。</p>
+                    </div>
+                </div>
+                <div style="margin-left: 1.25rem; border-left: 2px solid var(--gold); height: 2rem;"></div>
+                <div class="flow-item animate-in delay-4">
+                    <span class="step-number">3</span>
+                    <div>
+                        <h3>推理与回应</h3>
+                        <p>SOUL引导语气，TOOLS扩展能力，模型生成回应。</p>
+                    </div>
+                </div>
+                <div style="margin-left: 1.25rem; border-left: 2px solid var(--gold); height: 2rem;"></div>
+                <div class="flow-item animate-in delay-5">
+                    <span class="step-number">4</span>
+                    <div>
+                        <h3>记忆更新</h3>
+                        <p>会话存储，新学习编码，回应送达。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">IX</div>
+    </section>
+
+    <!-- SLIDE 10: Memory Pyramid -->
+    <section class="slide" data-slide="10">
+        <div class="slide-inner">
+            <h2 class="animate-in">记忆金字塔</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+                <div class="pyramid-layer pyramid-1 animate-in delay-2">
+                    <h3>长期记忆</h3>
+                    <p>持久知识、学习到的事实、组织智慧</p>
+                </div>
+                <div class="grid-3">
+                    <div class="pyramid-layer pyramid-2 animate-in delay-3">
+                        <h3>会话记忆</h3>
+                        <p>当前对话、最近上下文</p>
+                    </div>
+                    <div class="pyramid-layer pyramid-3 animate-in delay-3">
+                        <h3>工作记忆</h3>
+                        <p>活跃任务、即时专注</p>
+                    </div>
+                    <div class="pyramid-layer pyramid-4 animate-in delay-3">
+                        <h3>反射</h3>
+                        <p>即时反应、模式识别</p>
+                    </div>
+                </div>
+            </div>
+            <p class="animate-in delay-4" style="margin-top: 2rem; text-align: center; font-style: italic; color: var(--text-muted);">
+                从即时反射到持久智慧——每层都有记忆。
+            </p>
+        </div>
+        <div class="slide-number">X</div>
+    </section>
+
+    <!-- SLIDE 11: SOUL -->
+    <section class="slide" data-slide="11">
+        <div class="slide-inner">
+            <h2 class="animate-in">SOUL</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="max-width: 700px; margin: 2.5rem auto;">
+                <div class="card card-gold animate-in delay-2" style="text-align: center; padding: clamp(2rem, 4vw, 3rem);">
+                    <h3>人格与准则</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>SOUL是每个智能体独一无二的原因——它的人格、它的语气、它看世界的方式。</p>
+                    <div style="margin-top: 1.5rem; text-align: left;">
+                        <p><strong style="color: var(--burgundy);">人设：</strong>智能体如何呈现自己</p>
+                        <p style="margin-top: 0.75rem;"><strong style="color: var(--burgundy);">准则：</strong>行为规则和边界</p>
+                        <p style="margin-top: 0.75rem;"><strong style="color: var(--burgundy);">语气：</strong>声音、词汇、风格</p>
+                        <p style="margin-top: 0.75rem;"><strong style="color: var(--burgundy);">知识：</strong>领域专长和上下文</p>
+                    </div>
+                </div>
+            </div>
+            <p class="animate-in delay-3" style="text-align: center; font-style: italic; color: var(--text-muted);">
+                "赋予智能体SOUL，它就不只是工具——它成为同事。"
+            </p>
+        </div>
+        <div class="slide-number">XI</div>
+    </section>
+
+    <!-- SLIDE 12: TOOLS -->
+    <section class="slide" data-slide="12">
+        <div class="slide-inner">
+            <h2 class="animate-in">TOOLS</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-2" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>能力</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>智能体可以做什么：</p>
+                    <ul style="margin-top: 1rem; margin-left: 1.5rem;">
+                        <li>搜索和检索信息</li>
+                        <li>执行代码和命令</li>
+                        <li>读写文件</li>
+                        <li>调用外部API</li>
+                        <li>处理图像和文档</li>
+                    </ul>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>集成</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>智能体可以触及的地方：</p>
+                    <ul style="margin-top: 1rem; margin-left: 1.5rem;">
+                        <li>企业数据库</li>
+                        <li>云存储服务</li>
+                        <li>CRM和ERP系统</li>
+                        <li>通信平台</li>
+                        <li>自定义内部工具</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XII</div>
+    </section>
+
+    <!-- SLIDE 13: USER -->
+    <section class="slide" data-slide="13">
+        <div class="slide-inner">
+            <h2 class="animate-in">USER</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-2" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>身份档案</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>跟随每个用户的数字身份：</p>
+                    <ul style="margin-top: 1rem; margin-left: 1.5rem;">
+                        <li>用户ID和认证</li>
+                        <li>角色和权限</li>
+                        <li>偏好和设置</li>
+                        <li>使用历史和模式</li>
+                    </ul>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>上下文记忆</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>系统记住的关于每个用户的信息：</p>
+                    <ul style="margin-top: 1rem; margin-left: 1.5rem;">
+                        <li>过去的对话和结果</li>
+                        <li>偏好的沟通风格</li>
+                        <li>常见任务和工作流</li>
+                        <li>反馈和纠正</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="animate-in delay-4" style="margin-top: 2rem; text-align: center; font-style: italic; color: var(--text-muted);">
+                "了解你的用户，你就能很好地为他们服务。"
+            </p>
+        </div>
+        <div class="slide-number">XIII</div>
+    </section>
+
+    <!-- SLIDE 14: Session -->
+    <section class="slide" data-slide="14">
+        <div class="slide-inner">
+            <h2 class="animate-in">会话管理</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem;">
+                <div class="step animate-in delay-2">
+                    <span class="step-number">1</span>
+                    <div class="card">
+                        <h3>会话启动</h3>
+                        <p>当用户开始交互时，系统创建新的会话上下文，加载用户profile，初始化工作记忆。</p>
+                    </div>
+                </div>
+                <div class="step animate-in delay-3" style="margin-top: 1.5rem;">
+                    <span class="step-number">2</span>
+                    <div class="card">
+                        <h3>活跃对话</h3>
+                        <p>消息流入流出，上下文增长，记忆层实时更新，保持连贯对话。</p>
+                    </div>
+                </div>
+                <div class="step animate-in delay-4" style="margin-top: 1.5rem;">
+                    <span class="step-number">3</span>
+                    <div class="card">
+                        <h3>会话关闭</h3>
+                        <p>结束时，对会话进行摘要，关键学习被持久化，上下文被存档以供将来检索。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XIV</div>
+    </section>
+
+    <!-- SLIDE 15: Workspace -->
+    <section class="slide" data-slide="15">
+        <div class="slide-inner">
+            <h2 class="animate-in">工作空间</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <p class="animate-in delay-2" style="margin-bottom: 1.5rem;">定义智能体的七个文件：</p>
+            <div class="grid-7">
+                <div class="card animate-in delay-2">
+                    <h3>soul.md</h3>
+                    <p>人设</p>
+                </div>
+                <div class="card animate-in delay-2">
+                    <h3>tools.md</h3>
+                    <p>能力</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>memory.md</h3>
+                    <p>知识</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>workflows/</h3>
+                    <p>流程</p>
+                </div>
+                <div class="card animate-in delay-4">
+                    <h3>prompts/</h3>
+                    <p>模板</p>
+                </div>
+                <div class="card animate-in delay-4">
+                    <h3>resources/</h3>
+                    <p>资源</p>
+                </div>
+                <div class="card animate-in delay-5">
+                    <h3>config.json</h3>
+                    <p>设置</p>
+                </div>
+            </div>
+            <div class="pull-quote animate-in delay-5" style="margin-top: 2.5rem;">
+                "七个文件，无限可能。"
+            </div>
+        </div>
+        <div class="slide-number">XV</div>
+    </section>
+
+    <!-- SLIDE 16: Memory Flow -->
+    <section class="slide" data-slide="16">
+        <div class="slide-inner">
+            <h2 class="animate-in">记忆流程</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem;">
+                <div class="grid-6" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem;">
+                    <div class="card animate-in delay-1" style="text-align: center;">
+                        <span style="font-size: 2rem;">1</span>
+                        <p style="font-size: 0.8em;">输入</p>
+                    </div>
+                    <div class="card animate-in delay-2" style="text-align: center;">
+                        <span style="font-size: 2rem;">2</span>
+                        <p style="font-size: 0.8em;">理解</p>
+                    </div>
+                    <div class="card animate-in delay-3" style="text-align: center;">
+                        <span style="font-size: 2rem;">3</span>
+                        <p style="font-size: 0.8em;">推理</p>
+                    </div>
+                    <div class="card animate-in delay-4" style="text-align: center;">
+                        <span style="font-size: 2rem;">4</span>
+                        <p style="font-size: 0.8em;">决策</p>
+                    </div>
+                    <div class="card animate-in delay-5" style="text-align: center;">
+                        <span style="font-size: 2rem;">5</span>
+                        <p style="font-size: 0.8em;">行动</p>
+                    </div>
+                    <div class="card animate-in delay-6" style="text-align: center;">
+                        <span style="font-size: 2rem;">6</span>
+                        <p style="font-size: 0.8em;">存储</p>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 2rem;" class="animate-in delay-5">
+                    每一步都在记忆中留下痕迹，积累千次对话的智慧。
+                </p>
+            </div>
+        </div>
+        <div class="slide-number">XVI</div>
+    </section>
+
+    <!-- SLIDE 17: Deployment -->
+    <section class="slide" data-slide="17">
+        <div class="slide-inner">
+            <h2 class="animate-in">部署模式</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-3" style="margin-top: 2rem;">
+                <div class="card card-gold animate-in delay-2" style="text-align: center;">
+                    <h3>SaaS</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>全托管、即时设置、最小运维负担。快速部署的理想选择。</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">适用于：初创企业、中小企业</p>
+                </div>
+                <div class="card animate-in delay-3" style="text-align: center;">
+                    <h3>私有云</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>你的云，你的控制。增强安全性，弹性扩展。</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">适用于：中型市场</p>
+                </div>
+                <div class="card animate-in delay-4" style="text-align: center;">
+                    <h3>本地部署</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>在您的防火墙后，在您的屋檐下。最大控制和合规性。</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">适用于：企业、受监管行业</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XVII</div>
+    </section>
+
+    <!-- SLIDE 18: Platform Table -->
+    <section class="slide" data-slide="18">
+        <div class="slide-inner">
+            <h2 class="animate-in">平台对比</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem; overflow-x: auto;">
+                <table class="editorial-table animate-in delay-2">
+                    <thead>
+                        <tr>
+                            <th>功能</th>
+                            <th>OpenClaw</th>
+                            <th>Coze</th>
+                            <th>Dify</th>
+                            <th>FastGPT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>记忆系统</td>
+                            <td style="color: var(--burgundy); font-weight: 600;">原生</td>
+                            <td>有限</td>
+                            <td>基础</td>
+                            <td>中等</td>
+                        </tr>
+                        <tr>
+                            <td>企业SSO</td>
+                            <td style="color: var(--burgundy); font-weight: 600;">支持</td>
+                            <td>不支持</td>
+                            <td>支持</td>
+                            <td>不支持</td>
+                        </tr>
+                        <tr>
+                            <td>多渠道</td>
+                            <td style="color: var(--burgundy); font-weight: 600;">6+</td>
+                            <td>4</td>
+                            <td>2</td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td>SOUL定制</td>
+                            <td style="color: var(--burgundy); font-weight: 600;">深度</td>
+                            <td>表面</td>
+                            <td>表面</td>
+                            <td>中等</td>
+                        </tr>
+                        <tr>
+                            <td>开源</td>
+                            <td style="color: var(--burgundy); font-weight: 600;">是</td>
+                            <td>否</td>
+                            <td>是</td>
+                            <td>是</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="animate-in delay-3" style="margin-top: 1.5rem; text-align: center; font-style: italic; color: var(--text-muted);">
+                我们在行业中的定位。
+            </p>
+        </div>
+        <div class="slide-number">XVIII</div>
+    </section>
+
+    <!-- SLIDE 19: Tencent -->
+    <section class="slide" data-slide="19">
+        <div class="slide-inner">
+            <h2 class="animate-in">腾讯生态</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-2" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>微信 & 企业微信</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>中国主要的商业通信渠道。OpenClaw流利地使用两者。</p>
+                    <ul style="margin-top: 1rem; margin-left: 1.5rem;">
+                        <li>企业微信集成</li>
+                        <li>微信公众号支持</li>
+                        <li>消息类型：文本、图片、文档</li>
+                        <li>小程序钩子</li>
+                    </ul>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>飞书 & 钉钉</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>具有丰富API的现代替代方案。我们全部拥抱。</p>
+                    <ul style="margin-top: 1rem; margin-left: 1.5rem;">
+                        <li>飞书机器人框架</li>
+                        <li>钉钉Webhook集成</li>
+                        <li>日历和任务同步</li>
+                        <li>企业搜索集成</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XIX</div>
+    </section>
+
+    <!-- SLIDE 20: Server -->
+    <section class="slide" data-slide="20">
+        <div class="slide-inner">
+            <h2 class="animate-in">服务器配置</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-2" style="margin-top: 2rem;">
+                <div class="animate-in delay-2">
+                    <table class="editorial-table">
+                        <thead>
+                            <tr>
+                                <th>组件</th>
+                                <th>要求</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>CPU</td>
+                                <td>4核以上</td>
+                            </tr>
+                            <tr>
+                                <td>内存</td>
+                                <td>16GB以上</td>
+                            </tr>
+                            <tr>
+                                <td>存储</td>
+                                <td>100GB以上 SSD</td>
+                            </tr>
+                            <tr>
+                                <td>网络</td>
+                                <td>公网IP，10Mbps以上</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <div class="card warning-card animate-in delay-3" style="margin-bottom: 1rem;">
+                        <h3>防火墙警报</h3>
+                        <p>端口3000必须可访问。请相应配置您的安全组。</p>
+                    </div>
+                    <div class="card warning-card animate-in delay-4">
+                        <h3>域名要求</h3>
+                        <p>生产部署需要带SSL证书的公网域名。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XX</div>
+    </section>
+
+    <!-- SLIDE 21: Model Table -->
+    <section class="slide" data-slide="21">
+        <div class="slide-inner">
+            <h2 class="animate-in">模型层级</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem;">
+                <div class="grid-4">
+                    <div class="card animate-in delay-1" style="border-top: 4px solid var(--text-muted);">
+                        <h3>快速</h3>
+                        <p style="color: var(--text-muted);">Haiku, GPT-4o-mini</p>
+                        <p style="margin-top: 0.5rem; font-size: 0.9em;">简单任务、高容量、成本敏感型操作。</p>
+                    </div>
+                    <div class="card animate-in delay-2" style="border-top: 4px solid var(--sage);">
+                        <h3>均衡</h3>
+                        <p style="color: var(--sage);">GPT-4o, Claude 3.5</p>
+                        <p style="margin-top: 0.5rem; font-size: 0.9em;">通用场景、良好速度、稳健推理。</p>
+                    </div>
+                    <div class="card animate-in delay-3" style="border-top: 4px solid var(--gold);">
+                        <h3>智能</h3>
+                        <p style="color: var(--gold);">GPT-4.5, Claude 3.7</p>
+                        <p style="margin-top: 0.5rem; font-size: 0.9em;">复杂推理、细腻理解。</p>
+                    </div>
+                    <div class="card animate-in delay-4" style="border-top: 4px solid var(--burgundy);">
+                        <h3>深度</h3>
+                        <p style="color: var(--burgundy);">o1, o3, Gemini 2.0</p>
+                        <p style="margin-top: 0.5rem; font-size: 0.9em;">研究级、多步规划、深度分析。</p>
+                    </div>
+                </div>
+            </div>
+            <p class="animate-in delay-5" style="margin-top: 2rem; text-align: center; font-style: italic; color: var(--text-muted);">
+                明智选择，每层都有其用途。
+            </p>
+        </div>
+        <div class="slide-number">XXI</div>
+    </section>
+
+    <!-- SLIDE 22: 4-Step Flow -->
+    <section class="slide" data-slide="22">
+        <div class="slide-inner">
+            <h2 class="animate-in">四步走</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem;">
+                <div class="step animate-in delay-2">
+                    <span class="step-number">1</span>
+                    <div class="card">
+                        <h3>配置</h3>
+                        <p>定义您的SOUL，配置TOOLS，设置MEMORY层。</p>
+                    </div>
+                </div>
+                <div class="step animate-in delay-3" style="margin-top: 1rem;">
+                    <span class="step-number">2</span>
+                    <div class="card">
+                        <h3>连接</h3>
+                        <p>集成您的渠道——微信、企业微信、钉钉或自定义。</p>
+                    </div>
+                </div>
+                <div class="step animate-in delay-4" style="margin-top: 1rem;">
+                    <span class="step-number">3</span>
+                    <div class="card">
+                        <h3>训练</h3>
+                        <p>向您的智能体灌输知识，教授您的工作流，完善其人格。</p>
+                    </div>
+                </div>
+                <div class="step animate-in delay-5" style="margin-top: 1rem;">
+                    <span class="step-number">4</span>
+                    <div class="card">
+                        <h3>部署</h3>
+                        <p>启动、监控、迭代。看着您的生产力飙升。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XXII</div>
+    </section>
+
+    <!-- SLIDE 23: Pitfall -->
+    <section class="slide" data-slide="23">
+        <div class="slide-inner">
+            <h2 class="animate-in">陷阱</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="max-width: 700px; margin: 2.5rem auto;">
+                <div class="card warning-card animate-in delay-2" style="text-align: center; padding: clamp(2rem, 4vw, 3rem);">
+                    <h3 style="color: var(--burgundy);">上下文窗口溢出</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>当记忆无序增长时，上下文窗口会填满，推理变慢，成本飙升。</p>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">"没有记忆管理，最聪明的智能体也会迷失。"</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XXIII</div>
+    </section>
+
+    <!-- SLIDE 24: Pitfalls -->
+    <section class="slide" data-slide="24">
+        <div class="slide-inner">
+            <h2 class="animate-in">常见陷阱</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-2" style="margin-top: 2rem;">
+                <div class="card warning-card animate-in delay-2">
+                    <h3>忽视记忆卫生</h3>
+                    <p>不修剪旧会话，让上下文无序膨胀。导致性能下降和成本失控。</p>
+                </div>
+                <div class="card warning-card animate-in delay-3">
+                    <h3>SOUL漂移</h3>
+                    <p>缺乏监控的人格准则随时间偏移。智能体行为变得不一致、不可预测。</p>
+                </div>
+            </div>
+            <div class="pull-quote animate-in delay-4" style="margin-top: 2rem;">
+                "一分预防胜似一分治疗。"
+            </div>
+        </div>
+        <div class="slide-number">XXIV</div>
+    </section>
+
+    <!-- SLIDE 25: AI Install -->
+    <section class="slide" data-slide="25">
+        <div class="slide-inner">
+            <h2 class="animate-in">AI工具安装</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-3" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>Claude Desktop</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>用于本地开发和测试Anthropic模型。</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">claude desktop install</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>Continue</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>VS Code扩展，用于AI辅助开发工作流。</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">扩展市场</p>
+                </div>
+                <div class="card animate-in delay-4">
+                    <h3>OpenClaw CLI</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>用于智能体管理和部署的命令行界面。</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">npm install -g openclaw</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XXV</div>
+    </section>
+
+    <!-- SLIDE 26: Checklist -->
+    <section class="slide" data-slide="26">
+        <div class="slide-inner">
+            <h2 class="animate-in">部署前检查清单</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem; max-width: 700px; margin-left: auto; margin-right: auto;">
+                <div class="toc-item animate-in delay-2">
+                    <div class="toc-bullet"></div>
+                    <span>SOUL人格已文档化并测试</span>
+                </div>
+                <div class="toc-item animate-in delay-2">
+                    <div class="toc-bullet"></div>
+                    <span>TOOLS已配置且权限已验证</span>
+                </div>
+                <div class="toc-item animate-in delay-3">
+                    <div class="toc-bullet"></div>
+                    <span>MEMORY架构已规划（金字塔层）</span>
+                </div>
+                <div class="toc-item animate-in delay-3">
+                    <div class="toc-bullet"></div>
+                    <span>渠道集成已测试（微信、企业微信等）</span>
+                </div>
+                <div class="toc-item animate-in delay-4">
+                    <div class="toc-bullet"></div>
+                    <span>每个用例已选择模型层级</span>
+                </div>
+                <div class="toc-item animate-in delay-4">
+                    <div class="toc-bullet"></div>
+                    <span>安全审查已完成（认证、权限）</span>
+                </div>
+                <div class="toc-item animate-in delay-5">
+                    <div class="toc-bullet"></div>
+                    <span>监控和日志已配置</span>
+                </div>
+                <div class="toc-item animate-in delay-5">
+                    <div class="toc-bullet"></div>
+                    <span>成本警报已设置（避免意外）</span>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XXVI</div>
+    </section>
+
+    <!-- SLIDE 27: 8 Scenes -->
+    <section class="slide" data-slide="27">
+        <div class="slide-inner">
+            <h2 class="animate-in">八大用例</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-4" style="margin-top: 2rem;">
+                <div class="card animate-in delay-1">
+                    <h3>客服</h3>
+                    <p>全天候跨渠道智能支持</p>
+                </div>
+                <div class="card animate-in delay-1">
+                    <h3>销售助手</h3>
+                    <p>线索筛选和跟进自动化</p>
+                </div>
+                <div class="card animate-in delay-2">
+                    <h3>HR助手</h3>
+                    <p>政策解答、入职支持</p>
+                </div>
+                <div class="card animate-in delay-2">
+                    <h3>代码审查</h3>
+                    <p>自动PR分析和反馈</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>内容创作</h3>
+                    <p>文章、帖子、营销文案</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>数据分析</h3>
+                    <p>查询、汇总、可视化</p>
+                </div>
+                <div class="card animate-in delay-4">
+                    <h3>会议助手</h3>
+                    <p>安排、转录、总结</p>
+                </div>
+                <div class="card animate-in delay-4">
+                    <h3>研究员</h3>
+                    <p>深度研究、综合洞察</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XXVII</div>
+    </section>
+
+    <!-- SLIDE 28: Wecom -->
+    <section class="slide" data-slide="28">
+        <div class="slide-inner">
+            <h2 class="animate-in">企业微信集成</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-3" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>企业配置</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>配置企业微信企业账号，在OpenClaw仪表盘中设置智能体。</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">约15分钟</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>Webhook配置</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>设置回调URL，验证token，配置消息加密。</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">约10分钟</p>
+                </div>
+                <div class="card animate-in delay-4">
+                    <h3>测试</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>发送测试消息，验证响应，监控日志。</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">约5分钟</p>
+                </div>
+            </div>
+            <p class="animate-in delay-5" style="margin-top: 2rem; text-align: center; font-style: italic;">
+                总设置时间：约30分钟。然后您就上线了。
+            </p>
+        </div>
+        <div class="slide-number">XXVIII</div>
+    </section>
+
+    <!-- SLIDE 29: Zentao -->
+    <section class="slide" data-slide="29">
+        <div class="slide-inner">
+            <h2 class="animate-in">禅道集成</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-3" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>缺陷跟踪</h3>
+                    <p>从对话中自动记录缺陷，分配到迭代。</p>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">"已报告缺陷：移动端登录超时"</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>任务管理</h3>
+                    <p>从请求创建任务，跟踪进度，更新状态。</p>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">"已创建任务：实现深色模式"</p>
+                </div>
+                <div class="card animate-in delay-4">
+                    <h3>项目同步</h3>
+                    <p>保持相关方知情，生成报告，关键节点通知。</p>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">"第24个迭代明天开始"</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XXIX</div>
+    </section>
+
+    <!-- SLIDE 30: Xiaohongshu -->
+    <section class="slide" data-slide="30">
+        <div class="slide-inner">
+            <h2 class="animate-in">小红书发布</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem;">
+                <div class="step animate-in delay-2">
+                    <span class="step-number">1</span>
+                    <div class="card">
+                        <h3>内容生成</h3>
+                        <p>为平台起草具有正确语气、标签和风格的吸引人内容。</p>
+                    </div>
+                </div>
+                <div class="step animate-in delay-3" style="margin-top: 1rem;">
+                    <span class="step-number">2</span>
+                    <div class="card">
+                        <h3>图片附件</h3>
+                        <p>生成或选择相关图片，为最佳显示进行格式化。</p>
+                    </div>
+                </div>
+                <div class="step animate-in delay-4" style="margin-top: 1rem;">
+                    <span class="step-number">3</span>
+                    <div class="card">
+                        <h3>定时发布</h3>
+                        <p>排队等待最佳发布时间，发布，监控互动。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XXX</div>
+    </section>
+
+    <!-- SLIDE 31: Article -->
+    <section class="slide" data-slide="31">
+        <div class="slide-inner">
+            <h2 class="animate-in">文章写作</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-2" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>起草</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>研究、大纲、写作。智能体为您量身定制吸引人的叙事。</p>
+                    <ul style="margin-top: 1rem; margin-left: 1.5rem;">
+                        <li>SEO优化</li>
+                        <li>语气校准</li>
+                        <li>结构完善</li>
+                    </ul>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>发布</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>为每个平台格式化，生成元数据，安排发布时间。</p>
+                    <ul style="margin-top: 1rem; margin-left: 1.5rem;">
+                        <li>多平台分发</li>
+                        <li>跨发布优化</li>
+                        <li>效果追踪</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XXXI</div>
+    </section>
+
+    <!-- SLIDE 32: Scheduled -->
+    <section class="slide" data-slide="32">
+        <div class="slide-inner">
+            <h2 class="animate-in">定时智能</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem;">
+                <div class="bar bar-sage animate-in delay-2">
+                    <h3 style="color: var(--sage);">早间简报</h3>
+                    <p>8:00 — 每日新闻、天气、您的日程安排、关键指标。知己知彼。</p>
+                </div>
+                <div class="bar animate-in delay-3">
+                    <h3 style="color: var(--burgundy);">午间回顾</h3>
+                    <p>12:00 — 进度更新、待办事项、已识别机会。</p>
+                </div>
+                <div class="bar bar-gold animate-in delay-4">
+                    <h3 style="color: var(--gold);">晚间总结</h3>
+                    <p>18:00 — 今日成就、明日优先事项、截止日期提醒。</p>
+                </div>
+            </div>
+            <p class="animate-in delay-5" style="margin-top: 2rem; text-align: center; font-style: italic; color: var(--text-muted);">
+                智能准时送达。
+            </p>
+        </div>
+        <div class="slide-number">XXXII</div>
+    </section>
+
+    <!-- SLIDE 33: PPT Generation -->
+    <section class="slide" data-slide="33">
+        <div class="slide-inner">
+            <h2 class="animate-in">PPT生成</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem;">
+                <div class="flow-item animate-in delay-2">
+                    <span class="step-number">1</span>
+                    <div>
+                        <h3>主题与受众</h3>
+                        <p>确定主题、目标受众、期望的语气和深度。</p>
+                    </div>
+                </div>
+                <div style="margin-left: 1.25rem; border-left: 2px solid var(--gold); height: 1.5rem;"></div>
+                <div class="flow-item animate-in delay-3">
+                    <span class="step-number">2</span>
+                    <div>
+                        <h3>大纲生成</h3>
+                        <p>智能体创建逻辑结构、关键点和支撑数据。</p>
+                    </div>
+                </div>
+                <div style="margin-left: 1.25rem; border-left: 2px solid var(--gold); height: 1.5rem;"></div>
+                <div class="flow-item animate-in delay-4">
+                    <span class="step-number">3</span>
+                    <div>
+                        <h3>幻灯片编排</h3>
+                        <p>每张幻灯片都精心制作，包含标题、要点和视觉建议。</p>
+                    </div>
+                </div>
+                <div style="margin-left: 1.25rem; border-left: 2px solid var(--gold); height: 1.5rem;"></div>
+                <div class="flow-item animate-in delay-5">
+                    <span class="step-number">4</span>
+                    <div>
+                        <h3>导出与完善</h3>
+                        <p>生成PPTX，下载，必要时在PowerPoint中完善。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XXXIII</div>
+    </section>
+
+    <!-- SLIDE 34: Group Messages -->
+    <section class="slide" data-slide="34">
+        <div class="slide-inner">
+            <h2 class="animate-in">群消息处理</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem;">
+                <div class="step animate-in delay-2">
+                    <span class="step-number">1</span>
+                    <div class="card">
+                        <h3>@提及检测</h3>
+                        <p>智能体识别在群聊中被直接@的时刻。</p>
+                    </div>
+                </div>
+                <div class="step animate-in delay-3" style="margin-top: 1rem;">
+                    <span class="step-number">2</span>
+                    <div class="card">
+                        <h3>上下文提取</h3>
+                        <p>阅读前一条消息以理解群聊上下文。</p>
+                    </div>
+                </div>
+                <div class="step animate-in delay-4" style="margin-top: 1rem;">
+                    <span class="step-number">3</span>
+                    <div class="card">
+                        <h3>回复生成</h3>
+                        <p>考虑群组动态和礼仪，生成适当的回复。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XXXIV</div>
+    </section>
+
+    <!-- SLIDE 35: Code Review -->
+    <section class="slide" data-slide="35">
+        <div class="slide-inner">
+            <h2 class="animate-in">代码审查智能体</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-3" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>分析</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>解析diff，理解代码结构，识别模式。</p>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">可读性、复杂度、设计</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>反馈</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>生成建设性评论，建议改进。</p>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">最佳实践、安全、性能</p>
+                </div>
+                <div class="card animate-in delay-4">
+                    <h3>总结</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>将发现综合成可操作的总结，供PR作者参考。</p>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">LGTM、小建议或请求更改</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XXXV</div>
+    </section>
+
+    <!-- SLIDE 36: Browser Layers -->
+    <section class="slide" data-slide="36">
+        <div class="slide-inner">
+            <h2 class="animate-in">浏览器架构</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem;">
+                <div class="grid-4">
+                    <div class="card animate-in delay-1" style="border-top: 4px solid var(--burgundy);">
+                        <h3>编排</h3>
+                        <p>高级控制、导航逻辑、流程管理。</p>
+                    </div>
+                    <div class="card animate-in delay-2" style="border-top: 4px solid var(--gold);">
+                        <h3>内容处理</h3>
+                        <p>HTML解析、DOM理解、内容提取。</p>
+                    </div>
+                    <div class="card animate-in delay-3" style="border-top: 4px solid var(--sage);">
+                        <h3>交互</h3>
+                        <p>点击模拟、表单填写、滚动处理。</p>
+                    </div>
+                    <div class="card animate-in delay-4" style="border-top: 4px solid var(--text-muted);">
+                        <h3>执行</h3>
+                        <p>JavaScript运行时、网络请求、渲染。</p>
+                    </div>
+                </div>
+            </div>
+            <p class="animate-in delay-5" style="margin-top: 2rem; text-align: center; font-style: italic; color: var(--text-muted);">
+                四个层次和谐协作，自动化网络世界。
+            </p>
+        </div>
+        <div class="slide-number">XXXVI</div>
+    </section>
+
+    <!-- SLIDE 37: Advantages -->
+    <section class="slide" data-slide="37">
+        <div class="slide-inner">
+            <h2 class="animate-in">核心优势</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-5" style="margin-top: 2rem;">
+                <div class="card animate-in delay-1" style="text-align: center;">
+                    <h3>89.5%</h3>
+                    <p style="font-size: 0.85em; color: var(--text-muted);">准确率</p>
+                </div>
+                <div class="card animate-in delay-2" style="text-align: center;">
+                    <h3>24/7</h3>
+                    <p style="font-size: 0.85em; color: var(--text-muted);">可用性</p>
+                </div>
+                <div class="card animate-in delay-3" style="text-align: center;">
+                    <h3>6+</h3>
+                    <p style="font-size: 0.85em; color: var(--text-muted);">渠道</p>
+                </div>
+                <div class="card animate-in delay-4" style="text-align: center;">
+                    <h3>开源</h3>
+                    <p style="font-size: 0.85em; color: var(--text-muted);">开放</p>
+                </div>
+                <div class="card animate-in delay-5" style="text-align: center;">
+                    <h3>∞</h3>
+                    <p style="font-size: 0.85em; color: var(--text-muted);">可扩展</p>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XXXVII</div>
+    </section>
+
+    <!-- SLIDE 38: Advantage Compare -->
+    <section class="slide" data-slide="38">
+        <div class="slide-inner">
+            <h2 class="animate-in">优势</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-2" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>传统方式</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <ul style="margin-left: 1.5rem;">
+                        <li>手动数据输入</li>
+                        <li>静态工作流</li>
+                        <li>有限记忆</li>
+                        <li>单一渠道</li>
+                        <li>人工工作时间</li>
+                    </ul>
+                </div>
+                <div class="card card-gold animate-in delay-3">
+                    <h3>OpenClaw</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <ul style="margin-left: 1.5rem;">
+                        <li>全自动化</li>
+                        <li>动态适应</li>
+                        <li>持久记忆</li>
+                        <li>多渠道统一</li>
+                        <li>全天候智能</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="pull-quote animate-in delay-4" style="margin-top: 2rem;">
+                "未来不是关于取代人类，而是关于增强人类。"
+            </div>
+        </div>
+        <div class="slide-number">XXXVIII</div>
+    </section>
+
+    <!-- SLIDE 39: Open Source -->
+    <section class="slide" data-slide="39">
+        <div class="slide-inner">
+            <h2 class="animate-in">开源优势</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-2" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>透明</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>完全了解平台运作方式。没有黑盒，没有隐藏逻辑。</p>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">审计一切，不盲目信任。</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>灵活</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>自定义每个组件，扩展能力，深入集成。</p>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">您的基础设施，您的规则。</p>
+                </div>
+            </div>
+            <p class="animate-in delay-4" style="margin-top: 2rem; text-align: center; font-style: italic; color: var(--text-muted);">
+                开源不仅仅是一张许可证，它是一种哲学。
+            </p>
+        </div>
+        <div class="slide-number">XXXIX</div>
+    </section>
+
+    <!-- SLIDE 40: 89.5% -->
+    <section class="slide" data-slide="40">
+        <div class="slide-inner" style="text-align: center;">
+            <h2 class="animate-in" style="opacity: 0.5;">数据说话</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="big-number animate-in delay-2">89.5%</div>
+            <p class="animate-in delay-3" style="font-size: clamp(1.25rem, 2vw, 1.5rem); margin-top: 1.5rem;">
+                所有集成的任务完成率
+            </p>
+            <p class="animate-in delay-4" style="font-style: italic; color: var(--text-muted); margin-top: 1rem;">
+                "在企业试点项目中，OpenClaw智能体完成了89.5%的分配任务，无需人工干预。"
+            </p>
+        </div>
+        <div class="slide-number">XL</div>
+    </section>
+
+    <!-- SLIDE 41: 5 Drawbacks -->
+    <section class="slide" data-slide="41">
+        <div class="slide-inner">
+            <h2 class="animate-in">坦诚考量</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div style="margin-top: 2rem;">
+                <div class="toc-item animate-in delay-2">
+                    <div class="toc-bullet" style="background: var(--burgundy);"></div>
+                    <span>设置复杂性——需要深思熟虑的配置</span>
+                </div>
+                <div class="toc-item animate-in delay-2">
+                    <div class="toc-bullet" style="background: var(--burgundy);"></div>
+                    <span>模型成本——更智能的模型每次调用费用更高</span>
+                </div>
+                <div class="toc-item animate-in delay-3">
+                    <div class="toc-bullet" style="background: var(--burgundy);"></div>
+                    <span>维护开销——SOUL漂移需要监控</span>
+                </div>
+                <div class="toc-item animate-in delay-3">
+                    <div class="toc-bullet" style="background: var(--burgundy);"></div>
+                    <span>上下文窗口限制——记忆管理至关重要</span>
+                </div>
+                <div class="toc-item animate-in delay-4">
+                    <div class="toc-bullet" style="background: var(--burgundy);"></div>
+                    <span>企业集成工作量——可能需要DevOps参与</span>
+                </div>
+            </div>
+            <p class="animate-in delay-5" style="margin-top: 2rem; font-style: italic; color: var(--text-muted);">
+                "了解挑战，为它们制定计划，克服它们而成功。"
+            </p>
+        </div>
+        <div class="slide-number">XLI</div>
+    </section>
+
+    <!-- SLIDE 42: Token Cost -->
+    <section class="slide" data-slide="42">
+        <div class="slide-inner">
+            <h2 class="animate-in">Token经济</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-2" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>输入Token</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>每1M Token费用：</p>
+                    <p style="font-size: clamp(1.5rem, 2.5vw, 2rem); color: var(--burgundy); margin-top: 0.5rem;">$0.50 - $15.00</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">因模型层级而异，批量处理可降低成本。</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>输出Token</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <p>每1M Token费用：</p>
+                    <p style="font-size: clamp(1.5rem, 2.5vw, 2rem); color: var(--burgundy); margin-top: 0.5rem;">$1.50 - $75.00</p>
+                    <p style="margin-top: 1rem; font-size: 0.9em; color: var(--text-muted);">更智能的模型 = 更多输出 = 更高的输出成本。</p>
+                </div>
+            </div>
+            <p class="animate-in delay-4" style="margin-top: 2rem; text-align: center; font-style: italic; color: var(--text-muted);">
+                明智预算，模型层级应与任务复杂度相匹配。
+            </p>
+        </div>
+        <div class="slide-number">XLII</div>
+    </section>
+
+    <!-- SLIDE 43: Security -->
+    <section class="slide" data-slide="43">
+        <div class="slide-inner">
+            <h2 class="animate-in">安全架构</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-2" style="margin-top: 2rem;">
+                <div class="card animate-in delay-2">
+                    <h3>认证</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <ul style="margin-left: 1.5rem;">
+                        <li>企业SSO集成</li>
+                        <li>API密钥管理</li>
+                        <li>渠道特定认证（企业微信等）</li>
+                        <li>基于角色的访问控制</li>
+                    </ul>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>数据保护</h3>
+                    <div class="divider"><div class="divider-diamond"></div></div>
+                    <ul style="margin-left: 1.5rem;">
+                        <li>静态和传输中加密</li>
+                        <li>会话隔离</li>
+                        <li>数据存储选项</li>
+                        <li>审计日志</li>
+                    </ul>
+                </div>
+            </div>
+            <p class="animate-in delay-4" style="margin-top: 2rem; text-align: center; font-style: italic; color: var(--text-muted);">
+                "安全不是一项功能，它是基础。"
+            </p>
+        </div>
+        <div class="slide-number">XLIII</div>
+    </section>
+
+    <!-- SLIDE 44: Skills + Roadmap -->
+    <section class="slide" data-slide="44">
+        <div class="slide-inner">
+            <h2 class="animate-in">技能与路线图</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="animate-in delay-2" style="margin-top: 1.5rem;">
+                <p style="margin-bottom: 0.75rem;">当前技能：</p>
+                <span class="tag">代码审查</span>
+                <span class="tag">文章写作</span>
+                <span class="tag">PPT生成</span>
+                <span class="tag">数据分析</span>
+                <span class="tag">客服</span>
+                <span class="tag">会议助手</span>
+                <span class="tag">研究</span>
+                <span class="tag">禅道集成</span>
+            </div>
+            <div style="margin-top: 2.5rem;" class="animate-in delay-3">
+                <p style="margin-bottom: 1rem;">2026路线图：</p>
+                <div class="grid-4">
+                    <div class="card" style="text-align: center; padding: 1rem;">
+                        <h3 style="color: var(--sage);">Q1</h3>
+                        <p style="font-size: 0.85em;">高级记忆管理</p>
+                    </div>
+                    <div class="card" style="text-align: center; padding: 1rem;">
+                        <h3 style="color: var(--gold);">Q2</h3>
+                        <p style="font-size: 0.85em;">多智能体编排</p>
+                    </div>
+                    <div class="card" style="text-align: center; padding: 1rem;">
+                        <h3 style="color: var(--burgundy);">Q3</h3>
+                        <p style="font-size: 0.85em;">自定义模型微调</p>
+                    </div>
+                    <div class="card" style="text-align: center; padding: 1rem;">
+                        <h3 style="color: var(--text-muted);">Q4</h3>
+                        <p style="font-size: 0.85em;">企业知识图谱</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slide-number">XLIV</div>
+    </section>
+
+    <!-- SLIDE 45: Closing -->
+    <section class="slide" data-slide="45">
+        <div class="slide-inner">
+            <h2 class="animate-in">前进之路</h2>
+            <div class="divider animate-in delay-1"><div class="divider-diamond"></div></div>
+            <div class="grid-3" style="margin-top: 2rem;">
+                <div class="card card-gold animate-in delay-2">
+                    <h3>智能</h3>
+                    <p>AI记住、学习、每次交互都更加聪明。</p>
+                </div>
+                <div class="card animate-in delay-3">
+                    <h3>互联</h3>
+                    <p>跨所有企业渠道和工具的无缝集成。</p>
+                </div>
+                <div class="card animate-in delay-4">
+                    <h3>开放</h3>
+                    <p>透明、可定制，基于开源原则构建。</p>
+                </div>
+            </div>
+            <div style="margin-top: 2.5rem;" class="animate-in delay-5">
+                <p style="margin-bottom: 1rem; text-align: center;">您的下一步：</p>
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <span>访问openclaw.io查看文档</span>
+                </div>
+                <div class="step" style="margin-top: 0.5rem;">
+                    <span class="step-number">2</span>
+                    <span>加入社区Slack</span>
+                </div>
+                <div class="step" style="margin-top: 0.5rem;">
+                    <span class="step-number">3</span>
+                    <span>部署您的第一个试点智能体</span>
+                </div>
+                <div class="step" style="margin-top: 0.5rem;">
+                    <span class="step-number">4</span>
+                    <span>分享您的成功故事</span>
+                </div>
+            </div>
+            <div class="divider animate-in delay-5" style="margin-top: 2rem;"><div class="divider-diamond"></div></div>
+            <p class="animate-in delay-5" style="text-align: center; font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(1.25rem, 2vw, 1.5rem); color: var(--burgundy);">
+                OpenClaw — 智能，互联。
+            </p>
+        </div>
+        <div class="slide-number">XLV</div>
+        <p class="footer-credit">OpenClaw演示 — 复古编辑风格</p>
+    </section>
+
+    <script>
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.totalSlides = this.slides.length;
+                this.currentSlide = 0;
+                this.progressBar = document.getElementById('progressBar');
+                this.navDots = document.getElementById('navDots');
+                this.isScrolling = false;
+                this.scrollTimeout = null;
+
+                this.init();
+            }
+
+            init() {
+                this.createNavDots();
+                this.updateProgress();
+                this.setupIntersectionObserver();
+                this.setupKeyboardNav();
+                this.setupWheelNav();
+                this.setupTouchNav();
+                this.revealOnScroll();
+            }
+
+            createNavDots() {
+                for (let i = 0; i < this.totalSlides; i++) {
+                    const dot = document.createElement('button');
+                    dot.className = 'nav-dot';
+                    dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+                    dot.addEventListener('click', () => this.goToSlide(i));
+                    this.navDots.appendChild(dot);
+                }
+            }
+
+            updateProgress() {
+                const progress = ((this.currentSlide + 1) / this.totalSlides) * 100;
+                this.progressBar.style.width = `${progress}%`;
+
+                const dots = this.navDots.querySelectorAll('.nav-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentSlide);
+                });
+            }
+
+            goToSlide(index) {
+                if (index >= 0 && index < this.totalSlides) {
+                    this.slides[index].scrollIntoView({ behavior: 'smooth' });
+                    this.currentSlide = index;
+                    this.updateProgress();
+                }
+            }
+
+            setupIntersectionObserver() {
+                const options = {
+                    root: null,
+                    rootMargin: '0px',
+                    threshold: 0.5
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const slideIndex = parseInt(entry.target.dataset.slide) - 1;
+                            this.currentSlide = slideIndex;
+                            this.updateProgress();
+                            this.revealSlide(entry.target);
+                        }
+                    });
+                }, options);
+
+                this.slides.forEach(slide => observer.observe(slide));
+            }
+
+            revealSlide(slide) {
+                if (!slide.classList.contains('reveal')) {
+                    slide.classList.add('reveal');
+                }
+            }
+
+            revealOnScroll() {
+                const revealObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('reveal');
+                        }
+                    });
+                }, { threshold: 0.1 });
+
+                this.slides.forEach(slide => revealObserver.observe(slide));
+            }
+
+            setupKeyboardNav() {
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key) {
+                        case 'ArrowDown':
+                        case 'ArrowRight':
+                        case ' ':
+                        case 'PageDown':
+                            e.preventDefault();
+                            this.goToSlide(this.currentSlide + 1);
+                            break;
+                        case 'ArrowUp':
+                        case 'ArrowLeft':
+                        case 'PageUp':
+                            e.preventDefault();
+                            this.goToSlide(this.currentSlide - 1);
+                            break;
+                        case 'Home':
+                            e.preventDefault();
+                            this.goToSlide(0);
+                            break;
+                        case 'End':
+                            e.preventDefault();
+                            this.goToSlide(this.totalSlides - 1);
+                            break;
+                    }
+                });
+            }
+
+            setupWheelNav() {
+                window.addEventListener('wheel', (e) => {
+                    if (this.scrollTimeout) return;
+
+                    this.scrollTimeout = setTimeout(() => {
+                        this.scrollTimeout = null;
+                    }, 800);
+
+                    if (e.deltaY > 0) {
+                        this.goToSlide(this.currentSlide + 1);
+                    } else if (e.deltaY < 0) {
+                        this.goToSlide(this.currentSlide - 1);
+                    }
+                }, { passive: true });
+            }
+
+            setupTouchNav() {
+                let touchStartY = 0;
+                let touchEndY = 0;
+
+                document.addEventListener('touchstart', (e) => {
+                    touchStartY = e.changedTouches[0].screenY;
+                }, { passive: true });
+
+                document.addEventListener('touchend', (e) => {
+                    touchEndY = e.changedTouches[0].screenY;
+                    const diff = touchStartY - touchEndY;
+
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) {
+                            this.goToSlide(this.currentSlide + 1);
+                        } else {
+                            this.goToSlide(this.currentSlide - 1);
+                        }
+                    }
+                }, { passive: true });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new SlidePresentation();
+        });
+    </script>
+</body>
+</html>
